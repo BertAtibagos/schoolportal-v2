@@ -1,0 +1,12 @@
+table {
+	background-color: transparent;
+	font: italic bold 12px verdana, serif;
+	color: black;
+	text-align: left;
+	width: 100%;
+}
+td {
+	font: italic bold 12px verdana, serif;
+	color: black;
+	text-align: left;
+}

@@ -1,0 +1,26 @@
+<style>
+	.bodyfont {
+		font-family: Arial, TimesNewRoman, Helvetica, sans-serif;
+	}
+	.bodylayout {
+		background-color: lightblue;
+		color: green;
+		text-decoration: none;
+		padding: 23px 33px;
+		position: center;
+		display: inline-block;
+		border-radius: 5px;
+	}
+	.icon1 {
+		background: blue;
+	}
+	.icon {
+		position: center;
+		top: -23px;
+		right: -23px;
+		padding: 7px 13px;
+		border-radius: 47%;
+		background-color: pink;
+		color: yellow;
+	}
+</style>

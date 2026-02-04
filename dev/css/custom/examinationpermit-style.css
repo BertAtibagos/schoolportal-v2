@@ -1,0 +1,35 @@
+.wpermit {
+		background-image: url('../../images/with_permit.png');
+                                  background-size: cover;
+                                  background-repeat: no-repeat;
+                                  background-position: center;
+								  width: 20px;
+								  height: auto;
+								  resize: both;
+}
+.wopermit {
+		background-image: url('../../images/without_permit.png');
+                                  background-size: cover;
+                                  background-repeat: no-repeat;
+                                  background-position: center;
+								  width: 20px;
+							      height: auto;
+								  resize: both;
+}
+.wpromi {
+		font-size: 10px;
+		font-family: Roboto, sans-serif;
+		font-weight: normal;
+		text-decoration: none;
+		color: black;
+        padding-right: 10px;
+        margin-right: 10px;
+}
+	/*tbody tr td{
+		font-size: 10px;
+		font-family: Roboto, sans-serif;
+		font-weight: normal;
+		text-decoration: none;
+		color: black;
+	}*/
+	

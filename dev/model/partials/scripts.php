@@ -1,0 +1,1 @@
+<script type="module" src="<?= assetLoader('../../js/custom/masterpage-script.js') ?>"></script>

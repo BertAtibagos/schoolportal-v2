@@ -1,0 +1,32 @@
+[29-Mar-2023 06:31:05 UTC] PHP Warning:  Undefined array key "USERID" in /home/zstvqx3gf3b4/public_html/schoolportal.fcpc-inc.com/dev/model/forms/enrollment/enrollment-monitoring-controller.php on line 19
+[29-Mar-2023 06:31:05 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'ORDER BY `NAME`' at line 13 in /home/zstvqx3gf3b4/public_html/schoolportal.fcpc-inc.com/dev/model/forms/enrollment/enrollment-monitoring-controller.php:21
+Stack trace:
+#0 /home/zstvqx3gf3b4/public_html/schoolportal.fcpc-inc.com/dev/model/forms/enrollment/enrollment-monitoring-controller.php(21): mysqli->query()
+#1 {main}
+  thrown in /home/zstvqx3gf3b4/public_html/schoolportal.fcpc-inc.com/dev/model/forms/enrollment/enrollment-monitoring-controller.php on line 21
+[24-Apr-2023 06:35:42 UTC] PHP Warning:  Undefined array key "levelid" in /home/zstvqx3gf3b4/public_html/schoolportal.fcpc-inc.com/dev/model/forms/enrollment/enrollment-monitoring-controller.php on line 35
+[24-Apr-2023 06:35:42 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'AND `dept`.`SchlDeptHead_ID`=22 
+					ORDER BY `yr`.`SchlAcadYr_RANKNO` DESC' at line 13 in /home/zstvqx3gf3b4/public_html/schoolportal.fcpc-inc.com/dev/model/forms/enrollment/enrollment-monitoring-controller.php:38
+Stack trace:
+#0 /home/zstvqx3gf3b4/public_html/schoolportal.fcpc-inc.com/dev/model/forms/enrollment/enrollment-monitoring-controller.php(38): mysqli->query()
+#1 {main}
+  thrown in /home/zstvqx3gf3b4/public_html/schoolportal.fcpc-inc.com/dev/model/forms/enrollment/enrollment-monitoring-controller.php on line 38
+[24-Apr-2023 06:35:44 UTC] PHP Warning:  Undefined array key "levelid" in /home/zstvqx3gf3b4/public_html/schoolportal.fcpc-inc.com/dev/model/forms/enrollment/enrollment-monitoring-controller.php on line 35
+[24-Apr-2023 06:35:44 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'AND `dept`.`SchlDeptHead_ID`=22 
+					ORDER BY `yr`.`SchlAcadYr_RANKNO` DESC' at line 13 in /home/zstvqx3gf3b4/public_html/schoolportal.fcpc-inc.com/dev/model/forms/enrollment/enrollment-monitoring-controller.php:38
+Stack trace:
+#0 /home/zstvqx3gf3b4/public_html/schoolportal.fcpc-inc.com/dev/model/forms/enrollment/enrollment-monitoring-controller.php(38): mysqli->query()
+#1 {main}
+  thrown in /home/zstvqx3gf3b4/public_html/schoolportal.fcpc-inc.com/dev/model/forms/enrollment/enrollment-monitoring-controller.php on line 38
+[21-Feb-2024 04:41:03 UTC] PHP Warning:  Undefined array key "USERID" in /home/zstvqx3gf3b4/public_html/schoolportal.fcpc-inc.com/dev/model/forms/enrollment/enrollment-monitoring-controller.php on line 19
+[21-Feb-2024 04:41:03 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ORDER BY `NAME`' at line 13 in /home/zstvqx3gf3b4/public_html/schoolportal.fcpc-inc.com/dev/model/forms/enrollment/enrollment-monitoring-controller.php:21
+Stack trace:
+#0 /home/zstvqx3gf3b4/public_html/schoolportal.fcpc-inc.com/dev/model/forms/enrollment/enrollment-monitoring-controller.php(21): mysqli->query()
+#1 {main}
+  thrown in /home/zstvqx3gf3b4/public_html/schoolportal.fcpc-inc.com/dev/model/forms/enrollment/enrollment-monitoring-controller.php on line 21
+[08-Mar-2024 05:56:00 UTC] PHP Warning:  Undefined array key "USERID" in /home/zstvqx3gf3b4/public_html/schoolportal.fcpc-inc.com/dev/model/forms/enrollment/enrollment-monitoring-controller.php on line 19
+[08-Mar-2024 05:56:00 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ORDER BY `NAME`' at line 13 in /home/zstvqx3gf3b4/public_html/schoolportal.fcpc-inc.com/dev/model/forms/enrollment/enrollment-monitoring-controller.php:21
+Stack trace:
+#0 /home/zstvqx3gf3b4/public_html/schoolportal.fcpc-inc.com/dev/model/forms/enrollment/enrollment-monitoring-controller.php(21): mysqli->query()
+#1 {main}
+  thrown in /home/zstvqx3gf3b4/public_html/schoolportal.fcpc-inc.com/dev/model/forms/enrollment/enrollment-monitoring-controller.php on line 21

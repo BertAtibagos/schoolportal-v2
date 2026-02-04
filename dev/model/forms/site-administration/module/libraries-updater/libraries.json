@@ -1,0 +1,43 @@
+[
+    {
+        "name": "bootstrap",
+        "display_name": "Bootstrap",
+        "current_version": "5.3.8",
+        "files": [
+            {
+                "type": "css",
+                "path": "assets\/bootstrap\/bootstrap.min.css"
+            },
+            {
+                "type": "js",
+                "path": "assets\/bootstrap\/bootstrap.bundle.min.js"
+            }
+        ]
+    },
+    {
+        "name": "fontawesome",
+        "display_name": "Font Awesome",
+        "current_version": "7.1.0",
+        "files": [
+            {
+                "type": "css",
+                "path": "assets\/fontawesome\/fontawesome.min.css"
+            },
+            {
+                "type": "js",
+                "path": "assets\/fontawesome\/fontawesome.min.js"
+            }
+        ]
+    },
+    {
+        "name": "jquery",
+        "display_name": "jQuery",
+        "current_version": "3.7.1",
+        "files": [
+            {
+                "type": "js",
+                "path": "assets\/jquery\/jquery.min.js"
+            }
+        ]
+    }
+]

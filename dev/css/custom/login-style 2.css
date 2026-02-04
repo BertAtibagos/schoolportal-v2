@@ -1,0 +1,381 @@
+<style>
+.loginbody {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  display: cover;
+  background-image: url('../../images/FCPC_BLDG.png');
+	/* background-image: url('https://drive.google.com/uc?export=view&id=1l6ZZQ17RTrPp3XMs8zYNcqb-Y_SWvZxn');*/
+  /* background-image:linear-gradient(90deg,rgba(100, 200, 200,0),lightgray,gray);*/
+	background-repeat: no-repeat;
+	height: 50%;
+	width: 100%;
+	background-position: center; 
+	background-size: 100%;
+  /*background-color: hsla(0, 0%, 95.6%,0.9);*/
+  background-color: hsla(211, 100%, 84%,0.9);
+}
+
+.intro {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.bg-image-vertical {
+  position: absolute;
+  overflow: hidden;
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-size: auto 100%;
+}
+
+.header {
+	width: 20%;
+	height: 20%;
+	margin: 0;
+	padding: 0;
+	background-color: transparent;/*transparent;*/
+	background-repeat: no-repeat;
+	background-position: center; 
+	background-size: 20%;
+	/*background-image: url('../../images/FCPC_BLDG.png');*/
+	display: cover;
+}
+.bgcontent {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	background-color: transparent;/*transparent;*/
+	background-repeat: no-repeat;
+	background-position: left; 
+	background-size: 50%;
+	/*background-image: url('../../images/FCPC_LOGO-PNG.png');*/
+	/*position: absolute;*/
+}
+/*td {
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+}*/
+
+.divlogo
+{
+	width: 100px;
+	height: 95px;
+	background-repeat: no-repeat;
+	background-size: 90px;
+	background-position: left;
+	background-image: url('../../images/FCPC_LOGO-PNG.png');
+	padding: 0;
+	margin-top: 20px;
+	margin-bottom: 0;
+	margin-left: 0;
+	margin-right: 0;
+	font: 18px Georgia, times new roman;
+}
+.borderlineheader
+{
+	/*position: fixed;*/
+	padding: 0;
+	margin: 0;
+	width: 100%;
+	height: 2px;
+	color: rgba(100, 255, 10,1);
+	background-image:linear-gradient(90deg,hsl(227, 100%, 50%),hsl(220, 100%, 66%),rgba(200, 200, 255,0));
+	background-repeat: no-repeat;
+	background-size: 100%;
+	display: cover;
+}
+
+.borderlinefooter
+{
+	/*position: fixed;*/
+	padding: 0;
+	margin: 0;
+	width: 100%;
+	height: 2px;
+	color: rgba(100, 255, 10,1);
+	background-image:linear-gradient(90deg,rgba(200, 200, 255,0),hsl(220, 100%, 66%),hsl(227, 100%, 50%));
+	background-size: 100%;
+	background-repeat: no-repeat;
+	display: cover;
+}
+
+.home {
+  width: auto; 
+  height: auto;/*503px;*/
+  /*background-image: url('https://drive.google.com/uc?export=view&id=1gdk0159CYsap6L96XNoDtm-ODjbibc43');*/
+  background-repeat: no-repeat;
+  background-position: left; 
+  background-size: auto%;/*1200px*/;
+  opacity: 0.8;
+}
+
+.divdivider
+{
+	width: 80%;
+	height: auto;
+	position: absolute;
+	top: 22%;
+	left: 14%;
+	padding: 0;
+	text-align: center;
+}
+.divlink
+{
+	width: 100%;
+	height: auto;
+	font-size: 24px;
+	text-align: left;
+	font-style: italic;
+	text-decoration: underline;
+	float: left;
+	position: static;
+	
+}
+.divlink div
+{
+	font: 25px times new roman, serif;
+	width: 40%;
+	height: auto;
+	color: yellow;
+	font-style: normal;
+	text-decoration: none;
+	font-weight: normal;
+}
+
+.divlink div p
+{
+	font: 22px Cambria,times new roman;
+	width: auto;
+	height: auto;
+	color: yellow;
+	font-style: normal;
+	text-decoration: none;
+	font-weight: normal;
+	text-indent: 2em;
+}
+
+.alink
+{
+	color: rgba(100, 200, 255,1);
+	text-indent: 4em;
+	text-decoration: none;
+	font-style: normal;
+	font: 35px times new roman, serif;
+	margin-bottom: 50px;
+	/*background-image:linear-gradient(0deg,rgba(10, 180, 100,0),gray,rgba(200, 200, 200,0));*/
+}
+.alink a
+{
+	color: rgba(200, 255, 200,1);
+	text-align: left;
+	font-style: italic;
+	text-decoration: underline;
+	font: 30px times new roman, serif;
+	color: lighter;
+	
+}
+.divcompanyname
+{
+	color: rgba(0, 100, 255,1);
+	font-size: 24px;
+	font-family: Cambria, serif;
+	padding: 0;
+	margin: 0;
+	text-align: left;
+	background-size: 100%;
+	width: auto;
+	/*background-image:linear-gradient(90deg,rgba(100, 0, 200,0),gray,rgba(200, 200, 255,0));*/
+}
+
+.divcompanyname p
+{
+	font: 12px Cambria, times new roman;
+	width: 100%;
+    margin: 0;
+    padding: 0;
+	height: auto;
+	color: black;
+}
+
+.divsystemname {
+  position: static;
+  margin : 0;
+  width: 85%; 
+  height: auto;/*40%;*/ 
+  text-align: left; 
+  background-color: transparent; 
+  /*background-image:linear-gradient(210deg,hsl(214, 84%, 47%),hsl(214, 84%, 65%),hsl(214, 84%, 78%),hsl(214, 84%, 86%),hsla(211, 100%, 84%,0.9));*/
+}
+
+.divsystemname p {
+  text-align: left; 
+  margin-top: 7px; 
+  margin-left: 9px; 
+  background-color: transparent;/*transparent; */
+  color: black; 
+  z-index: 0;
+}
+/* Full-width input fields */
+input[type=text], input[type=password] {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+/* Full-width input fields */
+input[type=checkbox] {
+  width: auto;
+  height: auto;
+  padding: 0px;
+  margin: 0px 5px 0px 0px;
+}
+/* Set a style for all buttons */
+button {
+  /*background-color: #04AA6D;*/
+  background-color: hsl(227, 100%, 50%);
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+button:hover {
+  opacity: 0.8;
+}
+
+/* Extra styles for the cancel button */
+.cancelbtn {
+  width: auto;
+  padding: 10px 18px;
+  background-color: #f44336;
+}
+
+/* Center the image and position the close button */
+.imgcontainer {
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  background-color: lightgray;
+  width: auto;
+  height: auto;
+  background-position: center;
+}
+
+.avatar {
+  width: 20%;
+  position: relative;
+  background-position: center;
+  border-radius: 50%;
+  background-size: 20px;
+  background-repeat: no-repeat;
+  background-size: 40px;
+  background-image: url('../../images/COLLEGE_LOGO-PNG.png');
+  z-index: 1;
+  height: 15%;
+  background-color: lightgray;
+}
+
+.container {
+  padding: 16px;
+}
+
+span.psw {
+  float: right;
+  padding-top: 0px;
+  margin-top: -25px;
+  margin-right: 25px;
+  font-size: 13px;
+}
+
+/* The Modal (background) */
+.modal {
+  /*display: none;*/ /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 450px;
+  top: 50px;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.0); /* Black w/ opacity */
+  background-color: lightgray;
+  padding: 10px 0 0 0;
+  margin: 0;
+}
+
+/* Modal Content/Box */
+.modal-content {
+  background-color: white;/*#fefefe;*/
+  margin: 5% auto 12% auto; /* 5% from the top, 15% from the bottom and centered */
+  padding-top: 30px;
+  border: 1px solid #888;
+  width: 21%; /* Could be more or less, depending on screen size */
+  -webkit-animation: animatezoom 0.6s;
+  animation: animatezoom 0.6s;
+  border-radius: 25px;
+  /*background-color: hsl(225, 100%, 70%,0.8);*/
+  /*background-color: hsla(0, 0%, 74%, 0.6);*/
+  background-color: white;
+  opacity: 0.8;
+}
+
+/* The Close Button (x) */
+.close {
+  position: absolute;
+  right: 25px;
+  top: 0;
+  color: #000;
+  font-size: 35px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: red;
+  cursor: pointer;
+}
+
+/* Add Zoom Animation */
+.animate {
+  -webkit-animation: animatezoom 0.6s;
+  animation: animatezoom 0.6s
+}
+
+@-webkit-keyframes animatezoom {
+  from {-webkit-transform: scale(0)} 
+  to {-webkit-transform: scale(1)}
+}
+  
+@keyframes animatezoom {
+  from {transform: scale(0)} 
+  to {transform: scale(1)}
+}
+
+/* Change styles for span and cancel button on extra small screens */
+@media screen and (max-width: 400px) {
+  span.psw {
+     display: block;
+     float: none;
+  }
+  .cancelbtn {
+     width: 100%;
+  }
+}
+
+.label {
+  font-size: 13px;
+  text-align: left;
+  color: black;
+}
+</style>

@@ -1,0 +1,53 @@
+.filter-section{
+    text-align: center;
+}
+.card-filter{
+    width: 140vh;
+}
+.hide{
+    display: none;
+}
+.report-view{
+    /* width: 197vh; */
+    overflow-y: auto;
+    max-height: 62vh;
+}
+.stats{
+    text-align:center;
+}
+.gen-rep{
+    background-color: #032a74;
+}
+.verified{
+    background-color: #9bbdff70;
+    color:#032a74;
+}
+.unverified{
+    background-color: #ffd70061;
+    color:#a96200;
+}
+.total-rec{
+    background-color: #c9c9c9;
+}
+.chart-container1 {
+    max-width: 350px;  
+    height: 300px;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.chart-container2 {
+    /* max-width: 500px;   */
+    height: 400px;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.card-header-summary{
+    background-color: #032a74;
+}
+.badge-bg{
+    background-color: #415B8B;
+}
