@@ -13,13 +13,23 @@ button.addEventListener("click", function (e) {
 
     let isValid = true;
     const lateSubmissionCheckbox = document.getElementById("chck_late_submt");
+    const makeupDate = document.getElementById("session_type").value;
     let requiredFields =[];
 
-    if(lateSubmissionCheckbox.checked){
-        requiredFields = ["instructor", "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "attach", "comments", "late_class_date", "late_reason"];
+    if(lateSubmissionCheckbox){
+        if(lateSubmissionCheckbox.checked || makeupDate === "makeup"){
+            requiredFields = ["instructor", "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "attach", "comments", "late_class_date", "late_reason", "makeup_class_date"];
+        }else if(lateSubmissionCheckbox.checked){
+            requiredFields = ["instructor", "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "attach", "comments", "late_class_date", "late_reason"];
+        }
     }
-    requiredFields = ["instructor", "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "attach", "comments"];
-
+    
+    if(makeupDate === "makeup"){
+        requiredFields = ["instructor", "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "attach", "comments", "makeup_class_date"];
+    }else{
+        requiredFields = ["instructor", "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "attach", "comments"];
+    }
+    
     requiredFields.forEach(field => {
         const input = document.getElementById(field);
         if (!input.value) {
