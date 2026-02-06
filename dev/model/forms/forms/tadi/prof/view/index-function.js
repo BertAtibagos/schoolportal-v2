@@ -204,8 +204,17 @@ function DISPLAY_PROFESSOR_SUBJECT(result) {
 function disable_acknw_bttn() {
     document.querySelectorAll('.acknw').forEach(button => {
       const status = button.getAttribute('name');
-      if (status == 1) {
-        let acknowledgedText = document.createTextNode('Verified');
+      const approved = button.getAttribute('data-approved');
+      if (status == 1 && approved == 0) {
+        let acknowledgedText = document.createTextNode('Pending Approval');
+            let span = document.createElement('span');
+            span.style.color = '#eed038';
+            span.style.fontWeight = 'bold';
+            span.style.whiteSpace = 'nowrap';
+            span.appendChild(acknowledgedText);
+            button.replaceWith(span);
+      } else if (status == 1 && approved == 1){
+        let acknowledgedText = document.createTextNode('Approved');
             let span = document.createElement('span');
             span.style.color = '#198754';
             span.style.fontWeight = 'bold';
@@ -413,7 +422,14 @@ function DISPLAY_TADI_LOG(subj_off_id, summary = false) {
             <input type="hidden" class="pass" id="pass${record.sub_off_id}" value="${record.sub_off_id}">
           </td>
           <td>
-            <button class="btn acknw btn-success" value="${record.schltadi_ID}" name="${record.tadi_status}" data-subj-off="${record.sub_off_id}" data-from-summary="${summary}">Verify</button>
+            <button class="btn acknw btn-success" 
+              value="${record.schltadi_ID}" 
+              name="${record.tadi_status}" 
+              data-subj-off="${record.sub_off_id}" 
+              data-from-summary="${summary}" 
+              data-approved="${record.approve}">
+                Verify
+              </button>
           </td>
         `;
         tbody.appendChild(row);
@@ -445,7 +461,7 @@ function DISPLAYALL_TADI_RECORDS(subj_off_id,subjDesc = null,subjSec = null, sum
 	
   let tbody = document.getElementById('rcrd_tbl_body');
   tbody.innerHTML = `<tr class="loading-spinner hide">
-                                    <td colspan="4">
+                                    <td colspan="8">
                                         <div class="text-center">
                                             <div class="spinner-border " role="status">
                                                 <span class="sr-only"></span>
@@ -479,6 +495,7 @@ function DISPLAYALL_TADI_RECORDS(subj_off_id,subjDesc = null,subjSec = null, sum
              record.tadi_mode === 'onsite_learning' ? 'Onsite' : 
              record.tadi_mode}</td>
         <td>${record.tadi_type}</td>
+        <td>${record.mkup_date === null ? '--' : record.mkup_date}</td>
         <td>${new Date('1970-01-01T' + record.tadi_timein).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} - 
             ${new Date('1970-01-01T' + record.tadi_timeout).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</td>
         
@@ -486,7 +503,15 @@ function DISPLAYALL_TADI_RECORDS(subj_off_id,subjDesc = null,subjSec = null, sum
           ${viewUploadCell}
           <input type="hidden" class="pass" id="pass${record.sub_off_id}" value="${record.sub_off_id}">
         </td>
-        <td><button class="btn acknw btn-success" value="${record.schltadi_ID}" name="${record.tadi_status}" data-subj-off="${record.sub_off_id}" data-from-summary="${summary ? 'true' : 'false'}">Verify</button></td>
+        <td><button class="btn acknw btn-success" 
+            value="${record.schltadi_ID}" 
+            name="${record.tadi_status}" 
+            data-subj-off="${record.sub_off_id}" 
+            data-from-summary="${summary ? 'true' : 'false'}"
+            data-approved="${record.approve}">
+              Verify
+            </button>
+        </td>
       `;
       tbody.appendChild(row);
     }
@@ -542,6 +567,7 @@ function UPDATE_TADI_STATUS() {
       const hiddenInput = row.querySelector('.pass');
       const subOffId = hiddenInput ? hiddenInput.value : null;
       const summary = button.getAttribute('data-from-summary');
+      const approve = button.getAttribute('data-approved');
 
       const response = await fetch('forms/tadi/prof/controller/index-post.php', {
         method: "POST",
@@ -556,26 +582,23 @@ function UPDATE_TADI_STATUS() {
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
 
-      // Check for session expiry
       if (data.status === 'session_expired') {
         alert('Your session has expired. Please log in again.');
-        window.location.href = 'index.php'; // Redirect to login page
+        window.location.href = 'index.php'; 
         return;
       }
 
-      // Check for error message from PHP
       if (data.error) {
         alert(data.error);
         return;
       }
 
-      // Replace button with verified text
       const span = document.createElement('span');
-      span.style.cssText = 'color: #198754; font-weight: bold;';
-      span.textContent = 'Verified';
+      span.style.cssText = 'color: #eed038; font-weight: bold;';
+      span.style.whiteSpace = 'nowrap';
+      span.textContent = 'Pending Approval';
       button.replaceWith(span);
 
-      // Update unverified count if subOffId exists
       if (subOffId) {
         const countResponse = await fetch("forms/tadi/prof/controller/index-post.php", {
           method: "POST",
@@ -592,7 +615,6 @@ function UPDATE_TADI_STATUS() {
 
         const result = await countResponse.json();
         
-        // Check for session expiry in count response
         if (result.status === 'session_expired') {
           alert('Your session has expired. Please log in again.');
           window.location.href = 'index.php';
