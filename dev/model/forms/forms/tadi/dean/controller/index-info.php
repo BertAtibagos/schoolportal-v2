@@ -318,7 +318,9 @@ if($type == 'GETALL_TADI_RECORDS'){
 				schl_tadi.`schltadi_filepath` AS tadi_filepath,
 				schl_tadi.schlenrollsubjoff_id AS sub_off_id,
 				schl_tadi.schltadi_late_status AS late_status,
-				schl_tadi.SchlProf_ID 
+				schl_tadi.SchlProf_ID,
+				schl_tadi.schltadi_mkup_date AS mkup_date,
+				schl_tadi.schltadi_isconfirm AS approved
 			FROM `schooltadi` AS schl_tadi 
 			
 			LEFT JOIN `schoolstudent` AS schl_stud 
@@ -751,6 +753,31 @@ if ($type == 'GET_TEACHER_TADI_REPORT') {
     $fetch = $result->fetch_all(MYSQLI_ASSOC);
     $stmt->close();
     $dbConn->close();
+}
+
+if($type == 'APPROVE_TADI_REQUEST'){
+	$tadId = $_POST['tadi_id'];
+	$profId = $_POST['prof_id'];
+	$subjId = $_POST['subj_id'];
+
+	$qry =	"UPDATE `schooltadi`
+			SET `schltadi_isconfirm` = 1
+			WHERE `schltadi_id` = ?
+			AND `schlprof_id` = ?
+			AND `schlenrollsubjoff_id` = ?";
+
+	$stmt = $dbConn->prepare($qry);
+	$stmt->bind_param("iii", $tadId, $profId, $subjId);
+	$stmt->execute();
+	$affectedRows = $stmt->affected_rows;
+	$stmt->close();
+	$dbConn->close();
+
+	if($affectedRows > 0){
+		$fetch = ['status' => 'success'];
+	} else {
+		$fetch = ['status' => 'failed'];
+	}
 }
 
 echo json_encode($fetch); 
