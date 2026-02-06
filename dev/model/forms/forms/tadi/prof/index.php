@@ -215,10 +215,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="legend" style="display: none"> 
-                    <div>Number in <span class="badge bg-secondary"> </span> : Total number of records</div>
-                    <div>Number in <span class="badge bg-danger"> </span> : Total number of unverified records</div>
-                </div>
             </div>
         </div>
 
@@ -246,10 +242,11 @@
                                         <table class="table table-hover table-bordered log_tbl" style="line-height: 2.5; border-color: rgb(157, 157, 157); display: block; height: 400px; overflow-y: auto; width:100%;" id="rcrd_tbl">
                                             <thead style="color: white; width:100%;">
                                                 <tr style="position: sticky; top: 0;">
-                                                    <th scope="col" style="background-color: #181a46; color: white; width:20%;">Date</th>
+                                                    <th scope="col" style="background-color: #181a46; color: white; width:15%;">Date</th>
                                                     <th scope="col" style="background-color: #181a46; color: white; width:20%;">Student Name</th>
                                                     <th scope="col" style="background-color: #181a46; color: white; width:20%;">Learning Modality</th>
                                                     <th scope="col" style="background-color: #181a46; color: white; width:20%;">Session Type</th>
+                                                    <th scope="col" style="background-color: #181a46; color: white; width:15%;">Make up Original Date </th>
                                                     <th scope="col" style="background-color: #181a46; color: white; width:15%;">Time</th>
                                                     <th scope="col" style="background-color: #181a46; color: white; width:10%;">Attachment</th>
                                                     <th scope="col" style="background-color: #181a46; color: white; width:10%;"></th>
