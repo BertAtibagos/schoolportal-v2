@@ -227,7 +227,8 @@ function detailedReportView(result, filterRange, date, dept, filterType){
             stud_name: data.student_name,
             activity: data.activity,
             late_status: data.late_status,
-            status: data.status
+            status: data.status,
+            approved: data.approved
         });
 
         totalSessions++;
@@ -385,10 +386,10 @@ function detailedReportView(result, filterRange, date, dept, filterType){
                                 </thead>
                                 <tbody>
                                     ${subject.sessions.map(session => `
-                                        ${session.status == 0 ? `<tr style="background-color: #fff3cd;">
+                                        ${session.approved == 0 ? `<tr style="background-color: #fff3cd;">
                                                                     <td colspan="8" class="text-center py-3">
                                                                         <i class="fas fa-exclamation-triangle text-warning"></i>
-                                                                        <span class="text-muted ms-2">Record pending verification</span>
+                                                                        <span class="text-muted ms-2">Record pending Approval</span>
                                                                     </td>
                                                                 </tr>` : 
                                         `<tr>
