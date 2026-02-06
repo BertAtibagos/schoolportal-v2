@@ -33,12 +33,10 @@ function displaySubjectTable(result) {
 
     const late_sub_sec = document.getElementById('late_submss_section');
 
-    if(late_sub_sec && result.length > 0 && result[0].user_id == 957,26111){
+    if(late_sub_sec && result.length > 0 && result[0].user_id == 957){
+        document.getElementById('chckbox_late_submss_div').classList.remove('d-none');
         late_sub_sec.classList.remove('d-none');
         late_sub_sec.innerHTML = `
-                                <div>
-                                    <input type="checkbox" id="chck_late_submt"> Late Submission
-                                </div>
                                 <div class="row mb-4 late-submission-fields d-none">
                                     <div class="col-md-6 col-lg-4">
                                         <label for="late_class_date" class="form-label">
@@ -60,7 +58,7 @@ function displaySubjectTable(result) {
                                         <div class="invalid-feedback">Please select a reason</div>
                                     </div>
                                 </div>
-        `;
+                                `;
 
     document.getElementById("chck_late_submt").addEventListener("change", (e) =>{
     const isChecked = e.target.checked;
@@ -357,4 +355,70 @@ function viewSubmitted(subj_Id, prof_Id){
         .catch(err => {
             console.error("Error loading records:", err);
         });
+}
+
+document.getElementById('session_type').addEventListener('change', (e)=>{
+    const sessionType = e.target.value;
+    const mkupSection = document.getElementById('makeup_date_section');
+
+    if(sessionType === 'makeup'){
+        mkupSection.classList.remove('d-none');
+        mkupSection.innerHTML = `
+                                <div class="row mt-2 makeup-sub-field">
+                                    <div class="col-md-6 col-lg-12">
+                                        <label for="makeup_class_date" class="form-label">
+                                            Originally Scheduled Class Date <span class="text-danger">*</span></label>
+                                        </label>
+                                        <input class="form-control mkup-class-in" type="date" name="makeup_class_date" id="makeup_class_date" required>
+                                        <div class="invalid-feedback">Please set a date</div>
+                                    </div>
+                                </div>
+        `;
+    }else{
+        mkupSection.innerHTML ='';
+    }
+})
+
+// Hide late submission fields and makeup date section when modal is closed
+const tadiModal = document.getElementById('modal');
+if (tadiModal) {
+    tadiModal.addEventListener('hidden.bs.modal', () => {
+        // Hide and reset late submission fields
+        const lateSubmtField = document.querySelector(".late-submission-fields");
+        const lateSubmtCheckbox = document.getElementById("chck_late_submt");
+        
+        if (lateSubmtField) {
+            lateSubmtField.classList.add("d-none");
+        }
+        
+        if (lateSubmtCheckbox) {
+            lateSubmtCheckbox.checked = false;
+        }
+        
+        const lateClassDate = document.getElementById("late_class_date");
+        const lateReason = document.getElementById("late_reason");
+        
+        if (lateClassDate) {
+            lateClassDate.classList.remove("is-invalid");
+            lateClassDate.value = "";
+        }
+        
+        if (lateReason) {
+            lateReason.classList.remove("is-invalid");
+            lateReason.value = "";
+        }
+
+        // Hide and reset makeup date section
+        const mkupSection = document.getElementById('makeup_date_section');
+        if (mkupSection) {
+            mkupSection.classList.add('d-none');
+            mkupSection.innerHTML = '';
+        }
+
+        // Reset session type dropdown
+        const sessionType = document.getElementById('session_type');
+        if (sessionType) {
+            sessionType.value = '';
+        }
+    });
 }
