@@ -286,6 +286,7 @@ if($type == 'GET_TADI_DETAILS_BY_CUTOFF'){
 				tadi.`schltadi_activity` AS activity,
 				tadi.`schltadi_status` AS status,
                 tadi.schltadi_late_status AS late_status,
+                tadi.schltadi_isconfirm AS approved,
 				CONCAT(info.`SchlEnrollRegStudInfo_LAST_NAME`, ', ', info.`SchlEnrollRegStudInfo_FIRST_NAME`) AS student_name
 
 			FROM schooltadi tadi
