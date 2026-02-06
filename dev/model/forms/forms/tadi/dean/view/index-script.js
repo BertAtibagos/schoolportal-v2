@@ -312,3 +312,37 @@ function clearErrorMessageBox(){
     errBox.innerHtml = '';
     errBox.style.display = "none";
 }
+
+async function approveTadiRequest(tadiId, profId, subjId) {
+    if(confirm("Are you sure you want to approve this TADI request?") == true){
+        document.querySelectorAll(".approve").forEach(btn => btn.disabled = true);
+        const formData = new FormData();
+        formData.append('type', 'APPROVE_TADI_REQUEST');
+        formData.append('tadi_id', tadiId);
+        formData.append('prof_id', profId);
+        formData.append('subj_id', subjId);
+
+        try{
+            const resquest = await fetch(`forms/tadi/dean/controller/index-info.php`, {
+                method: "POST",
+                body: formData
+            });
+
+            const respond = await resquest.json();
+
+            if(respond.status === 'success'){
+                const currentProfId = profId;
+                const currentSubjId = subjId;
+                GETALL_TADI_RECORDS(currentProfId, currentSubjId);
+            }else{
+                showAlertModal("Failed to approve TADI request. Please try again.");
+            }
+        }catch(err){
+            console.error("Error:", err);
+            showAlertModal("An error occurred while processing the request. Please try again.");
+        }
+    }else{
+        document.querySelectorAll(".approve").forEach(btn => btn.disabled = false);
+        return;
+    }
+}
