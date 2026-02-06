@@ -93,6 +93,9 @@
     #student_tadi_section .thlabel{
         /** color:white; **/
     }
+    #student_tadi_section .mkup-class-in{
+        background-color: #fbe1b0;
+    }
 </style>
 <section id="student_tadi_section">
     <div class="container-fluid mt-4" style="margin:1rem">
@@ -170,6 +173,9 @@
                                         <option value="makeup">Make-Up Class</option>
                                     </select>
                                     <div class="invalid-feedback">Please select a session type</div>
+                                    <div class="d-none" id="makeup_date_section">
+
+                                    </div>
                                 </div>
                             </div>
 
@@ -200,10 +206,13 @@
                                 <input type="hidden" name="prof_id" value="0" id="prof_id">
                             </div>
 
+                            <div id="chckbox_late_submss_div" class="d-none mb-4">
+                                <input type="checkbox" id="chck_late_submt"> Late Submission
+                            </div>
+
                             <div class="d-none" id="late_submss_section">
                                 
                             </div>
-                            
                         </div>
 
 
