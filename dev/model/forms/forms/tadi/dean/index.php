@@ -319,11 +319,7 @@
                         </div>
 
                         <!-- Modal Footer -->
-                        <div class="modal-footer d-flex justify-content-between">
-                            <div class="legend"> 
-                                <div>Number in <span class="badge bg-secondary"> </span> : Total number of records</div>
-                                <div>Number in <span class="badge bg-danger"> </span> : Total number of unverified records</div>
-                            </div>
+                        <div class="modal-footer d-flex justify-content-end">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         </div>
 
@@ -375,13 +371,15 @@
                                         <div class="table-responsive table_tadi_responsive">
                                             <table class="table table-hover table-bordered tadi_tbl" id="tadi_tbl" style="border-color: rgb(157, 157, 157);">
                                                 <thead style="background-color: #181a46; color: white; position: sticky; top:0; z-index:2">
-                                                    <tr>
+                                                    <tr style="text-align: center">
                                                         <th class="col-2" style="background-color: #181a46; color: white;">Student Name</th>
                                                         <th class="col-2" style="background-color: #181a46; color: white;">Date and Time</th>
                                                         <th class="col-1" style="background-color: #181a46; color: white;">Class type</th>
+                                                        <th class="col-1" style="background-color: #181a46; color: white;">Make up original date</th>
                                                         <th style="background-color: #181a46; color: white;">Activity</th>
-                                                        <th class="col-1" style="background-color: #181a46; color: white;">Attachment</th>
                                                         <th class="col-1" style="background-color: #181a46; color: white;">Status</th>
+                                                        <th class="col-1" style="background-color: #181a46; color: white;">Attachment</th>
+                                                        <th class="col-1" style="background-color: #181a46; color: white;"></th>
                                                     </tr>
                                                 </thead>
                                                 <style>
