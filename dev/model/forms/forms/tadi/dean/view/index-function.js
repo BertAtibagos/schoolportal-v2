@@ -83,7 +83,7 @@ function displaySubjList(data) {
 
 function GETALL_TADI_RECORDS(prof_id, subj_id) {
   const tbody = document.getElementById('prof_tadi_list_table');
-  tbody.innerHTML = loadingRow(4);
+  tbody.innerHTML = loadingRow(8);
 
   const formData = new FormData();
   formData.append('type', 'GETALL_TADI_RECORDS');
@@ -121,14 +121,34 @@ function GETALL_TADI_RECORDS(prof_id, subj_id) {
             <td style="${dangerStyle}">${record.stud_name}</td>
             <td style="${dangerStyle}">${record.tadi_date} ${formatTimeToAmPm(record.tadi_timeIn)} - ${formatTimeToAmPm(record.tadi_timeOut)}</td>
             <td style="${dangerStyle}">${modeTypeMap[record.tadi_modeType] || record.tadi_modeType}</td>
+            <td style="${dangerStyle}">${record.mkup_date === null ? '--' : record.mkup_date}</td>
             <td style="${dangerStyle}"><span class="activity-text">${activity}</span></td>
-            <td style="${dangerStyle}">${viewBtn}</td>
             <td style="${dangerStyle}">${status}</td>
+            <td style="${dangerStyle}">${viewBtn}</td>
+            <td style="${dangerStyle}">
+            ${record.approved === 0 
+              ? `<button class="btn btn-sm w-70 approve" style="background-color:#2980B9;color:white" 
+                  value="${record.schltadi_ID}" 
+                  data-prof="${record.SchlProf_ID}" 
+                  data-subj-id="${record.sub_off_id}">
+                    Approve 
+                </button>`
+              : `<span style="color:green;font-weight:bold;">Approved</span>`}
+            </td>
           </tr>`;
       }).join('');
 
       tbody.querySelectorAll(".viewAttch").forEach(btn =>
         btn.addEventListener("click", e => GET_IMAGE(e.target.value, e.target.dataset.prof))
+      );
+
+      tbody.querySelectorAll(".approve").forEach(btn =>
+        btn.addEventListener("click", e => {
+          const tadiId = e.target.value;
+          const profId = e.target.dataset.prof;
+          const subjId = e.target.dataset.subjId;
+          approveTadiRequest(tadiId, profId, subjId);
+        })
       );
 
       tbody.querySelectorAll(".activity-text").forEach(setupActivityText);
