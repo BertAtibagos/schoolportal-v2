@@ -45,7 +45,6 @@ document.getElementById("searchButton").addEventListener("click", function () {
                         <th scope="col" style="background-color: #181a46; color: white;">Description</th>
                         <th scope="col" style="background-color: #181a46; color: white;"></th>
                     </tr>`;
-document.querySelector('.legend').style.display = 'block';
 
         const summary = document.querySelector('.summary');
         const tableWrapper = document.querySelector('.inst_list_tbl_wrapper');
@@ -265,6 +264,5 @@ function displaySummary(){
                             <th scope="col" style="background-color: #181a46; color: white;">Unverified Records</th>
                             <th scope="col" style="background-color: #181a46; color: white;"></th>
                         </tr>`;
-    document.querySelector('.legend').style.display = 'none';
     tadiSummary();
 }
