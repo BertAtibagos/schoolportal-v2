@@ -8,6 +8,7 @@
                 <select class="form-select shadow" id="filterMode">
                     <option value="detailed">Detailed</option>
                     <option value="summary">Summary</option>
+                    <option value="tabulation">Tabulation</option>
                 </select>
             </div>
 
