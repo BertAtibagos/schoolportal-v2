@@ -90,7 +90,7 @@
     }
 	.fixed-modal{
 		width: 600px;
-    	height: 500px;
+    	/* height: 500px; */
     	max-width: 90vw;
     	max-height: 90vh;
 	}
@@ -177,19 +177,19 @@
                         <div class="row">
                             <div class="summary row justify-content-center">
                                 <div class="col-md-3 mx-2" style="margin-bottom: 5px">
-                                    <div class="border rounded p-3 text-center h-100 border-secondary border-3" style="background-color: #c9c9c9;">
+                                    <div class="border rounded p-3 text-center h-100 border-secondary" style="background-color: #c9c9c9;">
                                         <h6>Total Records</h6>
                                         <h3 id="totalCount">0</h3>
                                     </div>
                                 </div>
                                 <div class="col-md-3 mx-2" style="margin-bottom: 5px">
-                                    <div class="border rounded p-3 text-center h-100 border-success border-3 text-success" style="background-color: #ddffef;">
+                                    <div class="border rounded p-3 text-center h-100 border-success text-success" style="background-color: #ddffef;">
                                         <h6>Total Verified</h6>
                                         <h3 id="totalVerified">0</h3>
                                     </div>
                                 </div>
                                 <div class="col-md-3 mx-2" style="margin-bottom: 5px">
-                                    <div class="border rounded p-3 text-center h-100 border-danger border-3 text-danger" style="background-color: #fff1f2;">
+                                    <div class="border rounded p-3 text-center h-100 border-danger text-danger" style="background-color: #fff1f2;">
                                         <h6>Total Unverified</h6>
                                         <h3 id="totalUnverified">0</h3>
                                     </div>

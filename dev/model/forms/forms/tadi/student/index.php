@@ -10,7 +10,7 @@
     #student_tadi_section .fixed-modal {
         width: 600px;
         /* fixed width */
-        height: 500px;
+        /* height: 500px; */
         /* fixed height */
         max-width: 90vw;
         /* still responsive on small screens */
@@ -89,9 +89,6 @@
 
     #student_tadi_section .loading.active {
         display: block;
-    }
-    #student_tadi_section .thlabel{
-        /** color:white; **/
     }
     #student_tadi_section .mkup-class-in{
         background-color: #fbe1b0;

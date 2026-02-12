@@ -381,7 +381,7 @@ function DISPLAY_TADI_LOG(subj_off_id, summary = false) {
 	
   const tbody = document.getElementById('rcrd_tbl_body');
   tbody.innerHTML = `<tr class="loading-spinner hide">
-                                    <td colspan="4">
+                                    <td colspan="8">
                                         <div class="text-center">
                                             <div class="spinner-border " role="status">
                                                 <span class="sr-only"></span>
@@ -414,6 +414,7 @@ function DISPLAY_TADI_LOG(subj_off_id, summary = false) {
                 record.tadi_mode}
           </td>
           <td>${record.tadi_type}</td>
+          <td>${record.mkup_date === null ? '--' : record.mkup_date}</td>
           <td>${new Date('1970-01-01T' + record.tadi_timein).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} - 
               ${new Date('1970-01-01T' + record.tadi_timeout).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</td>
           
@@ -686,7 +687,7 @@ async function tadiSummary(){
 
   const tbodySpinner = document.querySelector('.prof_dashboard_table');
   tbodySpinner.innerHTML =`<tr class="loading-spinner hide">
-                                  <td colspan="4">
+                                  <td colspan="5">
                                       <div class="text-center">
                                           <div class="spinner-border " role="status">
                                               <span class="sr-only"></span>

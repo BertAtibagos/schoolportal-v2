@@ -82,7 +82,7 @@
     }
 	.fixed-modal{
 		width: 600px;
-    	height: 500px;
+    	/* height: 500px; */
     	max-width: 90vw;
     	max-height: 90vh;
 	}
@@ -105,7 +105,7 @@
 	}
     .table-scroll-width-limit,
     .report-container{
-        max-height: 58vh;
+        max-height: 38vh;
     	overflow-y: auto;
     }
     .legend{
