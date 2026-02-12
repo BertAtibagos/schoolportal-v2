@@ -482,7 +482,8 @@ document.getElementById("reportSearch").addEventListener("click", function(){
                 status: record.status,
                 late_status: record.late_status,
                 activity: record.activity ? record.activity.replace(/\\r\\n/g, "<br>") : 'No activity recorded',
-                stud_name: record.student_name
+                stud_name: record.student_name,
+                makeup_date: record.mkup_date || null
             });
         }
 
@@ -502,6 +503,12 @@ document.getElementById("reportSearch").addEventListener("click", function(){
         acc.verifiedSessions += teacherStats.verifiedSessions;
         return acc;
     }, { totalTeachers: 0, totalSessions: 0, verifiedSessions: 0 });
+
+    const hasMakeupDate = Object.values(teacherGroups).some(teacher => 
+    Object.values(teacher.subjects).some(subject => 
+        subject.sessions.some(session => session.makeup_date)
+    )
+);
 
     // Generate HTML output with summary
     reportContainer.innerHTML = `
@@ -531,7 +538,7 @@ document.getElementById("reportSearch").addEventListener("click", function(){
                 <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">${teacher.prof_name}</h5>
                     <span class="badge bg-light text-dark">
-                        ${Object.values(teacher.subjects).reduce((sum, subj) => sum + subj.sessions.length, 0)} sessions
+                        ${Object.values(teacher.subjects).reduce((sum, subj) => sum + subj.sessions.length, 0)} session(s)
                     </span>
                 </div>
                 <div class="card-body">
@@ -544,11 +551,12 @@ document.getElementById("reportSearch").addEventListener("click", function(){
                             <div class="table-responsive">
                                 <table class="table table-sm table-bordered table-hover">
                                     <thead class="table-light">
-                                        <tr>
+                                        <tr style="text-align: center;">
                                             <th>Date</th>
                                             <th>Time</th>
                                             <th>Duration</th>
                                             <th>Session Type</th>
+                                            <th>Make up date</th>
                                             <th>Submitted By</th>
                                             <th>Activity</th>
                                             <th>Status</th>
@@ -556,11 +564,12 @@ document.getElementById("reportSearch").addEventListener("click", function(){
                                     </thead>
                                     <tbody>
                                         ${subject.sessions.map(session => `
-                                            <tr>
+                                            <tr style="text-align: center">
                                                 <td>${session.date}</td>
                                                 <td>${session.time_in} - ${session.time_out}</td>
                                                 <td>${session.duration}</td>
                                                 <td>${session.mode} ${session.type}</td>
+                                                <td>${hasMakeupDate == "null" ? `--` : session.makeup_date}</td>
                                                 <td>${session.stud_name}</td>
                                                 <td>${session.activity}</td>
                                                 <td>
