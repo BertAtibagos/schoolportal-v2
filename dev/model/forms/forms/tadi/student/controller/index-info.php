@@ -97,29 +97,31 @@ if ($type === 'GET_SUBJECT_LIST') {
     $subj_list = $stud_subj_list['schl_acad_subj_id'];
 
     $qry = "SELECT `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID` AS `subj_id`,
-                   `schl_acad_subj`.`SchlAcadSubj_CODE` AS `subj_code`,
-                   `schl_acad_subj`.`SchlAcadSubj_desc` AS `subj_desc`,
-                   `schl_enr_subj_off`.`SchlEnrollSubjOff_UNIT` AS `schl_subj_unit`,
-                   `schl_enr_subj_off`.`SchlProf_ID` AS `prof_id`,
-                   `schl_enr_subj_off`.`SchlAcadYr_ID` AS `acad_year_id`,
-                   `schl_enr_subj_off`.`SchlAcadLvl_ID` AS `acad_lvl_id`,
-                   `schl_enr_subj_off`.`SchlAcadPrd_ID` AS `acad_prd_id`,
-                   (
-                       SELECT REPLACE(GROUP_CONCAT(`schl_emp`.`SchlEmp_FNAME`, ' ', `schl_emp`.`SchlEmp_LNAME`), ',', ' / ')
-                       FROM `schoolemployee` `schl_emp`
-                       WHERE FIND_IN_SET(`schl_emp`.`SchlEmpSms_ID`, `schl_enr_subj_off`.`SchlProf_ID`)
-                   ) AS `prof_name`,
-            COUNT(studrec.schltadi_id) AS record_count_today
+                `schl_acad_subj`.`SchlAcadSubj_CODE` AS `subj_code`,
+                `schl_acad_subj`.`SchlAcadSubj_desc` AS `subj_desc`,
+                `schl_enr_subj_off`.`SchlEnrollSubjOff_UNIT` AS `schl_subj_unit`,
+                `schl_enr_subj_off`.`SchlProf_ID` AS `prof_id`,
+                `schl_enr_subj_off`.`SchlAcadYr_ID` AS `acad_year_id`,
+                `schl_enr_subj_off`.`SchlAcadLvl_ID` AS `acad_lvl_id`,
+                `schl_enr_subj_off`.`SchlAcadPrd_ID` AS `acad_prd_id`,
+                (
+                    SELECT GROUP_CONCAT(
+                        CONCAT(`schl_emp`.`SchlEmp_FNAME`, ' ', `schl_emp`.`SchlEmp_LNAME`)
+                        ORDER BY FIND_IN_SET(`schl_emp`.`SchlEmpSms_ID`, `schl_enr_subj_off`.`SchlProf_ID`)
+                        SEPARATOR ' / '
+                    )
+                    FROM `schoolemployee` `schl_emp`
+                    WHERE FIND_IN_SET(`schl_emp`.`SchlEmpSms_ID`, `schl_enr_subj_off`.`SchlProf_ID`) > 0
+                ) AS `prof_name`,
+                COUNT(studrec.schltadi_id) AS record_count_today
             FROM schoolenrollmentsubjectoffered schl_enr_subj_off
             LEFT JOIN schoolacademicsubject schl_acad_subj
                 ON schl_enr_subj_off.SchlAcadSubj_ID = schl_acad_subj.SchlAcadSubjSms_ID
             LEFT JOIN schooltadi studrec
                 ON schl_enr_subj_off.SchlEnrollSubjOffSms_ID = studrec.schlenrollsubjoff_id
                 AND DATE(studrec.schltadi_date) = CURDATE()
-				-- AND studrec.`schlstud_id` = $USERID
             WHERE 
-				schl_enr_subj_off.SchlEnrollSubjOffSms_ID IN ($subj_list)
-			
+                schl_enr_subj_off.SchlEnrollSubjOffSms_ID IN ($subj_list)
             GROUP BY schl_enr_subj_off.SchlEnrollSubjOffSms_ID";
     
     $rreg = $dbConn->query($qry);
@@ -159,14 +161,14 @@ if($type === 'GET_SUBMITTED_REC'){
 			LEFT JOIN `schoolenrollmentregistrationstudentinformation` AS schl_reg_stud 
 				ON schl_enr_reg.`SchlEnrollRegSms_ID` = `schl_reg_stud`.`SchlEnrollReg_ID` 
 
-			WHERE `schlprof_id` =  ?
+			WHERE FIND_IN_SET(`schlprof_id`, ?) > 0
 			AND `schlenrollsubjoff_id` =  ?
 			-- AND `schl_tadi`.`schlstud_id` = ?
             AND `schltadi_date` = CURDATE()
 			ORDER BY schl_tadi.`schltadi_date`, schl_tadi.`schltadi_timein`";
     
     $stmt = $dbConn->prepare($qry);
-	$stmt->bind_param("ii",$prof_Id,$subj_Id);
+	$stmt->bind_param("si",$prof_Id,$subj_Id);
 	$stmt->execute();
 	$result = $stmt->get_result();
 	$fetch = $result->fetch_all(MYSQLI_ASSOC);
