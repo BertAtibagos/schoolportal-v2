@@ -100,7 +100,7 @@
 		object-fit: contain;
 	}
 	.inst_list_tbl_wrapper{
-		max-height: 65vh;
+		max-height: 43vh;
     	overflow-y: auto;
 	}
     .table-scroll-width-limit,

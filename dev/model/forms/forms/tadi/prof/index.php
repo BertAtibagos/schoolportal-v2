@@ -108,7 +108,7 @@
 		object-fit: contain;
 	}
 	.inst_list_tbl_wrapper{
-		max-height: 56vh;
+		max-height: 43vh;
     	overflow-y: auto;
 	}
     .inst_list_tbl_wrapper.dashboard{
