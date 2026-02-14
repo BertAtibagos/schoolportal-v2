@@ -180,52 +180,54 @@ if ($type == 'GET_INSTRUCTOR_LIST') {
 	}
 
 	$qry = "SELECT DISTINCT 
-			`schl_enr_subj_off`.`SchlProf_ID`,
-			CONCAT(
-				emp.SchlEmp_LNAME,
-				', ',
-				emp.SchlEmp_FNAME,
-				' ',
-				emp.SchlEmp_MNAME
-			) AS prof_name,
-			(SELECT 
-				COUNT(*) 
+				`schl_enr_subj_off`.`SchlProf_ID`,
+				emp.`SchlEmpSms_ID` AS single_prof_id,
+				CONCAT(
+					emp.SchlEmp_LNAME,
+					', ',
+					emp.SchlEmp_FNAME,
+					' ',
+					emp.SchlEmp_MNAME
+				) AS prof_name,
+				(SELECT 
+					COUNT(*) 
+				FROM
+					schooltadi st 
+				INNER JOIN schoolenrollmentsubjectoffered seso 
+					ON st.schlenrollsubjoff_id = seso.SchlEnrollSubjOffSms_ID
+				LEFT JOIN `schoolacademiccourses` `sac` 
+					ON `seso`.`SchlAcadCrses_ID` = `sac`.`SchlAcadCrseSms_ID`
+				LEFT JOIN `schooldepartment` `sd` 
+					ON `sac`.`SchlDept_ID` = `sd`.`SchlDeptSms_ID` 
+				WHERE st.SchlProf_ID = emp.`SchlEmpSms_ID`
+					AND seso.SchlAcadLvl_ID = ?
+					AND seso.SchlAcadYr_ID = ?
+					AND seso.SchlAcadPrd_ID = ?
+					AND `seso`.`SchlAcadYrLvl_ID` = ?
+					AND st.schltadi_status = 1
+					AND st.`schltadi_isconfirm` = 0
+					$forHead) AS unverified_count 
 			FROM
-				schooltadi st 
-			INNER JOIN schoolenrollmentsubjectoffered seso 
-				ON st.schlenrollsubjoff_id = seso.SchlEnrollSubjOffSms_ID
-			LEFT JOIN `schoolacademiccourses` `schl_acad_crses` 
-				ON `seso`.`SchlAcadCrses_ID` = `schl_acad_crses`.`SchlAcadCrseSms_ID`
-			LEFT JOIN `schooldepartment` `schl_dept` 
-				ON `schl_acad_crses`.`SchlDept_ID` = `schl_dept`.`SchlDeptSms_ID` 
-			WHERE st.SchlProf_ID = `schl_enr_subj_off`.`SchlProf_ID` 
-				AND st.schltadi_status = 0 
-				AND seso.SchlAcadLvl_ID = ?
-				AND seso.SchlAcadYr_ID = ?
-				AND seso.SchlAcadPrd_ID = ? 
-				AND `seso`.`SchlAcadYrLvl_ID` = ?
-				AND st.schltadi_status = 1
-    			$forHead) AS unverified_count 
-			FROM
-			`schoolenrollmentsubjectoffered` `schl_enr_subj_off` 
+				`schoolenrollmentsubjectoffered` `schl_enr_subj_off` 
 			LEFT JOIN `schoolacademiccourses` `schl_acad_crses` 
 				ON `schl_enr_subj_off`.`SchlAcadCrses_ID` = `schl_acad_crses`.`SchlAcadCrseSms_ID` 
 			LEFT JOIN `schooldepartment` `schl_dept` 
 				ON `schl_acad_crses`.`SchlDept_ID` = `schl_dept`.`SchlDeptSms_ID` 
 			LEFT JOIN schoolemployee AS emp 
-				ON `schl_enr_subj_off`.`SchlProf_ID` = emp.`SchlEmpSms_ID` 
+				ON FIND_IN_SET(emp.`SchlEmpSms_ID`, `schl_enr_subj_off`.`SchlProf_ID`) > 0
 			WHERE `schl_enr_subj_off`.`SchlAcadLvl_ID` = ?
-			AND `schl_enr_subj_off`.`SchlAcadYr_ID` = ?
-			AND `schl_enr_subj_off`.`SchlAcadPrd_ID` = ?
-			AND `schl_enr_subj_off`.`SchlAcadYrLvl_ID` = ? 
-			$forHead
-			AND `schl_enr_subj_off`.`SchlEnrollSubjOff_ISACTIVE` = 1 
-			AND emp.`SchlEmp_ID` IS NOT NULL 
-			GROUP BY `schl_enr_subj_off`.`SchlProf_ID`,
-			emp.SchlEmp_LNAME,
-			emp.SchlEmp_FNAME,
-			emp.SchlEmp_MNAME 
-			ORDER BY prof_name ASC ";
+				AND `schl_enr_subj_off`.`SchlAcadYr_ID` = ?
+				AND `schl_enr_subj_off`.`SchlAcadPrd_ID` = ?
+				AND `schl_enr_subj_off`.`SchlAcadYrLvl_ID` = ?
+				$forHead
+				AND `schl_enr_subj_off`.`SchlEnrollSubjOff_ISACTIVE` = 1 
+				AND emp.`SchlEmp_ID` IS NOT NULL 
+			GROUP BY 
+				emp.`SchlEmpSms_ID`,
+				emp.SchlEmp_LNAME,
+				emp.SchlEmp_FNAME,
+				emp.SchlEmp_MNAME 
+			ORDER BY prof_name ASC";
 
 	$stmt = $dbConn->prepare($qry);
 
@@ -408,55 +410,56 @@ if ($type == 'GET_SUBJECT_BY_INSTRUCTOR') {
 	}
 
 	$qry = "SELECT DISTINCT
-				CONCAT(emp.SchlEmp_LNAME, ',', emp.SchlEmp_FNAME, ' ', emp.SchlEmp_MNAME) AS prof_name,
-				schl_enr_subj_off.`SchlEnrollSubjOffSms_ID` AS sub_off_id,
-				`schl_acad_sec`.`SchlAcadSec_NAME` AS schl_sec,
-				`schl_acad_subj`.`SchlAcadSubj_CODE` AS `subj_code`,
-				`schl_acad_subj`.`SchlAcadSubj_desc` AS `subj_desc`,
-				`schl_acad_subj`.`SchlAcadSubj_NAME` AS `subj_name`,
-				`schl_enr_subj_off`.`SchlProf_ID`,
-				`schl_enr_subj_off`.`SchlAcadLvl_ID` AS lvlid,
-				`schl_enr_subj_off`.`SchlAcadYr_ID`AS yrid,
-				`schl_enr_subj_off`.`SchlAcadPrd_ID` AS prdid,
-				`schl_enr_subj_off`.`SchlAcadYrLvl_ID` AS yrlvlid,
-				`schl_enr_subj_off`.`SchlEnrollSubjOff_ISACTIVE` AS `subj_act`,
-				(
-				SELECT 
-					COUNT(*) 
-				FROM
-					`schooltadi` AS t 
-				WHERE t.`schltadi_status` = 1
-					AND t.`schlprof_id` = `schl_enr_subj_off`.`SchlProf_ID` 
-					AND t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`) AS verified_count
-			FROM`schoolenrollmentsubjectoffered` AS `schl_enr_subj_off`
+                CONCAT(emp.SchlEmp_LNAME, ', ', emp.SchlEmp_FNAME, ' ', emp.SchlEmp_MNAME) AS prof_name,
+                schl_enr_subj_off.`SchlEnrollSubjOffSms_ID` AS sub_off_id,
+                `schl_acad_sec`.`SchlAcadSec_NAME` AS schl_sec,
+                `schl_acad_subj`.`SchlAcadSubj_CODE` AS `subj_code`,
+                `schl_acad_subj`.`SchlAcadSubj_desc` AS `subj_desc`,
+                `schl_acad_subj`.`SchlAcadSubj_NAME` AS `subj_name`,
+                ? AS SchlProf_ID,
+                `schl_enr_subj_off`.`SchlAcadLvl_ID` AS lvlid,
+                `schl_enr_subj_off`.`SchlAcadYr_ID` AS yrid,
+                `schl_enr_subj_off`.`SchlAcadPrd_ID` AS prdid,
+                `schl_enr_subj_off`.`SchlAcadYrLvl_ID` AS yrlvlid,
+                `schl_enr_subj_off`.`SchlEnrollSubjOff_ISACTIVE` AS `subj_act`,
+                (
+                SELECT 
+                    COUNT(*) 
+                FROM
+                    `schooltadi` AS t 
+                WHERE t.`schltadi_status` = 1
+                    AND t.`schlprof_id` = ?
+                    AND t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`) AS verified_count
+            FROM `schoolenrollmentsubjectoffered` AS `schl_enr_subj_off`
 
-			LEFT JOIN `schoolacademicsubject` AS `schl_acad_subj`
-				 ON `schl_enr_subj_off`.`SchlAcadSubj_ID` = `schl_acad_subj`.`SchlAcadSubjSms_ID`
-			LEFT JOIN `schoolacademicsection` AS `schl_acad_sec` 
-				ON `schl_enr_subj_off`.`SchlAcadSec_ID` = `schl_acad_sec`.`SchlAcadSecSms_ID`
-			LEFT JOIN `schoolacademiccourses` AS `schl_acad_crses`
-				ON `schl_enr_subj_off`.`SchlAcadCrses_ID` = `schl_acad_crses`.`SchlAcadCrseSms_ID`
-			LEFT JOIN `schooldepartment` AS `schl_dept` 
-				ON `schl_acad_crses`.`SchlDept_ID` = `schl_dept`.`SchlDeptSms_ID`
-			LEFT JOIN `schoolacademicyearperiod` AS `schl_acad_yr_prd` 
-				ON `schl_enr_subj_off`.`SchlAcadYr_ID` = `schl_acad_yr_prd`.`SchlAcadYr_ID`
-			LEFT JOIN `schoolacademicyear` AS `schl_yr` 
-				ON `schl_acad_yr_prd`.`SchlAcadYr_ID` = `schl_yr`.`SchlAcadYrSms_ID`
-			LEFT JOIN schoolemployee AS emp 
-				ON `schl_enr_subj_off`.`SchlProf_ID` = emp.`SchlEmpSms_ID` 
-			
-			WHERE `schl_enr_subj_off`.`SchlProf_ID` = ?
-			AND`schl_enr_subj_off`.`SchlAcadLvl_ID` = ?
-			AND `schl_enr_subj_off`.`SchlAcadYr_ID` = ?
-			AND `schl_enr_subj_off`.`SchlAcadPrd_ID` = ?
-			AND `schl_enr_subj_off`.`SchlAcadYrLvl_ID` = ?
+            LEFT JOIN `schoolacademicsubject` AS `schl_acad_subj`
+                 ON `schl_enr_subj_off`.`SchlAcadSubj_ID` = `schl_acad_subj`.`SchlAcadSubjSms_ID`
+            LEFT JOIN `schoolacademicsection` AS `schl_acad_sec` 
+                ON `schl_enr_subj_off`.`SchlAcadSec_ID` = `schl_acad_sec`.`SchlAcadSecSms_ID`
+            LEFT JOIN `schoolacademiccourses` AS `schl_acad_crses`
+                ON `schl_enr_subj_off`.`SchlAcadCrses_ID` = `schl_acad_crses`.`SchlAcadCrseSms_ID`
+            LEFT JOIN `schooldepartment` AS `schl_dept` 
+                ON `schl_acad_crses`.`SchlDept_ID` = `schl_dept`.`SchlDeptSms_ID`
+            LEFT JOIN `schoolacademicyearperiod` AS `schl_acad_yr_prd` 
+                ON `schl_enr_subj_off`.`SchlAcadYr_ID` = `schl_acad_yr_prd`.`SchlAcadYr_ID`
+            LEFT JOIN `schoolacademicyear` AS `schl_yr` 
+                ON `schl_acad_yr_prd`.`SchlAcadYr_ID` = `schl_yr`.`SchlAcadYrSms_ID`
+            LEFT JOIN schoolemployee AS emp 
+                ON emp.`SchlEmpSms_ID` = ?
+            
+            WHERE `schl_enr_subj_off`.`SchlEnrollSubjOff_ISACTIVE` = 1
+            AND FIND_IN_SET(?, `schl_enr_subj_off`.`SchlProf_ID`)
+            AND `schl_enr_subj_off`.`SchlAcadLvl_ID` = ?
+            AND `schl_enr_subj_off`.`SchlAcadYr_ID` = ?
+            AND `schl_enr_subj_off`.`SchlAcadPrd_ID` = ?
+            AND `schl_enr_subj_off`.`SchlAcadYrLvl_ID` = ?
 			$forHead";
 
 	$stmt = $dbConn->prepare($qry);
 	if($user == 11 || $user == 430){
-		$stmt->bind_param("iiiii",$profId, $lvlid, $yrid, $prdid, $yrlvlid);
+		$stmt->bind_param("iiiiiiii", $profId, $profId, $profId, $profId, $lvlid, $yrid, $prdid, $yrlvlid);
 	}else{
-		$stmt->bind_param("iiiiii",$profId, $lvlid, $yrid, $prdid, $yrlvlid, $user);
+		$stmt->bind_param("iiiiiiiii", $profId, $profId, $profId, $profId, $lvlid, $yrid, $prdid, $yrlvlid, $user);
 	}
 	
 	$stmt->execute();
