@@ -17,7 +17,7 @@ function GETACADEMICLEVEL() {
     .catch(err => console.error("Error fetching academic level:", err));
 }
 
-function GET_SUBJECT_BY_INSTRUCTOR({ SchlProf_ID }) {
+function GET_SUBJECT_BY_INSTRUCTOR({ single_prof_id }) {
   const lvlid = document.getElementById("academiclevel").value;
   const yrlvlid = document.getElementById("academicyearlevel").value;
   const prdid = document.getElementById("academicperiod").value;
@@ -25,7 +25,7 @@ function GET_SUBJECT_BY_INSTRUCTOR({ SchlProf_ID }) {
 
   const formData = new FormData();
   formData.append('type', 'GET_SUBJECT_BY_INSTRUCTOR');
-  formData.append('prof_id', SchlProf_ID);
+  formData.append('prof_id', single_prof_id);
   formData.append('lvl_id', lvlid);
   formData.append('prd_id', prdid);
   formData.append('yr_id', yrid);
@@ -94,7 +94,7 @@ function GETALL_TADI_RECORDS(prof_id, subj_id) {
     .then(res => res.json())
     .then(data => {
       if (!data.length) {
-        tbody.innerHTML = "<tr><td colspan='6' class='text-center'>No records found</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='8' class='text-center'>No records found</td></tr>";
         return;
       }
 
