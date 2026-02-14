@@ -33,13 +33,13 @@
                         COUNT(*) 
                     FROM
                         `schooltadi` AS t 
-                        WHERE t.`schlprof_id` = `schl_enr_subj_off`.`SchlProf_ID` 
+                        WHERE t.`schlprof_id` = ? 
                         AND t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`) AS total_count,
                     (
                         SELECT COUNT(*) 
                         FROM `schooltadi` AS t
                         WHERE t.`schltadi_status` = 0
-                        AND t.`schlprof_id` = `schl_enr_subj_off`.`SchlProf_ID`
+                        AND t.`schlprof_id` = ?
                         AND t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`
                     ) AS unverified_count
                 FROM
@@ -66,7 +66,7 @@
                 WHERE`schl_enr_subj_off`.`SchlAcadLvl_ID` = ?
                 AND `schl_acad_yr_prd`.`SchlAcadYr_ID` = ?
                 AND `schl_enr_subj_off`.`SchlAcadPrd_ID` = ?
-                AND `schl_enr_subj_off`.`SchlProf_ID` = ?
+                AND FIND_IN_SET(?, `schl_enr_subj_off`.`SchlProf_ID`) > 0
                 AND schl_enr_subj_off.`SchlAcadYrLvl_ID`= ?
                 AND `schl_enr_subj_off`.`SchlEnrollSubjOff_ISACTIVE` = 1 
                 AND `schl_acad_subj`.`SchlAcadSubj_CODE` LIKE ? ";
@@ -76,7 +76,7 @@
         if ($stmt) {
             
             $searchTerm = "%" . $search . "%";
-            $stmt->bind_param("iiiiis", $lvlid, $yrid, $prdid, $USERID, $yrlvlid, $searchTerm);
+            $stmt->bind_param("iiiiiiis", $USERID,$USERID,$lvlid, $yrid, $prdid, $USERID, $yrlvlid, $searchTerm);
 
             $stmt->execute();
             $result = $stmt->get_result();
@@ -467,14 +467,16 @@
                     COUNT(*) 
                 FROM
                     `schooltadi` AS t 
-                WHERE t.`schlprof_id` = `schl_enr_subj_off`.`SchlProf_ID` 
+                WHERE FIND_IN_SET(?, schl_enr_subj_off.`SchlProf_ID`) > 0 
+                    AND t.`schlprof_id` = ?
                     AND t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`) AS total_count,
                 (SELECT 
                     COUNT(*) 
                 FROM
                     `schooltadi` AS t 
                 WHERE t.`schltadi_status` = 0 
-                    AND t.`schlprof_id` = `schl_enr_subj_off`.`SchlProf_ID` 
+                    AND t.`schlprof_id` = ?
+                    AND FIND_IN_SET(?, schl_enr_subj_off.`SchlProf_ID`) > 0
                     AND t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`) AS unverified_count 
                 FROM
                 `schoolenrollmentsubjectoffered` AS `schl_enr_subj_off` 
@@ -493,13 +495,13 @@
                 WHERE `schl_enr_subj_off`.`SchlAcadLvl_ID` = ? 
                 AND `schl_acad_yr_prd`.`SchlAcadYr_ID` = ?
                 AND `schl_enr_subj_off`.`SchlAcadPrd_ID` = ? 
-                AND `schl_enr_subj_off`.`SchlProf_ID` = ?
+                AND FIND_IN_SET(?, schl_enr_subj_off.`SchlProf_ID`) > 0
                 AND `schl_enr_subj_off`.`SchlEnrollSubjOff_ISACTIVE` = 1 
                 ORDER BY unverified_count DESC, total_count DESC ";
 
 
         $stmt = $dbConn->prepare($qry);
-        $stmt->bind_param("iiii", $lvlid, $yrid, $prdid, $USERID);
+        $stmt->bind_param("iiiiiiii", $USERID,$USERID,$USERID,$USERID,$lvlid, $yrid, $prdid, $USERID);
         $stmt->execute();
         $result = $stmt->get_result();
         $fetch = $result->fetch_all(MYSQLI_ASSOC);
@@ -516,8 +518,11 @@
                         SUM(CASE WHEN schltadi_status = 1 THEN 1 ELSE 0 END) AS verified_count,
                         SUM(CASE WHEN schltadi_status = 0 THEN 1 ELSE 0 END) AS total_unverified,
                         COUNT(*) AS total_count
-                    FROM schooltadi 
-                    WHERE schlprof_id = ?
+                    FROM schooltadi t
+                    LEFT JOIN `schoolenrollmentsubjectoffered` AS `schl_enr_subj_off`
+                        ON t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`
+                    WHERE t.schlprof_id = ?
+                    AND FIND_IN_SET(?, schl_enr_subj_off.`SchlProf_ID`) > 0
                 )
                 SELECT 
                     verified_count,
@@ -527,7 +532,7 @@
                 FROM counts";
 
         $stmt = $dbConn->prepare($qry);
-        $stmt->bind_param("i",$user);
+        $stmt->bind_param("ii",$user,$user);
         $stmt->execute();
         $result = $stmt->get_result();
         $fetch = $result->fetch_assoc();
