@@ -60,24 +60,25 @@ function displaySubjectTable(result) {
                                 </div>
                                 `;
 
-    document.getElementById("chck_late_submt").addEventListener("change", (e) =>{
-    const isChecked = e.target.checked;
-    const lateSubmtField = document.querySelector(".late-submission-fields");
+        document.getElementById("chck_late_submt").addEventListener("change", (e) =>{
+        const isChecked = e.target.checked;
+        const lateSubmtField = document.querySelector(".late-submission-fields");
 
-    if(isChecked){
-        lateSubmtField.classList.remove("d-none");
-    }
+            if(isChecked){
+                lateSubmtField.classList.remove("d-none");
+            }
 
-    if(!isChecked){
-        lateSubmtField.classList.add("d-none");
+            if(!isChecked){
+                lateSubmtField.classList.add("d-none");
 
-        document.getElementById("late_class_date").classList.remove("is-invalid");
-        document.getElementById("late_reason").classList.remove("is-invalid");
-        
-        document.getElementById("late_class_date").value = "";
-        document.getElementById("late_reason").value = "";
-    }
-})
+                document.getElementById("late_class_date").classList.remove("is-invalid");
+                document.getElementById("late_reason").classList.remove("is-invalid");
+                
+                document.getElementById("late_class_date").value = "";
+                document.getElementById("late_reason").value = "";
+            }
+        })
+
     }else if(!late_sub_sec){
         console.log("Not loaded yet")
     }
@@ -153,7 +154,12 @@ function displayTadi(value) {
         const profNames = value.prof_name.split(/[\/,]\s*/);
         const profIds = value.prof_id.split(/[\/,]\s*/);
         
-        instructor = profNames.map((name, index) => 
+        // Add placeholder if multiple professors
+        if (profNames.length > 1) {
+            instructor = "<option value='' selected disabled>Select an Instructor</option>";
+        }
+        
+        instructor += profNames.map((name, index) => 
             `<option value='${profIds[index]?.trim()}'>${name.trim()}</option>`
         ).join("");
     } else {
