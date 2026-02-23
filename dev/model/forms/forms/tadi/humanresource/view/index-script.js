@@ -36,8 +36,24 @@ document.getElementById('filterMode').addEventListener('change', (e)=>{
         document.getElementById('byAllNameDept').classList.add('hide');
         document.querySelector('.name-search').classList.add('hide');
         document.querySelector('.dept-select').classList.remove('hide');
+        document.querySelector('.cutoff-search').classList.remove('hide');
+        document.querySelectorAll('.acad-lvl').forEach(acadFld => {
+            acadFld.classList.add('hide');
+        });
+    }else if(selectValue == 'tabulation'){
+        document.querySelector('.cutoff-search').classList.add('hide');
+        document.querySelector('.dept-select').classList.add('hide');
+        document.getElementById('byAllNameDept').classList.remove('hide');
+        document.querySelectorAll('.acad-lvl').forEach(acadFld => {
+            acadFld.classList.remove('hide');
+        });
+        GET_ACADEMICLEVEL();
     }else{
         document.getElementById('byAllNameDept').classList.remove('hide');
         document.querySelector('.dept-select').classList.add('hide');
+        document.querySelector('.cutoff-search').classList.remove('hide');
+        document.querySelectorAll('.acad-lvl').forEach(acadFld => {
+            acadFld.classList.add('hide');
+        });
     }
 });

@@ -1,0 +1,5 @@
+# Tadi attachments (uploaded files)
+dev/model/forms/forms/tadi/attachment/
+
+# Database / environment configuration
+dev/model/configuration/
