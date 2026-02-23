@@ -64,8 +64,10 @@ document.getElementById('generateBtn').addEventListener("click", (e)=>{
     const filterMode = document.getElementById('filterMode').value;
     if(filterMode == 'detailed'){
         detailedGenReport();
-    }else{
+    }else if(filterMode == 'summary'){
         summaryGenReport();
+    }else{
+        tabulationReport();
     }
 });
 
@@ -122,7 +124,7 @@ async function summaryGenReport(){
     const reportCard = document.getElementById('reportView');
     const srchBtn = document.getElementById('generateBtn');
     srchBtn.disabled = true;
-    reportCard.innerHTML = loadingRow();
+    showLoadingModal();
 
     try{
         
@@ -133,10 +135,12 @@ async function summaryGenReport(){
         });
 
         const result = await request.json();
+        hideLoadingModal();
         summaryReportView(result, filterRange, dateRange, dept);
         
     }
     catch(error){
+         hideLoadingModal();
          console.log("ERROR: ", error);
          srchBtn.disabled = false;
          document.getElementById('reportView').innerHTML = '<div class="alert alert-danger">Error loading report. Please try again.</div>';
@@ -281,7 +285,7 @@ async function detailedGenReport(){
     const reportCard = document.getElementById('reportView');
     const srchBtn = document.getElementById('generateBtn');
     srchBtn.disabled = true;
-    reportCard.innerHTML = loadingRow();
+    showLoadingModal();
 
     try{
         
@@ -292,10 +296,12 @@ async function detailedGenReport(){
         });
 
         const result = await request.json();
+        hideLoadingModal();
         detailedReportView(result, filterRange, dateRange, dept, filterType);
         
     }
     catch(error){
+         hideLoadingModal();
          console.log("ERROR: ", error);
          srchBtn.disabled = false;
          document.getElementById('reportView').innerHTML = '<div class="alert alert-danger">Error loading report. Please try again.</div>';
@@ -351,15 +357,38 @@ function exportTableToCSV(tableId, filename){
     link.click();
 }
 
-function loadingRow() {
-  return `
-    <tr>
-      <td colspan="4">
-        <div class="text-center p-3">
-          <div class="spinner-border" role="status">
+function showLoadingModal() {
+  // Remove existing modal if any
+  hideLoadingModal();
+
+  const modalHTML = `
+    <div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-body text-center p-5">
+            <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;"></div>
+            <p class="mb-0 fw-semibold">Loading, please wait...</p>
+          </div>
         </div>
-      </td>
-    </tr>`;
+      </div>
+    </div>`;
+
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+  const modal = new bootstrap.Modal(document.getElementById('loadingModal'));
+  modal.show();
+}
+
+function hideLoadingModal() {
+  const modalEl = document.getElementById('loadingModal');
+  if (modalEl) {
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    if (modal) {
+      modal.hide();
+    }
+    modalEl.addEventListener('hidden.bs.modal', () => modalEl.remove(), { once: true });
+    // Fallback removal in case event doesn't fire
+    setTimeout(() => { if (document.getElementById('loadingModal')) modalEl.remove(); }, 500);
+  }
 }
 
 function getCutoffDates() {
@@ -400,4 +429,169 @@ function getCutoffDates() {
         prev_cutoff_start,
         prev_cutoff_end
     };
+}
+
+function GET_ACADEMICLEVEL() {
+    let isFirstLoad = true;  // Flag to track initial load
+
+    fetch("forms/tadi/humanresource/controller/index-post.php", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({
+            type: "GET_ACADEMIC_LEVEL"
+        })
+    })
+    .then(res => res.json())
+    .then(result => {
+        let optLevel = result.length
+            ? result.map(value => `<option value="${value.AcadLvl_ID}">${value.AcadLvl_Name}</option>`).join("")
+            : "<option>No Academic Level Found.</option>";
+        document.querySelector("#academiclevel").insertAdjacentHTML('beforeend', optLevel);
+
+        const lvlid = document.getElementById('academiclevel');
+        
+        // Only trigger on first load
+        if (isFirstLoad) {
+            getAcademicPeriods(lvlid.value);
+            isFirstLoad = false;
+        }
+
+        // Event listener for subsequent changes
+        lvlid.addEventListener("change", function() {
+            const lvlid = this.value;
+            getAcademicPeriods(lvlid);
+        });
+    })
+    .catch(err => console.error("Error fetching academic levels:", err));
+}
+
+function getAcademicPeriods(lvlid) {
+    // Remove existing event listener first
+    const periodSelect = document.querySelector("#period");
+    const existingHandler = periodSelect._changeHandler;
+    if (existingHandler) {
+        periodSelect.removeEventListener("change", existingHandler);
+    }
+
+    fetch("forms/tadi/humanresource/controller/index-post.php", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({
+            type: "GET_ACADEMIC_PERIOD",
+            lvl_id: lvlid
+        })
+    })
+    .then(res => res.json())
+    .then(result => {
+        periodSelect.innerHTML = result.length
+            ? result.map(value => `<option value="${value.acad_prd_id}">${value.acad_prd_name}</option>`).join("")
+            : "<option>No Period Found.</option>";
+
+        // Create new handler
+        const changeHandler = function() {
+            const lvlid = document.querySelector("#academiclevel").value;
+            const prdid = this.value;
+            getAcademicYears(lvlid, prdid, true);
+        };
+
+        // Store handler reference
+        periodSelect._changeHandler = changeHandler;
+
+        // Add new event listener
+        periodSelect.addEventListener("change", changeHandler);
+
+        // Only dispatch change event on first load
+        if (!periodSelect._initialized) {
+            periodSelect.dispatchEvent(new Event("change"));
+            periodSelect._initialized = true;
+        }
+    })
+    .catch(err => console.error("Error fetching periods:", err));
+}
+
+function getAcademicYears(lvlid, prdid) {
+  const searchButton = document.getElementById("searchButton");
+  fetch("forms/tadi/humanresource/controller/index-post.php", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: new URLSearchParams({
+      type: "GET_ACAD_YEAR",
+      lvl_id: lvlid,
+      prd_id: prdid
+    })
+  })
+  .then(res => res.json())
+  .then(result => {
+    const select = document.querySelector("#acadyear");
+    select.innerHTML = result.length
+      ? result.map(value => `<option value="${value.Period_id}">${value.YEAR_NAME}</option>`).join("")
+      : "<option>No Year Found.</option>";
+  })
+  .catch(err => console.error("Error fetching academic years:", err));
+}
+
+async function tabulationReport(dateStart = '', dateEnd = ''){
+    const byAllNameDept = document.getElementById('byAllNameDept').value;
+    const lvlid = document.getElementById('academiclevel').value;
+    const prdid = document.getElementById('period').value;
+    const acadyr = document.getElementById('acadyear').value;
+    let filterType = '';
+    let dept = '';
+    let dateRange = { startDate: dateStart, endDate: dateEnd };
+
+    const params = new URLSearchParams({
+        type: "GET_TABULATION",
+        lvlid: lvlid,
+        prdid: prdid,
+        acadyr: acadyr
+    });
+
+    if(dateStart && dateEnd){
+        params.append('startDate', dateStart);
+        params.append('endDate', dateEnd);
+    }
+
+    if(byAllNameDept == 'byName'){
+        const nameSearch = document.getElementById('nameSearch').value;
+        filterType = byAllNameDept;
+        params.append('name', nameSearch);
+        params.append('filterType', filterType);
+    }else if(byAllNameDept == 'byDept'){
+        const deptSelect = document.getElementById('deptSelect').value;
+        dept = deptSelect;
+        filterType = byAllNameDept;
+        params.append('dept', deptSelect);
+        params.append('filterType', filterType);
+    }else{
+        dept = 'all';
+        filterType = 'all';
+        params.append('filterType', 'all');
+    }
+
+    const reportCard = document.getElementById('reportView');
+    const srchBtn = document.getElementById('generateBtn');
+    srchBtn.disabled = true;
+    showLoadingModal();
+
+    try{
+        const request = await fetch(`forms/tadi/humanresource/controller/index-post.php`, {
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: params
+        });
+
+        const result = await request.json();
+        hideLoadingModal();
+        tabulationReportView(result, filterType, dept, dateRange);
+
+    }catch(error){
+        hideLoadingModal();
+        console.log("Error fetching: ", error);
+    }
 }
