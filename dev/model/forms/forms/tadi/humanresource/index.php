@@ -2,7 +2,7 @@
 <section>
 
     <div class="card-filter mb-3 p-3">
-        <div class="row g-3 align-items-end flex-wrap">
+        <div class="d-flex gap-3 align-items-end">
 
             <div class="col-auto">
                 <select class="form-select shadow" id="filterMode">
@@ -12,7 +12,24 @@
                 </select>
             </div>
 
-            <div class="col-auto">
+             <div class="col-auto acad-lvl hide">
+                <select class="form-select shadow" id="academiclevel" name="academiclevel">
+                </select>
+            </div>
+
+            <div class="col-auto acad-lvl hide">
+                <select class="form-select shadow" id="period" name="period">
+                    <option value="" disabled selected>Period</option>
+                </select>
+            </div>
+
+            <div class="col-auto acad-lvl hide">
+                <select class="form-select shadow" id="acadyear" name="acadyear">
+                    <option value="" disabled selected>School Year</option>
+                </select>
+            </div>
+
+            <div class="col-auto cutoff-search">
                 <select class="form-select shadow" id="perCutoffByDate">
                     <option value="currCutOff">Current cut off</option>
                     <option value="prevCutOff">Previous cut off</option>
