@@ -167,16 +167,15 @@ function vertBarChartPerDeptBuilder(result){
 
 function detailedReportView(result, filterRange, date, dept, filterType){
 
+    const reportCard = document.getElementById('reportView'); 
+    const srchBtn = document.getElementById('generateBtn');
+
     if(!Array.isArray(result) || result.length === 0){
-        const reportCard = document.getElementById('reportView'); 
-        const srchBtn = document.getElementById('generateBtn');
         srchBtn.disabled = false;
         reportCard.innerHTML = '<div class="alert alert-warning" role="alert">No records found for the selected criteria.</div>';
         return;
     }
 
-    const reportCard = document.getElementById('reportView'); 
-    const srchBtn = document.getElementById('generateBtn');
     srchBtn.disabled = false;
     reportCard.innerHTML = '';
     const timeFormat = getCutoffDates();
@@ -478,17 +477,15 @@ function detailedReportView(result, filterRange, date, dept, filterType){
 
 function summaryReportView(result, filterRange, date, dept){
 
+    const reportCard = document.getElementById('reportView'); 
+    const srchBtn = document.getElementById('generateBtn');
+
     if(!Array.isArray(result) || result.length === 0){
-        const reportCard = document.getElementById('reportView'); 
-        const srchBtn = document.getElementById('generateBtn');
         srchBtn.disabled = false;
         reportCard.innerHTML = '<div class="alert alert-warning" role="alert">No records found for the selected criteria.</div>';
         return;
     }
 
-
-    const reportCard = document.getElementById('reportView'); 
-    const srchBtn = document.getElementById('generateBtn');
     srchBtn.disabled = false;
     reportCard.innerHTML = '';
     const timeFormat = getCutoffDates();
@@ -661,7 +658,6 @@ function summaryReportView(result, filterRange, date, dept){
     `;
     reportCard.appendChild(summaryDiv);
 
-    // Create department cards with instructor tables
     Object.entries(deptGroups).sort().forEach(([deptInitial, dept]) => {
         const deptCard = document.createElement('div');
         deptCard.className = 'card mb-4';
@@ -753,4 +749,221 @@ function summaryReportView(result, filterRange, date, dept){
     });
     hiddenTable.appendChild(tbody);
     reportCard.appendChild(hiddenTable);
+}
+
+function tabulationReportView(result, filterType, dept, dateRange = { startDate: '', endDate: '' }){
+    
+    const reportCard = document.getElementById('reportView'); 
+    const srchBtn = document.getElementById('generateBtn');
+    
+    if(!Array.isArray(result) || result.length === 0){
+        srchBtn.disabled = false;
+        reportCard.innerHTML = '<div class="alert alert-warning" role="alert">No records found for the selected criteria.</div>';
+        return;
+    }
+
+    srchBtn.disabled = false;
+    reportCard.innerHTML = '';
+    let fileName = '';
+    let deptName = '';
+
+    // Clear existing report content if any
+    let reportTable = document.getElementById('reportTable');
+    if(reportTable) reportTable.remove();
+    let exportContainer = document.getElementById('exportContainer');
+    if(exportContainer) exportContainer.remove();
+    let reportSummary = document.getElementById('reportSummary');
+    if(reportSummary) reportSummary.remove();
+
+    const exportDiv = document.createElement('div');
+    exportDiv.id = 'exportContainer';
+    exportDiv.className = 'mb-3 d-flex justify-content-between';
+    
+    const exportBtn = document.createElement('button');
+    exportBtn.className = 'btn btn-success';
+    exportBtn.textContent = 'Export to CSV';
+
+    const reportLabel = document.createElement('h3');
+    reportLabel.className = 'me-3 fw-bold';
+
+    if(filterType == 'byName'){
+        reportLabel.textContent = `Tabulation Report for ${result[0].prof_name}`;
+        fileName = `TABULATION_REPORT_${result[0].prof_name.replace(/[,]/g, '_').toUpperCase()}.csv`;
+    }else if(filterType == 'byDept'){
+        switch(dept){
+                case 'COAM':
+                    deptName = 'CAMS';
+                    break;
+                case 'COLA':
+                    deptName = 'CAS';
+                    break;
+                case 'COCS':
+                    deptName = 'CCS';
+                    break;
+                case 'COCJ':
+                    deptName = 'CCJ';
+                case 'COE':
+                    deptName = 'CE';
+                default:
+                    deptName = dept;
+            }
+        reportLabel.textContent = `${deptName} PROFESSIONAL REGULAR 2ND SEMESTER A.Y. 2025-2026`;
+        fileName = `TABULATION_REPORT_${deptName.toUpperCase()}.csv`;
+    }else{
+        reportLabel.textContent = `ALL DEPTARTMENTS PROFESSIONAL REGULAR 2ND SEMESTER A.Y. 2025-2026`;
+        fileName = `TABULATION_REPORT_ALL_DEPARTMENTS.csv`;
+    }
+
+    const dateFilter = document.createElement('div');
+    dateFilter.className = 'mb-3';
+    dateFilter.innerHTML = `
+        <label for="tabDateFirst" class="form-label">Filter by Date:</label>
+        <input type="date" id="tabDateFirst" class="form-control form-control-sm d-inline-block w-auto" value="${dateRange.startDate}">
+        <span class="mx-2">to</span>
+        <input type="date" id="tabDateSecond" class="form-control form-control-sm d-inline-block w-auto" value="${dateRange.endDate}">
+        <button id="tabDateFilterBtn" class="btn btn-sm ms-2 text-white" style="background-color:#071976">Search</button>`;
+
+    exportBtn.addEventListener('click', () => exportTableToCSV('reportTable', fileName));
+    exportDiv.appendChild(reportLabel);
+    exportDiv.appendChild(exportBtn);
+    reportCard.appendChild(exportDiv);
+    reportCard.appendChild(dateFilter);
+
+    document.getElementById('tabDateFilterBtn').addEventListener('click', () => {
+        const startDate = document.getElementById('tabDateFirst').value;
+        const endDate = document.getElementById('tabDateSecond').value;
+
+        if(!startDate || !endDate){
+            alert('Please select both start and end dates.');
+            return;
+        }
+        if(startDate > endDate){
+            alert('Start date cannot be later than end date.');
+            return;
+        }
+
+        tabulationReport(startDate, endDate);
+    });
+
+    const filtered = result.filter(r => r.prof_name !== null && r.prof_name !== '');
+    const profGroups = {};
+    filtered.forEach(data => {
+        if (!profGroups[data.prof_name]) {
+            profGroups[data.prof_name] = {};
+        }
+        const subjKey = data.subject_code;
+        if (!profGroups[data.prof_name][subjKey]) {
+            profGroups[data.prof_name][subjKey] = {
+                subject_code: data.subject_code,
+                subject_desc: data.subject_desc,
+                total_enrolled_students: 0,
+                filtered_hours: 0,
+                total_accumulated_hours: 0
+            };
+        }
+        profGroups[data.prof_name][subjKey].total_enrolled_students += parseFloat(data.total_enrolled_students) || 0;
+        profGroups[data.prof_name][subjKey].filtered_hours += parseFloat(data.filtered_hours) || 0;
+        profGroups[data.prof_name][subjKey].total_accumulated_hours += parseFloat(data.total_accumulated_hours) || 0;
+    });
+
+    const totalInstructors = Object.keys(profGroups).length;
+
+
+    const deptCard = document.createElement('div');
+    deptCard.className = 'card mb-4';
+    deptCard.innerHTML = `
+        <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">${deptName}</h5>
+            <span class="badge bg-light text-dark">${totalInstructors > 1 ? totalInstructors + ' instructors' : totalInstructors + ' instructor'}</span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive" style="max-height: 36vh; overflow-y: auto;">
+                <table class="table table-sm table-bordered table-hover">
+                    <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
+                        <tr>
+                            <th class="text-white text-center" style="background-color: #071976">Instructor Name</th>
+                            <th class="text-white text-center" style="background-color: #071976">Code</th>
+                            <th class="text-white text-center" style="background-color: #071976">Subject</th>
+                            <th class="text-white text-center" style="background-color: #071976">No. of Students</th>
+                            <th class="text-white text-center" style="background-color: #071976">Total Hours Conducted${dateRange.startDate && dateRange.endDate ? ` for ${dateRange.startDate} to ${dateRange.endDate}` : ' for this month'}</th>
+                            <th class="text-white text-center" style="background-color: #071976">Total Accumulated Hours per Subject</th>
+                            <th class="text-white text-center" style="background-color: #071976">Total Accumulated hours per Faculty</th>
+                            <th class="text-white text-center" style="background-color: #071976">Total Hours for Sem</th>
+                            <th class="text-white text-center" style="background-color: #071976">Remaining Hours for Sem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${Object.entries(profGroups).map(([profName, subjectsObj]) => {
+                            const subjects = Object.values(subjectsObj);
+                            const totalHoursForSem = 270;
+                            const facultyTotal = subjects.reduce((sum, s) => sum + (parseFloat(s.total_accumulated_hours) || 0), 0);
+                            const remainingHours = Math.round(totalHoursForSem - facultyTotal);
+                            return subjects.map((subj, idx) => `
+                                <tr>
+                                    ${idx === 0 ? `<td rowspan="${subjects.length}" class="text-center align-middle">${profName}</td>` : ''}
+                                    <td class="text-center align-middle">${subj.subject_code}</td>
+                                    <td class="text-center align-middle">${subj.subject_desc}</td>
+                                    <td class="text-center align-middle">${Math.round(subj.total_enrolled_students)}</td>
+                                    <td class="text-center align-middle" style="background-color: #ffefd3">${Math.round(subj.filtered_hours)}</td>
+                                    <td class="text-center align-middle">${Math.round(subj.total_accumulated_hours)}</td>
+                                    ${idx === 0 ? `<td rowspan="${subjects.length}" class="text-center align-middle">${Math.round(facultyTotal)}</td>` : ''}
+                                    ${idx === 0 ? `<td rowspan="${subjects.length}" class="text-center align-middle">${totalHoursForSem}</td>` : ''}
+                                    ${idx === 0 ? `<td rowspan="${subjects.length}" class="text-center align-middle fw-bold">${remainingHours}</td>` : ''}
+                                </tr>
+                            `).join('');
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+    reportCard.appendChild(deptCard);
+
+    // Add hidden table for CSV export
+    const hiddenTable = document.createElement('table');
+    hiddenTable.id = 'reportTable';
+    hiddenTable.style.display = 'none';
+
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    headerRow.innerHTML = `
+        <th>Instructor Name</th>
+        <th>Code</th>
+        <th>Subject</th>
+        <th>No. of Students</th>
+        <th>Total Hours Conducted</th>
+        <th>Total Accumulated Hours per Subject</th>
+        <th>Total Accumulated Hours per Faculty</th>
+        <th>Total Hours for Sem</th>
+        <th>Remaining Hours for Sem</th>
+    `;
+    thead.appendChild(headerRow);
+    hiddenTable.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    Object.entries(profGroups).forEach(([profName, subjectsObj]) => {
+        const subjects = Object.values(subjectsObj);
+        const totalHoursForSem = 270;
+        const facultyTotal = subjects.reduce((sum, s) => sum + (parseFloat(s.total_accumulated_hours) || 0), 0);
+        const remainingHours = Math.round(totalHoursForSem - facultyTotal);
+
+        subjects.forEach((subj, idx) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${idx === 0 ? profName : ''}</td>
+                <td>${subj.subject_code}</td>
+                <td>${subj.subject_desc}</td>
+                <td>${Math.round(subj.total_enrolled_students)}</td>
+                <td>${Math.round(subj.filtered_hours)}</td>
+                <td>${Math.round(subj.total_accumulated_hours)}</td>
+                <td>${idx === 0 ? Math.round(facultyTotal) : ''}</td>
+                <td>${idx === 0 ? totalHoursForSem : ''}</td>
+                <td>${idx === 0 ? remainingHours : ''}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    });
+    hiddenTable.appendChild(tbody);
+    reportCard.appendChild(hiddenTable);
+    
 }
