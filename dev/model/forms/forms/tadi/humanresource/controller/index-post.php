@@ -415,7 +415,7 @@ if($type == 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY'){
                 AND st.schltadi_status = 1
                 AND seso.SchlAcadLvl_ID = 2 
                 AND seso.SchlAcadYr_ID = 19 
-                AND seso.SchlAcadPrd_ID = 5 
+                AND seso.SchlAcadPrd_ID = 6
                 $queryFilter ) AS verified_count,
             (SELECT 
                 COUNT(*) 
@@ -431,7 +431,7 @@ if($type == 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY'){
                 AND st.schltadi_status = 0 
                 AND seso.SchlAcadLvl_ID = 2 
                 AND seso.SchlAcadYr_ID = 19 
-                AND seso.SchlAcadPrd_ID = 5 
+                AND seso.SchlAcadPrd_ID = 6
                 $queryFilter ) AS unverified_count,
             (SELECT 
                 COUNT(*) 
@@ -446,7 +446,7 @@ if($type == 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY'){
             WHERE st.SchlProf_ID = `schl_enr_subj_off`.`SchlProf_ID` 
                 AND seso.SchlAcadLvl_ID = 2 
                 AND seso.SchlAcadYr_ID = 19 
-                AND seso.SchlAcadPrd_ID = 5 
+                AND seso.SchlAcadPrd_ID = 6
                 $queryFilter ) AS total_count 
             FROM
             `schoolenrollmentsubjectoffered` `schl_enr_subj_off` 
@@ -458,7 +458,7 @@ if($type == 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY'){
                 ON `schl_enr_subj_off`.`SchlProf_ID` = emp.`SchlEmpSms_ID` 
             WHERE `schl_enr_subj_off`.`SchlAcadLvl_ID` = 2 
             AND `schl_enr_subj_off`.`SchlAcadYr_ID` = 19 
-            AND `schl_enr_subj_off`.`SchlAcadPrd_ID` = 5 
+            AND `schl_enr_subj_off`.`SchlAcadPrd_ID` = 6
             AND `schl_dept`.`SchlDept_CODE` = ?
             AND `schl_enr_subj_off`.`SchlEnrollSubjOff_ISACTIVE` = 1 
             AND emp.`SchlEmp_ID` IS NOT NULL 
@@ -478,6 +478,229 @@ if($type == 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY'){
     $dbConn->close();
 }
 
+if($type == 'GET_ACADEMIC_LEVEL'){
 
-echo json_encode($fetch);
+        $qry = "SELECT DISTINCT
+                    acad_lvl.`SchlAcadLvl_ID` AcadLvl_ID,
+                    acad_lvl.`SchlAcadLvl_NAME` AcadLvl_Name,
+                    acad_lvl.`SchlAcadLvl_DESC` 
+                FROM
+                    `schoolacademiclevel` acad_lvl 
+                LEFT JOIN `schoolenrollmentsubjectoffered` subj_off 
+                    ON acad_lvl.`SchlAcadLvlSms_ID` = subj_off.`SchlAcadLvl_ID` 
+                LEFT JOIN `schooldepartment` `schl_dept` 
+                    ON acad_lvl.`SchlAcadLvlSms_ID` = `schl_dept`.`SchlAcadLvl_ID`
+                WHERE `SchlAcadLvl_ISACTIVE` = 1
+                ORDER BY AcadLvl_Name DESC";
+
+        $stmt = $dbConn->prepare($qry); 
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $fetch = $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        $dbConn->close();
+
+}
+
+if($type == 'GET_ACADEMIC_YEAR_LEVEL') {
+
+    $lvlid = $_POST['lvl_id'];
+
+    $qry = "SELECT 
+                `SchlAcadYrLvlSms_ID` AS `ACAD_YRLVL_ID`,
+                `SchlAcadYrLvl_NAME` AS `ACAD_YRLVL_NAME`
+            FROM `schoolacademicyearlevel`
+            WHERE `SchlAcadYrLvl_STATUS` = 1 
+            AND `SchlAcadYrLvl_ISACTIVE` = 1 
+            AND `SchlAcadLvl_ID` = ? ORDER BY `SchlAcadYrLvl_RANKNO` ";
+
+    $stmt = $dbConn->prepare($qry);
+    $stmt->bind_param("i", $lvlid);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $fetch = $result->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    $dbConn->close();
+}
+
+if ($type == 'GET_ACADEMIC_PERIOD') {
+    $lvlid = $_POST['lvl_id'];
+
+    $qry = "SELECT DISTINCT 
+                `schl_acad_prd`.`SchlAcadPrdSms_ID` AS `acad_prd_id`,
+                `schl_acad_prd`.`SchlAcadPrd_NAME` AS `acad_prd_name`
+            FROM `schoolacademicyearperiod` AS `schl_acad_yr_prd`
+            LEFT JOIN `schoolacademicperiod` AS `schl_acad_prd`
+                ON `schl_acad_yr_prd`.`SchlAcadPrd_ID` =  `schl_acad_prd`.`SchlAcadPrdSms_ID`
+            WHERE `schl_acad_yr_prd`.`SchlAcadLvl_ID` = ? 
+            AND `schl_acad_yr_prd`.`SchlAcadYrPrd_ISACTIVE` = 1 ";
+
+    $stmt = $dbConn->prepare($qry);
+    $stmt->bind_param("i", $lvlid);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $fetch = $result->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    $dbConn->close();
+}
+
+if ($type == 'GET_ACAD_YEAR') {
+
+    $lvlid = $_POST['lvl_id'];
+    $prdid = $_POST['prd_id'];
+
+    $qry = "  SELECT  
+                `schl_acad_yr_prd`.`SchlAcadLvl_ID` AS `YEAR_ID`,
+                `schl_yr`.`SchlAcadYr_DESC` AS `YEAR_NAME`,
+                schl_yr.`SchlAcadYrSms_ID` AS `Period_id`
+            FROM `schoolacademicyearperiod` AS `schl_acad_yr_prd`  
+            LEFT JOIN `schoolacademicyear` AS `schl_yr`  
+                ON `schl_acad_yr_prd`.`SchlAcadYr_ID` = `schl_yr`.`SchlAcadYrSms_ID`
+            WHERE `schl_acad_yr_prd`.`SchlAcadYrPrd_ISACTIVE` = 1 
+            AND `schl_acad_yr_prd`.`SchlAcadLvl_ID` = ? 
+            AND `schl_acad_yr_prd`.`SchlAcadPrd_ID` = ?
+            ORDER BY  `schl_yr`.`SchlAcadYr_DESC` DESC";
+            
+    $stmt = $dbConn->prepare($qry);
+    $stmt->bind_param("ii", $lvlid, $prdid);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $fetch = $result->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    $dbConn->close();
+}
+
+if($type == "GET_TABULATION"){
+    $lvlid = $_POST['lvlid'];
+    $acadyrid = $_POST['acadyr'];
+    $prdid = $_POST['prdid'];
+    $filterType = $_POST['filterType'];
+    $fDate = isset($_POST['startDate']) && $_POST['startDate'] !== '' ? $_POST['startDate'] : date('Y-m-01');
+    $lDate = isset($_POST['endDate']) && $_POST['endDate'] !== '' ? $_POST['endDate'] : date('Y-m-t');
+
+    switch($filterType){
+        case 'byDept':
+            $dept = $_POST['dept'];
+            $filter = "AND dept.`SchlDept_CODE` = ?";
+            $values = [$fDate, $lDate, $lvlid, $acadyrid, $prdid, $lvlid, $acadyrid, $prdid, $lvlid, $acadyrid, $prdid, $dept];
+            $bind = "ssiiiiiiiiis";
+            break;
+        case 'byName':
+            $name = $_POST['name'];
+            $filter = "AND CONCAT(emp.`SchlEmp_LNAME`, ', ', emp.`SchlEmp_FNAME`) LIKE ?";
+            $bindName = "%". $name . "%";
+            $values = [$fDate, $lDate, $lvlid, $acadyrid, $prdid, $lvlid, $acadyrid, $prdid, $lvlid, $acadyrid, $prdid, $bindName];
+            $bind = "ssiiiiiiiiis";
+            break;
+        case 'all':
+            $filter = "";
+            $values = [$fDate, $lDate, $lvlid, $acadyrid, $prdid, $lvlid, $acadyrid, $prdid, $lvlid, $acadyrid, $prdid];
+            $bind = "ssiiiiiiiii";
+            break;
+        default:
+            echo json_encode(['error' => 'Invalid filter type']);
+            exit;
+    }
+
+    $qry = "WITH tadi_hours AS (
+                SELECT 
+                    t.`schlprof_id`,
+                    o.`SchlAcadSubj_ID`,
+                    o.`SchlAcadCrses_ID`,
+                    ROUND(SUM(
+                        CASE WHEN t.`schltadi_date` BETWEEN ? AND ?
+                        THEN TIMESTAMPDIFF(MINUTE, t.`schltadi_timein`, t.`schltadi_timeout`)
+                        ELSE 0 END
+                    ) / 60, 2) AS filtered_hours,
+                    ROUND(SUM(TIMESTAMPDIFF(MINUTE, t.`schltadi_timein`, t.`schltadi_timeout`)) / 60, 2) AS total_accumulated_hours
+                FROM schooltadi t
+                INNER JOIN schoolenrollmentsubjectoffered o
+                    ON t.`schlenrollsubjoff_id` = o.`SchlEnrollSubjOffSms_ID`
+                WHERE o.`SchlAcadLvl_ID` = ?
+                    AND o.`SchlAcadYr_ID` = ?
+                    AND o.`SchlAcadPrd_ID` = ?
+                    AND FIND_IN_SET(t.`schlprof_id`, o.`SchlProf_ID`) > 0
+                    AND t.`schltadi_timein` IS NOT NULL
+                    AND t.`schltadi_timeout` IS NOT NULL
+                    AND t.`schltadi_isconfirm` = 1
+                    AND t.`schltadi_status` = 1
+                GROUP BY t.`schlprof_id`, o.`SchlAcadSubj_ID`, o.`SchlAcadCrses_ID`
+            ),
+            enrolled_counts AS (
+                SELECT 
+                    o.`SchlAcadSubj_ID`,
+                    o.`SchlAcadCrses_ID`,
+                    o.`SchlProf_ID`,
+                    COUNT(DISTINCT asmt.`SchlEnrollAssSms_ID`) AS total_enrolled
+                FROM schoolenrollmentsubjectoffered o
+                INNER JOIN schoolenrollmentassessment asmt
+                    ON FIND_IN_SET(o.`SchlEnrollSubjOffSms_ID`, asmt.`SchlAcadSubj_ID`) > 0
+                    AND asmt.`SchlAcadLvl_ID` = o.`SchlAcadLvl_ID`
+                    AND asmt.`SchlAcadYr_ID` = o.`SchlAcadYr_ID`
+                    AND asmt.`SchlAcadPrd_ID` = o.`SchlAcadPrd_ID`
+                INNER JOIN schoolstudent stud
+                    ON asmt.`SchlStud_ID` = stud.`SchlStudSms_ID`
+                WHERE o.`SchlAcadLvl_ID` = ? AND o.`SchlAcadYr_ID` = ? AND o.`SchlAcadPrd_ID` = ?
+                    AND IFNULL(asmt.`SchlEnrollAss_STATUS`, 0) = 1
+                    AND IFNULL(asmt.`SchlEnrollWithdrawType_ID`, 0) = 0
+                    AND IFNULL(stud.`SchlStud_STATUS`, 0) = 1
+                    AND IFNULL(stud.`SchlStud_ISACTIVE`, 0) = 1
+                GROUP BY o.`SchlAcadSubj_ID`, o.`SchlAcadCrses_ID`, o.`SchlProf_ID`
+            )
+            SELECT  
+                CONCAT(emp.`SchlEmp_LNAME`, ', ', emp.`SchlEmp_FNAME`) AS prof_name,
+                subj.`SchlAcadSubj_CODE` AS subject_code,
+                subj.`SchlAcadSubj_DESC` AS subject_desc,
+                crse.`SchlAcadCrses_NAME` AS course_name,
+                dept.`SchlDept_CODE` AS dept_code,
+                COUNT(DISTINCT off.`SchlEnrollSubjOffSms_ID`) AS section_count,
+                GROUP_CONCAT(DISTINCT sec.`SchlAcadSec_NAME` ORDER BY sec.`SchlAcadSec_NAME` SEPARATOR ', ') AS sections,
+                IFNULL(MAX(ec.total_enrolled), 0) AS total_enrolled_students,
+                IFNULL(MAX(th.filtered_hours), 0) AS filtered_hours,
+                IFNULL(MAX(th.total_accumulated_hours), 0) AS total_accumulated_hours
+
+            FROM schoolenrollmentsubjectoffered off
+            LEFT JOIN schoolacademicsubject subj ON off.`SchlAcadSubj_ID` = subj.`SchlAcadSubjSms_ID`
+            LEFT JOIN schoolacademicsection sec ON off.`SchlAcadSec_ID` = sec.`SchlAcadSecSms_ID`
+            LEFT JOIN schoolacademiccourses crse ON off.`SchlAcadCrses_ID` = crse.`SchlAcadCrseSms_ID`
+            LEFT JOIN schooldepartment dept ON crse.`SchlDept_ID` = dept.`SchlDeptSms_ID`
+            LEFT JOIN schoolemployee emp ON FIND_IN_SET(emp.`SchlEmpSms_ID`, off.`SchlProf_ID`) > 0
+            LEFT JOIN tadi_hours th 
+                ON th.`schlprof_id` = emp.`SchlEmpSms_ID`
+                AND th.`SchlAcadSubj_ID` = subj.`SchlAcadSubjSms_ID`
+                AND th.`SchlAcadCrses_ID` = crse.`SchlAcadCrseSms_ID`
+            LEFT JOIN enrolled_counts ec
+                ON ec.`SchlAcadSubj_ID` = subj.`SchlAcadSubjSms_ID`
+                AND ec.`SchlAcadCrses_ID` = crse.`SchlAcadCrseSms_ID`
+                AND FIND_IN_SET(emp.`SchlEmpSms_ID`, ec.`SchlProf_ID`) > 0
+
+            WHERE off.`SchlAcadLvl_ID` = ?
+                AND off.`SchlAcadYr_ID` = ?
+                AND off.`SchlAcadPrd_ID` = ?
+                AND off.`SchlEnrollSubjOff_STATUS` = 1
+                AND off.`SchlEnrollSubjOff_ISACTIVE` = 1
+                $filter
+
+            GROUP BY 
+                emp.`SchlEmpSms_ID`,
+                subj.`SchlAcadSubjSms_ID`,
+                crse.`SchlAcadCrseSms_ID`,
+                dept.`SchlDeptSms_ID`
+
+            ORDER BY emp.`SchlEmp_LNAME`, subj.`SchlAcadSubj_CODE`";
+
+        $stmt = $dbConn->prepare($qry);
+        $stmt->bind_param($bind,...$values);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $fetch = $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        $dbConn->close();
+}
+
+if (!isset($fetch)) {
+    echo json_encode(['error' => 'Invalid request type']);
+} else {
+    echo json_encode($fetch);
+}
 ?>
