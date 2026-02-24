@@ -751,6 +751,30 @@ function summaryReportView(result, filterRange, date, dept){
     reportCard.appendChild(hiddenTable);
 }
 
+function recalcTabRow(input) {
+    const row = input.closest('tr');
+    const sectionCount = parseInt(input.dataset.sectionCount) || 0;
+    const numUnits = parseFloat(input.value) || 0;
+    const originalUnits = parseFloat(input.dataset.originalUnits) || 0;
+    const accumulatedHours = parseFloat(input.dataset.accumulatedHours) || 0;
+    const totalForSem = numUnits * 18 * sectionCount;
+    const remaining = totalForSem - Math.round(accumulatedHours);
+    const totalSemCell = row.querySelector('.tab-total-sem');
+    totalSemCell.textContent = totalForSem;
+    const hourRemaining = row.querySelector('.tab-remaining');
+    hourRemaining.textContent = remaining;
+    hourRemaining.style.backgroundColor = numUnits !== originalUnits ? '#fff3cd' : '#ededed';
+
+    // Sync hidden export table row
+    const rowKey = input.dataset.rowKey;
+    document.querySelectorAll('#reportTable tbody tr').forEach(r => {
+        if (r.dataset.rowKey === rowKey) {
+            r.cells[7].textContent = totalForSem;
+            r.cells[8].textContent = remaining;
+        }
+    });
+}
+
 function tabulationReportView(result, filterType, dept, dateRange = { startDate: '', endDate: '' }){
     
     const reportCard = document.getElementById('reportView'); 
@@ -856,6 +880,9 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
             profGroups[data.prof_name][subjKey] = {
                 subject_code: data.subject_code,
                 subject_desc: data.subject_desc,
+                lec_units: parseFloat(data.lec_units) || 0,
+                lab_units: parseFloat(data.lab_units) || 0,
+                section_count: parseInt(data.section_count) || 0,
                 total_enrolled_students: 0,
                 filtered_hours: 0,
                 total_accumulated_hours: 0
@@ -888,29 +915,45 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
                             <th class="text-white text-center" style="background-color: #071976">Total Hours Conducted${dateRange.startDate && dateRange.endDate ? ` for ${dateRange.startDate} to ${dateRange.endDate}` : ' for this month'}</th>
                             <th class="text-white text-center" style="background-color: #071976">Total Accumulated Hours per Subject</th>
                             <th class="text-white text-center" style="background-color: #071976">Total Accumulated hours per Faculty</th>
-                            <th class="text-white text-center" style="background-color: #071976">Total Hours for Sem</th>
-                            <th class="text-white text-center" style="background-color: #071976">Remaining Hours for Sem</th>
+                            <th class="text-white text-center" style="background-color: #071976">No. of Units</th>
+                            <th class="text-white text-center bg-dark">Units Override</th>
+                            <th class="text-white text-center bg-dark">Total Hours for Sem</th>
+                            <th class="text-white text-center bg-dark">Remaining Hours for Sem</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${Object.entries(profGroups).map(([profName, subjectsObj]) => {
                             const subjects = Object.values(subjectsObj);
-                            const totalHoursForSem = 270;
-                            const facultyTotal = subjects.reduce((sum, s) => sum + (parseFloat(s.total_accumulated_hours) || 0), 0);
-                            const remainingHours = Math.round(totalHoursForSem - facultyTotal);
-                            return subjects.map((subj, idx) => `
+                            const facultyFilteredTotal = subjects.reduce((sum, s) => sum + (parseFloat(s.filtered_hours) || 0), 0);
+                            return subjects.map((subj, idx) => {
+                                const num_units = (subj.lab_units == 1 && subj.lec_units == 2) ? 5
+                                               : (subj.lab_units == 0 && subj.lec_units == 3) ? 3
+                                               : (subj.lab_units == 0 && subj.lec_units == 2) ? 2 : 0;
+                                const totalForSem = num_units * 18 * subj.section_count;
+                                const remaining = totalForSem - Math.round(subj.total_accumulated_hours);
+                                return `
                                 <tr>
                                     ${idx === 0 ? `<td rowspan="${subjects.length}" class="text-center align-middle">${profName}</td>` : ''}
                                     <td class="text-center align-middle">${subj.subject_code}</td>
                                     <td class="text-center align-middle">${subj.subject_desc}</td>
                                     <td class="text-center align-middle">${Math.round(subj.total_enrolled_students)}</td>
-                                    <td class="text-center align-middle" style="background-color: #ffefd3">${Math.round(subj.filtered_hours)}</td>
-                                    <td class="text-center align-middle">${Math.round(subj.total_accumulated_hours)}</td>
-                                    ${idx === 0 ? `<td rowspan="${subjects.length}" class="text-center align-middle">${Math.round(facultyTotal)}</td>` : ''}
-                                    ${idx === 0 ? `<td rowspan="${subjects.length}" class="text-center align-middle">${totalHoursForSem}</td>` : ''}
-                                    ${idx === 0 ? `<td rowspan="${subjects.length}" class="text-center align-middle fw-bold">${remainingHours}</td>` : ''}
+                                    <td class="text-center align-middle">${Math.round(subj.filtered_hours)}</td>
+                                    <td class="text-center align-middle">${Math.round(subj.filtered_hours)}</td>
+                                    ${idx === 0 ? `<td rowspan="${subjects.length}" class="text-center align-middle">${Math.round(facultyFilteredTotal)}</td>` : ''}
+                                    <td class="text-center align-middle">${num_units}</td>
+                                    <td class="text-center align-middle" style="background-color:#ededed">
+                                        <input type="number" class="form-control form-control-sm text-center" style="width:70px" min="0" value="${num_units}"
+                                            data-section-count="${subj.section_count}"
+                                            data-accumulated-hours="${subj.total_accumulated_hours}"
+                                            data-original-units="${num_units}"
+                                            data-row-key="${profName}|||${subj.subject_code}"
+                                            oninput="recalcTabRow(this)">
+                                    </td>
+                                    <td class="text-center align-middle tab-total-sem" style="background-color:#ededed">${totalForSem}</td>
+                                    <td class="text-center align-middle fw-bold tab-remaining" style="background-color:#ededed">${remaining}</td>
                                 </tr>
-                            `).join('');
+                            `;
+                            }).join('');
                         }).join('')}
                     </tbody>
                 </table>
@@ -943,22 +986,27 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
     const tbody = document.createElement('tbody');
     Object.entries(profGroups).forEach(([profName, subjectsObj]) => {
         const subjects = Object.values(subjectsObj);
-        const totalHoursForSem = 270;
-        const facultyTotal = subjects.reduce((sum, s) => sum + (parseFloat(s.total_accumulated_hours) || 0), 0);
-        const remainingHours = Math.round(totalHoursForSem - facultyTotal);
+        const facultyFilteredTotal = subjects.reduce((sum, s) => sum + (parseFloat(s.filtered_hours) || 0), 0);
 
         subjects.forEach((subj, idx) => {
+            const num_units = (subj.lab_units == 1 && subj.lec_units == 2) ? 5
+                            : (subj.lab_units == 0 && subj.lec_units == 3) ? 3
+                            : (subj.lab_units == 0 && subj.lec_units == 2) ? 2 : 0;
+            const totalForSem = num_units * 18 * subj.section_count;
+            const remaining = totalForSem - Math.round(subj.total_accumulated_hours);
+
             const row = document.createElement('tr');
+            row.dataset.rowKey = `${profName}|||${subj.subject_code}`;
             row.innerHTML = `
                 <td>${idx === 0 ? profName : ''}</td>
                 <td>${subj.subject_code}</td>
                 <td>${subj.subject_desc}</td>
                 <td>${Math.round(subj.total_enrolled_students)}</td>
                 <td>${Math.round(subj.filtered_hours)}</td>
-                <td>${Math.round(subj.total_accumulated_hours)}</td>
-                <td>${idx === 0 ? Math.round(facultyTotal) : ''}</td>
-                <td>${idx === 0 ? totalHoursForSem : ''}</td>
-                <td>${idx === 0 ? remainingHours : ''}</td>
+                <td>${Math.round(subj.filtered_hours)}</td>
+                <td>${idx === 0 ? Math.round(facultyFilteredTotal) : ''}</td>
+                <td>${totalForSem}</td>
+                <td>${remaining}</td>
             `;
             tbody.appendChild(row);
         });
