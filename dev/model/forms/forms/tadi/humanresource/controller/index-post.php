@@ -657,7 +657,9 @@ if($type == "GET_TABULATION"){
                 GROUP_CONCAT(DISTINCT sec.`SchlAcadSec_NAME` ORDER BY sec.`SchlAcadSec_NAME` SEPARATOR ', ') AS sections,
                 IFNULL(MAX(ec.total_enrolled), 0) AS total_enrolled_students,
                 IFNULL(MAX(th.filtered_hours), 0) AS filtered_hours,
-                IFNULL(MAX(th.total_accumulated_hours), 0) AS total_accumulated_hours
+                IFNULL(MAX(th.total_accumulated_hours), 0) AS total_accumulated_hours,
+                subj.`SchlAcadSubj_LEC` AS lec_units,
+                subj.`SchlAcadSubj_LAB` AS lab_units
 
             FROM schoolenrollmentsubjectoffered off
             LEFT JOIN schoolacademicsubject subj ON off.`SchlAcadSubj_ID` = subj.`SchlAcadSubjSms_ID`
