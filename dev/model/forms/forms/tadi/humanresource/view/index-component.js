@@ -882,12 +882,13 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
                 subject_desc: data.subject_desc,
                 lec_units: parseFloat(data.lec_units) || 0,
                 lab_units: parseFloat(data.lab_units) || 0,
-                section_count: parseInt(data.section_count) || 0,
+                section_count: 0,
                 total_enrolled_students: 0,
                 filtered_hours: 0,
                 total_accumulated_hours: 0
             };
         }
+        profGroups[data.prof_name][subjKey].section_count += parseInt(data.section_count) || 0;
         profGroups[data.prof_name][subjKey].total_enrolled_students += parseFloat(data.total_enrolled_students) || 0;
         profGroups[data.prof_name][subjKey].filtered_hours += parseFloat(data.filtered_hours) || 0;
         profGroups[data.prof_name][subjKey].total_accumulated_hours += parseFloat(data.total_accumulated_hours) || 0;
@@ -926,9 +927,10 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
                             const subjects = Object.values(subjectsObj);
                             const facultyFilteredTotal = subjects.reduce((sum, s) => sum + (parseFloat(s.filtered_hours) || 0), 0);
                             return subjects.map((subj, idx) => {
-                                const num_units = (subj.lab_units == 1 && subj.lec_units == 2) ? 5
-                                               : (subj.lab_units == 0 && subj.lec_units == 3) ? 3
-                                               : (subj.lab_units == 0 && subj.lec_units == 2) ? 2 : 0;
+                                // const num_units = (subj.lab_units == 1 && subj.lec_units == 2) ? 5
+                                //                : (subj.lab_units == 0 && subj.lec_units == 3) ? 3
+                                //                : (subj.lab_units == 0 && subj.lec_units == 2) ? 2 : 0; commented to use later
+                                const num_units = subj.lec_units + subj.lab_units;
                                 const totalForSem = num_units * 18 * subj.section_count;
                                 const remaining = totalForSem - Math.round(subj.total_accumulated_hours);
                                 return `
@@ -989,9 +991,10 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
         const facultyFilteredTotal = subjects.reduce((sum, s) => sum + (parseFloat(s.filtered_hours) || 0), 0);
 
         subjects.forEach((subj, idx) => {
-            const num_units = (subj.lab_units == 1 && subj.lec_units == 2) ? 5
-                            : (subj.lab_units == 0 && subj.lec_units == 3) ? 3
-                            : (subj.lab_units == 0 && subj.lec_units == 2) ? 2 : 0;
+            // const num_units = (subj.lab_units == 1 && subj.lec_units == 2) ? 5
+            //                 : (subj.lab_units == 0 && subj.lec_units == 3) ? 3
+            //                 : (subj.lab_units == 0 && subj.lec_units == 2) ? 2 : 0; commented to use later
+            const num_units = subj.lec_units + subj.lab_units;
             const totalForSem = num_units * 18 * subj.section_count;
             const remaining = totalForSem - Math.round(subj.total_accumulated_hours);
 
