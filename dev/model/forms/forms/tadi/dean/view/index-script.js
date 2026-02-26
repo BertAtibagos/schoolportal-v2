@@ -47,7 +47,7 @@ function GETYEARLVL(){
         .then(res => res.json())
         .then(result => {
             let optPeriod = result.length
-                ? result.map(value => `<option value="${value.acad_prd_id}">${value.acad_prd_name}</option>`).join("")
+                ? result.map(value => `<option value="${value.acad_prd_id}" ${value.is_current == 1 ? "selected" : ""}>${value.acad_prd_name}</option>`).join("")
                 : "<option>No Period Found.</option>";
             document.getElementById("academicperiod").innerHTML = optPeriod;
 

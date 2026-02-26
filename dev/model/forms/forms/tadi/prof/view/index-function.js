@@ -78,7 +78,7 @@ function getAcademicPeriods(lvlid) {
     .then(res => res.json())
     .then(result => {
         periodSelect.innerHTML = result.length
-            ? result.map(value => `<option value="${value.acad_prd_id}">${value.acad_prd_name}</option>`).join("")
+            ? result.map(value => `<option value="${value.acad_prd_id}" ${value.is_current == 1 ? "selected" : ""}>${value.acad_prd_name}</option>`).join("")
             : "<option>No Period Found.</option>";
 
         // Create new handler
