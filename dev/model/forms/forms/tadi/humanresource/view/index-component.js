@@ -944,7 +944,7 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
                                     ${idx === 0 ? `<td rowspan="${subjects.length}" class="text-center align-middle">${Math.round(facultyFilteredTotal)}</td>` : ''}
                                     <td class="text-center align-middle">${num_units}</td>
                                     <td class="text-center align-middle" style="background-color:#ededed">
-                                        <input type="number" class="form-control form-control-sm text-center" style="width:70px" min="0" value="${num_units}"
+                                        <input type="number" class="form-control form-control-sm text-center mx-auto" style="width:70px" min="0" value="${num_units}"
                                             data-section-count="${subj.section_count}"
                                             data-accumulated-hours="${subj.total_accumulated_hours}"
                                             data-original-units="${num_units}"
