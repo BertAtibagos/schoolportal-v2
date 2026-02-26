@@ -1016,5 +1016,4 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
     });
     hiddenTable.appendChild(tbody);
     reportCard.appendChild(hiddenTable);
-    
 }

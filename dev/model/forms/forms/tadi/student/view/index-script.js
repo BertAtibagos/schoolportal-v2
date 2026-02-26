@@ -127,8 +127,8 @@ button.addEventListener("click", function (e) {
                 })
                 .catch(error => {
                     console.error("Submission error:", error);
-                    alert("Error submitting TADI: " + error);
-                    submitBtn.disabled = true;
+                    alert("Something Went Wrong. Please Try Again.");
+                    submitBtn.disabled = false;
                     submitBtn.innerHTML = ``;
                     submitBtn.innerHTML = `Submit`;
                 });
