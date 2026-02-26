@@ -73,14 +73,16 @@ if ($type == 'GET_ACADEMIC_PERIOD') {
 
 	$lvlid = $_POST['lvl_id'];
 
-	$qry = " SELECT DISTINCT 
-				`schl_acad_prd`.`SchlAcadPrdSms_ID` `acad_prd_id`,
-				`schl_acad_prd`.`SchlAcadPrd_NAME` `acad_prd_name`
-			FROM 	`schoolacademicyearperiod` `schl_acad_yr_prd`
-			LEFT JOIN `schoolacademicperiod` `schl_acad_prd`
-				ON `schl_acad_yr_prd`.`SchlAcadPrd_ID` =  `schl_acad_prd`.`SchlAcadPrdSms_ID`
-			WHERE `schl_acad_yr_prd`.`SchlAcadLvl_ID` = ? 
-			AND	`schl_acad_yr_prd`.`SchlAcadYrPrd_ISACTIVE` = 1";
+	$qry = " SELECT DISTINCT
+                    `schl_acad_prd`.`SchlAcadPrdSms_ID` AS `acad_prd_id`,
+                    `schl_acad_prd`.`SchlAcadPrd_NAME` AS `acad_prd_name`,
+                     `schl_acad_yr_prd`.`SchlAcadYrPrd_ISOPEN` AS `is_current`
+                FROM `schoolacademicyearperiod` AS `schl_acad_yr_prd`
+                LEFT JOIN `schoolacademicperiod` AS `schl_acad_prd`
+                    ON `schl_acad_yr_prd`.`SchlAcadPrd_ID` =  `schl_acad_prd`.`SchlAcadPrdSms_ID`
+                WHERE `schl_acad_yr_prd`.`SchlAcadLvl_ID` = ?
+				AND `schl_acad_yr_prd`.SchlAcadYr_ID = 19
+                AND `schl_acad_yr_prd`.`SchlAcadYrPrd_ISACTIVE` = 1";
 
 	$stmt = $dbConn->prepare($qry);
 	$stmt->bind_param("i",$lvlid);
