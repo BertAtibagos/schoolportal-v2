@@ -539,7 +539,9 @@ function summaryReportView(result, filterRange, date, dept){
             prof_name: data.prof_name,
             verified_count: data.verified_count,
             unverified_count: data.unverified_count,
-            total_count: data.total_count
+            total_count: data.total_count,
+            to_approved: data.to_approved,
+            approved: data.approved
         });
 
         totalInstructors++;
@@ -678,6 +680,8 @@ function summaryReportView(result, filterRange, date, dept){
                                 <th class="text-center text-black" style="background-color: #9bbdff70;">Verified</th>
                                 <th class="text-center text-black" style="background-color: #ff970678;">Unverified</th>
                                 <th class="text-center text-black">Total</th>
+                                <th class="text-center text-black" style="background-color: #ff000070;">To Approve</th>
+                                <th class="text-center text-black" style="background-color: #53c45e;">Approved</th>
                                 <th class="text-center text-black">Verification Rate</th>
                             </tr>
                         </thead>
@@ -692,6 +696,8 @@ function summaryReportView(result, filterRange, date, dept){
                                         <td class="text-center"><strong>${instr.verified_count}</strong></td>
                                         <td class="text-center"><strong>${instr.unverified_count}</strong></td>
                                         <td class="text-center"><strong>${instr.total_count}</strong></td>
+                                        <td class="text-center"><strong>${instr.to_approved}</strong></td>
+                                        <td class="text-center"><strong>${instr.approved}</strong></td>
                                         <td class="text-center">
                                             <span class="badge ${instr.verified_count == 0 && instr.unverified_count == 0 && instr.total_count == 0 ? 'bg-secondary' 
                                                                 : rate >= 80 ? 'bg-success' : rate >= 50 ? 'bg-warning' : 'bg-danger'}">
@@ -723,6 +729,8 @@ function summaryReportView(result, filterRange, date, dept){
         <th>Verified</th>
         <th>Unverified</th>
         <th>Total</th>
+        <th>To Approve</th>
+        <th>Approved</th>
         <th>Verification Rate</th>
     `;
     thead.appendChild(headerRow);
@@ -742,6 +750,8 @@ function summaryReportView(result, filterRange, date, dept){
                 <td>${instr.verified_count}</td>
                 <td>${instr.unverified_count}</td>
                 <td>${instr.total_count}</td>
+                <td>${instr.to_approved}</td>
+                <td>${instr.approved}</td>
                 <td>${rate}%</td>
             `;
             tbody.appendChild(row);
