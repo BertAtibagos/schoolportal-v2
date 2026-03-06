@@ -366,8 +366,8 @@ if($type == 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY'){
         $queryFilter = "AND st.schltadi_date BETWEEN ? AND ?
         AND `schl_dept`.`SchlDept_CODE` = ?";
         
-        $values = [$startDate, $endDate, $dept, $startDate, $endDate, $dept, $startDate, $endDate, $dept, $dept];
-        $bind = "ssssssssss";
+        $values = [$startDate, $endDate, $dept, $startDate, $endDate, $dept, $startDate, $endDate, $dept, $startDate, $endDate, $dept, $startDate, $endDate, $dept, $dept];
+        $bind = "ssssssssssssssss";
     }
 
     if($rangeType == 'currCutOff'){
@@ -377,8 +377,8 @@ if($type == 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY'){
         $queryFilter = "AND st.schltadi_date BETWEEN ? AND ?
         AND `schl_dept`.`SchlDept_CODE` = ?";
         
-        $values = [$date_start, $date_end, $dept, $date_start, $date_end, $dept, $date_start, $date_end, $dept, $dept];
-        $bind = "ssssssssss";
+        $values = [$date_start, $date_end, $dept, $date_start, $date_end, $dept, $date_start, $date_end, $dept, $date_start, $date_end, $dept, $date_start, $date_end, $dept, $dept];
+        $bind = "ssssssssssssssss";
     }
 
     if($rangeType == 'prevCutOff'){
@@ -388,8 +388,8 @@ if($type == 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY'){
         $queryFilter = "AND st.schltadi_date BETWEEN ? AND ?
         AND `schl_dept`.`SchlDept_CODE` = ?";
 
-        $values = [$date_start, $date_end, $dept, $date_start, $date_end, $dept, $date_start, $date_end, $dept, $dept];
-        $bind = "ssssssssss";
+        $values = [$date_start, $date_end, $dept, $date_start, $date_end, $dept, $date_start, $date_end, $dept, $date_start, $date_end, $dept, $date_start, $date_end, $dept, $dept];
+        $bind = "ssssssssssssssss";
     }
 
     $qry = "SELECT DISTINCT 
@@ -447,7 +447,41 @@ if($type == 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY'){
                 AND seso.SchlAcadLvl_ID = 2 
                 AND seso.SchlAcadYr_ID = 19 
                 AND seso.SchlAcadPrd_ID = 6
-                $queryFilter ) AS total_count 
+                $queryFilter ) AS total_count,
+            (SELECT
+                COUNT(*)
+            FROM
+                schooltadi st
+                INNER JOIN schoolenrollmentsubjectoffered seso
+                ON st.schlenrollsubjoff_id = seso.SchlEnrollSubjOffSms_ID
+                LEFT JOIN `schoolacademiccourses` `schl_acad_crses`
+                ON `seso`.`SchlAcadCrses_ID` = `schl_acad_crses`.`SchlAcadCrseSms_ID`
+                LEFT JOIN `schooldepartment` `schl_dept`
+                ON `schl_acad_crses`.`SchlDept_ID` = `schl_dept`.`SchlDeptSms_ID`
+            WHERE st.SchlProf_ID = `schl_enr_subj_off`.`SchlProf_ID`
+                AND st.schltadi_status = 1
+                AND st.schltadi_isconfirm = 0
+                AND seso.SchlAcadLvl_ID = 2
+                AND seso.SchlAcadYr_ID = 19
+                AND seso.SchlAcadPrd_ID = 6
+                $queryFilter ) AS to_approved,
+            (SELECT
+                COUNT(*)
+            FROM
+                schooltadi st
+                INNER JOIN schoolenrollmentsubjectoffered seso
+                ON st.schlenrollsubjoff_id = seso.SchlEnrollSubjOffSms_ID
+                LEFT JOIN `schoolacademiccourses` `schl_acad_crses`
+                ON `seso`.`SchlAcadCrses_ID` = `schl_acad_crses`.`SchlAcadCrseSms_ID`
+                LEFT JOIN `schooldepartment` `schl_dept`
+                ON `schl_acad_crses`.`SchlDept_ID` = `schl_dept`.`SchlDeptSms_ID`
+            WHERE st.SchlProf_ID = `schl_enr_subj_off`.`SchlProf_ID`
+                AND st.schltadi_status = 1
+                AND st.schltadi_isconfirm = 1
+                AND seso.SchlAcadLvl_ID = 2
+                AND seso.SchlAcadYr_ID = 19
+                AND seso.SchlAcadPrd_ID = 6
+                $queryFilter ) AS approved
             FROM
             `schoolenrollmentsubjectoffered` `schl_enr_subj_off` 
             LEFT JOIN `schoolacademiccourses` `schl_acad_crses` 
