@@ -54,9 +54,9 @@
             font-size: 0.7rem;
         }
 
-        #student_tadi_section .vw_tadi_rec {
+        /* #student_tadi_section .vw_tadi_rec {
             margin-top: 10%;
-        }
+        } */
 
         #student_tadi_section .faculty-record {
             font-size: 0.8rem;
@@ -95,26 +95,12 @@
     }
 </style>
 <section id="student_tadi_section">
-    <div class="container-fluid mt-4" style="margin:1rem">
+    <div class="container-fluid mt-4">
         <div class="mt-4" >
             <div class="shadow-sm">
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <div class="subj-list-wrapper">
-                        <table class="table table-hover" style="line-height: 2.5;">
-                            <thead style="background-color: #181a46; position:sticky; top:0; z-index:2">
-                                <tr>
-                                    <th class="thlabel" scope="col">Subject Code</th>
-                                    <th class="thlabel" scope="col">Description</th>
-                                    <th class="thlabel" scope="col">Faculty</th>
-                                    <th class="thlabel" scope="col"></th>
-                                </tr>
-                            </thead>
-                            <tbody class="faculty-list">
+                    <div id="card_container" class="d-flex flex-wrap gap-3 justify-content-start">
 
-                            </tbody>
-                        </table>
-                    </div>
                     </div>
                 </div>
             </div>
