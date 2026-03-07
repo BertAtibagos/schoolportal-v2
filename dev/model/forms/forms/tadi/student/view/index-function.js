@@ -12,7 +12,7 @@ function GET_SUBJECTLIST() {
     const formData = new FormData();
     formData.append('type','GET_SUBJECT_LIST');
 
-    const tbody = document.querySelector('.faculty-list');
+    const tbody = document.getElementById('card_container');
     tbody.innerHTML = spinner;
     
     fetch("forms/tadi/student/controller/index-info.php", {
@@ -83,14 +83,17 @@ function displaySubjectTable(result) {
         console.log("Not loaded yet")
     }
         
-    const tbody = document.querySelector("#student_tadi_section tbody");
+    const tbody = document.getElementById('card_container');
     
     tbody.innerHTML = result.map((item, index) => 
-        `<tr>
-            <td>${item.subj_code}</td>
-            <td>${item.subj_desc}</td>
-            <td>${item.prof_name || "No faculty"}</td>
-            <td>
+        `<div class="card d-flex flex-row align-items-center justify-content-between" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px; width: 100%; max-width: 600px;">
+            <div class="faculty-record">
+                <span class="badge bg-warning text-dark" style="width: fit-content;">${item.subj_code}</span>
+                <div style="font-weight:bold">${item.subj_desc}</div>
+                <div style="font-size: smaller">${item.prof_name || "No faculty"}</div>
+            </div>
+
+            <div class="d-flex flex-column align-items-end gap-2 tadi-bttn" style="margin-left: 20px;">
                 <button 
                     class="btn btn-sm"
                     ${item.prof_name ? "" : "disabled"}
@@ -112,8 +115,8 @@ function displaySubjectTable(result) {
                     ${item.record_count_today == 0 ? "hidden" : ""}>
                     VIEW
                 </button>
-            </td>
-        </tr>`
+            </div>
+        </div>`
     ).join("");
 
     result.forEach((value, index) => {
