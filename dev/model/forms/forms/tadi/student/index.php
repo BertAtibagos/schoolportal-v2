@@ -97,7 +97,7 @@
 <section id="student_tadi_section">
     <div class="container-fluid mt-4">
         <div class="mt-4" >
-            <div class="shadow-sm">
+            <div>
                 <div class="card-body">
                     <div id="card_container" class="d-flex flex-wrap gap-3 justify-content-start">
 
@@ -227,6 +227,7 @@
         <div class="modal-dialog modal-dialog-centered modal-xl rcrd-preview-mdl">
             <div class="modal-content">
                 <div class="modal-header d-flex justify-content-between align-items-start" style="background-color: #181a46; color: white;">
+                    <div id="tadi-date"></div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" id="closeTadiModal1"></button>
                 </div>
                 <div class="modal-body" style="background-color: rgb(238, 238, 246); max-height: 80vh;">

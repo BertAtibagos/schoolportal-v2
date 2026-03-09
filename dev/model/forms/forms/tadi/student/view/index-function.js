@@ -293,7 +293,7 @@ function viewSubmitted(subj_Id, prof_Id){
 
                 
                 const tabBtn = document.createElement('button');
-                tabBtn.className = `nav-link ${isActive}`;
+                tabBtn.className = `nav-link ${isActive} ${isActive ? 'fw-bold' : 'text-secondary'}`.trim();
                 tabBtn.id = `nav-tab-${record.schltadi_ID}`;
                 tabBtn.setAttribute('data-bs-toggle', 'tab');
                 tabBtn.setAttribute('data-bs-target', `#tab-pane-${record.schltadi_ID}`);
@@ -316,20 +316,24 @@ function viewSubmitted(subj_Id, prof_Id){
 
                 let activity = record.tadi_act.replace(/\\r\\n/g, "<br>");
                 const statusConfig = record.tadi_status == 1
-                    ? { text: "Verified", color: "green" }
-                    : { text: "Unverified", color: "red" };
+                    ? { text: "Verified", color: "success" }
+                    : { text: "Unverified", color: "warning" };
 
                 const tabPane = document.createElement('div');
-                tabPane.className = `tab-pane fade show ${isActive}`;
+                tabPane.className = `tab-pane fade show ${isActive} bg-white`;
                 tabPane.id = `tab-pane-${record.schltadi_ID}`;
                 tabPane.role = "tabpanel";
                 tabPane.setAttribute("aria-labelledby", `nav-tab-${record.schltadi_ID}`);
 
+                document.getElementById('tadi-date').textContent = `${new Date(record.tadi_date).toLocaleDateString("en-PH", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                })}`;
+
                 tabPane.innerHTML = `
                     <div class="p-3" id="preview-${record.schltadi_ID}">
-                        <div style="margin-bottom:2%" id="dateLabel${record.schltadi_ID}">
-                            <span><span class="label">Date:</span> ${record.tadi_date}</span>
-                        </div>
+
                         <div style="margin-bottom:2%" id="timeLabel${record.schltadi_ID}">
                             <span><span class="label">Time:</span> ${formatTimeToAmPm(record.tadi_timeIn)} - ${formatTimeToAmPm(record.tadi_timeOut)}</span>
                         </div>
@@ -346,8 +350,8 @@ function viewSubmitted(subj_Id, prof_Id){
                         </div>
                         <div style="margin-bottom:2%" class="status" id="status${record.schltadi_ID}">
                             <span class="label">Status:</span>
-                            <span class="acknw" value="${record.schltadi_ID}" name="${record.tadi_status}" 
-                            style="color:${statusConfig.color}; font-weight:bold;">${statusConfig.text}</span>
+                            <span class="acknw badge bg-${statusConfig.color}" value="${record.schltadi_ID}" name="${record.tadi_status}" 
+                            style="color:white; font-weight:bold;">${statusConfig.text}</span>
                         </div>
                     </div>`;
 
@@ -355,6 +359,15 @@ function viewSubmitted(subj_Id, prof_Id){
 
                 const text = tabPane.querySelector('.activity-text');
                 setupActivityText(text);
+            });
+
+            navTabs.addEventListener('shown.bs.tab', function (e) {
+                if (e.relatedTarget) {
+                    e.relatedTarget.classList.add('text-secondary');
+                    e.relatedTarget.classList.remove('fw-bold');
+                }
+                e.target.classList.remove('text-secondary');
+                e.target.classList.add('fw-bold');
             });
 
             document.querySelectorAll('.viewAttch').forEach(button =>
