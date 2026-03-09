@@ -3,3 +3,5 @@ dev/model/forms/forms/tadi/attachment/
 
 # Database / environment configuration
 dev/model/configuration/
+
+pass.php
