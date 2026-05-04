@@ -5,3 +5,5 @@ dev/model/forms/forms/tadi/attachment/
 dev/model/configuration/
 
 pass.php
+
+dev/public/attachments
