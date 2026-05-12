@@ -1,10 +1,8 @@
 <?php
-// ✅ Secure cookie flags (must be set before session_start)
 ini_set('session.cookie_httponly', 1);
 ini_set('session.cookie_secure', 1);
 ini_set('session.cookie_samesite', 'Strict');
 
-// PHP error handling
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
@@ -19,12 +17,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
     $YRID = $_SESSION['STUDENT']['YRID'] ?? 0;
     $PRDID = $_SESSION['STUDENT']['PRDID'] ?? 0;
 
-
-    // SESSION validation
     if (!$STUDID || !$LVLID || !$YRID || !$PRDID) {
         $fetch['message'] = "Invalid session. Please log in again.";
         echo json_encode($fetch);
         exit;
+    }
+
+    $rateLimitWindowSec = 300;
+    $rateLimitMax = 5;
+    $rateLimitKey = 'rl_tadi_submit';
+    $now = time();
+
+    if (!isset($_SESSION[$rateLimitKey])) {
+        $_SESSION[$rateLimitKey] = ['count' => 1, 'start' => $now];
+    } else {
+        $elapsed = $now - $_SESSION[$rateLimitKey]['start'];
+        if ($elapsed > $rateLimitWindowSec) {
+            $_SESSION[$rateLimitKey] = ['count' => 1, 'start' => $now];
+        } else {
+            $_SESSION[$rateLimitKey]['count']++;
+            if ($_SESSION[$rateLimitKey]['count'] > $rateLimitMax) {
+                http_response_code(429);
+                $fetch['message'] = 'Too many submissions. Please try again later.';
+                echo json_encode($fetch);
+                exit;
+            }
+        }
     }
 
     try {
@@ -43,17 +61,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
         $schltadi_mkup_date = ($schltadi_type === 'makeup' && isset($_POST['makeup_class_date']) && !empty($_POST['makeup_class_date'])) ? $dbConn->real_escape_string($_POST['makeup_class_date']) : null;
 
 
-
-        // TADI limit check
         $check_sql = "SELECT COUNT(*) as count 
                       FROM schooltadi 
-                      WHERE schlenrollsubjoff_id = $subj_id 
-                      AND schlprof_id = $prof_id 
-                      AND DATE(schltadi_date) = '$schltadi_date'";
+                      WHERE schlenrollsubjoff_id = ? 
+                      AND schlprof_id = ? 
+                      AND DATE(schltadi_date) = ?";
 
-        $result = $dbConn->query($check_sql);
-        $row = $result->fetch_assoc();
-        $count = (int)$row['count'];
+        $check_stmt = $dbConn->prepare($check_sql);
+        if ($check_stmt === false) {
+            throw new Exception('Prepare failed: ' . $dbConn->error);
+        }
+
+        $check_stmt->bind_param('iis', $subj_id, $prof_id, $schltadi_date);
+        $check_stmt->execute();
+        $check_stmt->bind_result($count);
+        $check_stmt->fetch();
+        $check_stmt->close();
+        $count = (int)$count;
 
         if ($count >= 3) {
             $fetch['message'] = "You have already submitted 3 TADIs today.";
@@ -61,25 +85,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
             exit;
         }
 
-        // Time overlap check
-        $overlap_sql = "SELECT COUNT(*) as count 
-                        FROM schooltadi 
-                        WHERE schlenrollsubjoff_id = $subj_id 
-                        AND schlprof_id = $prof_id 
-                        AND DATE(schltadi_date) = '$schltadi_date'
-                        AND (
-                            (schltadi_timein <= '$schltadi_timein' AND schltadi_timeout >= '$schltadi_timein') OR
-                            (schltadi_timein <= '$schltadi_timeout' AND schltadi_timeout >= '$schltadi_timeout')
-                        )";
+        $overlapTimeSameProf = "SELECT
+                                    COUNT(*) as count
+                                FROM schooltadi as tadi
+                                WHERE tadi.schlprof_id = ?
+                                AND tadi.schltadi_isactive = 1
+                                AND DATE(tadi.schltadi_date) = ?
+                                AND (
+                                    (tadi.schltadi_timein <= ? AND tadi.schltadi_timeout >= ?) OR
+                                    (tadi.schltadi_timein <= ? AND tadi.schltadi_timeout >= ?)
+                                )";
 
-        $overlap_result = $dbConn->query($overlap_sql);
-        $overlap_row = $overlap_result->fetch_assoc();
+        $overlap_stmt = $dbConn->prepare($overlapTimeSameProf);
+        if ($overlap_stmt === false) {
+            throw new Exception('Prepare failed: ' . $dbConn->error);
+        }
 
-        if ((int)$overlap_row['count'] > 0) {
-            $fetch['message'] = "Submission time overlaps with a previous entry.";
+        $overlap_stmt->bind_param(
+            'isssss',
+            $prof_id,
+            $schltadi_date,
+            $schltadi_timein,
+            $schltadi_timein,
+            $schltadi_timeout,
+            $schltadi_timeout
+        );
+
+        $overlap_stmt->execute();
+        $overlap_stmt->bind_result($overlapCount);
+        $overlap_stmt->fetch();
+        $overlap_stmt->close();
+
+        if ((int)$overlapCount > 0) {
+            $fetch['message'] = "A TADI with an overlapping time range already exists for this instructor.";
             echo json_encode($fetch);
             exit;
         }
+
+        // Time overlap check
+        // $overlap_sql = "SELECT COUNT(*) as count 
+        //                 FROM schooltadi 
+        //                 WHERE schlenrollsubjoff_id = $subj_id 
+        //                 AND schlprof_id = $prof_id 
+        //                 AND DATE(schltadi_date) = '$schltadi_date'
+        //                 AND (
+        //                     (schltadi_timein <= '$schltadi_timein' AND schltadi_timeout >= '$schltadi_timein') OR
+        //                     (schltadi_timein <= '$schltadi_timeout' AND schltadi_timeout >= '$schltadi_timeout')
+        //                 )";
+
+        // $overlap_result = $dbConn->query($overlap_sql);
+        // $overlap_row = $overlap_result->fetch_assoc();
+
+        // if ((int)$overlap_row['count'] > 0) {
+        //     $fetch['message'] = "Submission time overlaps with a previous entry.";
+        //     echo json_encode($fetch);
+        //     exit;
+        // }
 
         // image upload
         $image_path = null;
@@ -90,7 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
             $prof_id = $_POST['instructor'] ?? 'unknown_prof';
             $date_folder = date('Y-m-d');
 
-            $baseDir = '../../attachment/';
+            $baseDir = __DIR__ . '/../../../../../../public/attachment/';
             $uploadDir = $baseDir . $prof_id . '/' . $date_folder . '/';
 
             if (!is_dir($uploadDir)) {
@@ -113,7 +174,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
                 exit;
             }
 
-        
             $finfo = finfo_open(FILEINFO_MIME_TYPE);
             $mimeType = finfo_file($finfo, $_FILES['attach']['tmp_name']);
             finfo_close($finfo);
@@ -161,8 +221,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
             exit;
         }
 
-
-        // Insert
         $stmt = $dbConn->prepare("INSERT INTO schooltadi 
                 (schltadi_mode, 
                 schltadi_type, 

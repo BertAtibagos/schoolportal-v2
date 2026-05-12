@@ -1,0 +1,546 @@
+/* ===== CSS Custom Properties ===== */
+#student_tadi_section {
+    --tadi-primary: #181a46;
+    --tadi-primary-light: #2a2d6e;
+    --tadi-accent: #071976;
+    --tadi-accent-light: #6366f1;
+    --tadi-success: #10b981;
+    --tadi-success-light: #d1fae5;
+    --tadi-warning: #f59e0b;
+    --tadi-warning-light: #fef3c7;
+    --tadi-danger: #ef4444;
+    --tadi-bg: #f1f5f9;
+    --tadi-card-bg: #ffffff;
+    --tadi-text: #1e293b;
+    --tadi-text-secondary: #64748b;
+    --tadi-border: #e2e8f0;
+    --tadi-radius: 12px;
+    --tadi-radius-sm: 8px;
+    --tadi-shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+    --tadi-shadow-md: 0 4px 6px -1px rgba(0,0,0,.07), 0 2px 4px -2px rgba(0,0,0,.05);
+    --tadi-shadow-lg: 0 10px 15px -3px rgba(0,0,0,.08), 0 4px 6px -4px rgba(0,0,0,.04);
+    --tadi-transition: .2s ease;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/* ===== Section Header ===== */
+#student_tadi_section .tadi-section-header {
+    margin-bottom: 1.5rem;
+}
+#student_tadi_section .tadi-section-header h4 {
+    font-weight: 700;
+    color: var(--tadi-text);
+    margin: 0;
+    font-size: 1.35rem;
+}
+#student_tadi_section .tadi-section-header p {
+    color: var(--tadi-text-secondary);
+    margin: .25rem 0 0;
+    font-size: .9rem;
+}
+
+/* ===== Loading Spinner ===== */
+#student_tadi_section .tadi-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    gap: .75rem;
+    color: var(--tadi-text-secondary);
+    font-size: .9rem;
+}
+#student_tadi_section .tadi-loading .spinner-border {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-width: 3px;
+    color: var(--tadi-accent);
+}
+
+/* ===== Subject Cards ===== */
+#student_tadi_section .subj-card {
+    background: var(--tadi-card-bg);
+    border: 1px solid var(--tadi-border);
+    border-left: 4px solid var(--tadi-accent);
+    border-radius: var(--tadi-radius);
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    max-width: 580px;
+    box-shadow: var(--tadi-shadow);
+    transition: box-shadow var(--tadi-transition), transform var(--tadi-transition);
+}
+#student_tadi_section .subj-card:hover {
+    box-shadow: var(--tadi-shadow-md);
+    transform: translateY(-2px);
+}
+#student_tadi_section .subj-card .subj-info {
+    flex: 1;
+    min-width: 0;
+}
+#student_tadi_section .subj-card .subj-code {
+    display: inline-block;
+    font-size: .7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--tadi-accent);
+    background: #eef2ff;
+    padding: .2rem .55rem;
+    border-radius: 50px;
+    margin-bottom: .35rem;
+}
+#student_tadi_section .subj-card .subj-desc {
+    font-weight: 600;
+    font-size: .95rem;
+    color: var(--tadi-text);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+#student_tadi_section .subj-card .subj-faculty {
+    font-size: .8rem;
+    color: var(--tadi-text-secondary);
+    margin-top: .15rem;
+}
+#student_tadi_section .subj-card .subj-actions {
+    display: flex;
+    flex-direction: column;
+    gap: .45rem;
+    flex-shrink: 0;
+}
+
+/* ===== Buttons ===== */
+#student_tadi_section .btn-tadi {
+    font-size: .78rem;
+    font-weight: 600;
+    padding: .4rem 1rem;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background var(--tadi-transition), transform var(--tadi-transition), box-shadow var(--tadi-transition);
+    letter-spacing: .3px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+#student_tadi_section .btn-tadi:active {
+    transform: scale(.97);
+}
+#student_tadi_section .btn-tadi-primary {
+    background: var(--tadi-primary);
+    color: #fff;
+}
+#student_tadi_section .btn-tadi-primary:hover:not(:disabled) {
+    background: var(--tadi-primary-light);
+    box-shadow: 0 2px 8px rgba(24,26,70,.25);
+}
+#student_tadi_section .btn-tadi-primary:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+#student_tadi_section .btn-tadi-success {
+    background: var(--tadi-success);
+    color: #fff;
+}
+#student_tadi_section .btn-tadi-success:hover {
+    background: #059669;
+    box-shadow: 0 2px 8px rgba(16,185,129,.3);
+}
+#student_tadi_section .btn-tadi-view {
+    background: #3b82f6;
+    color: #fff;
+}
+#student_tadi_section .btn-tadi-view:hover {
+    background: #2563eb;
+    box-shadow: 0 2px 8px rgba(59,130,246,.3);
+}
+#student_tadi_section .btn-tadi-danger {
+    background: var(--tadi-danger);
+    color: #fff;
+}
+#student_tadi_section .btn-tadi-danger:hover {
+    background: #dc2626;
+    box-shadow: 0 2px 8px rgba(239,68,68,.3);
+}
+
+/* ===== Form Modal ===== */
+#student_tadi_section .modal .modal-content {
+    border: none;
+    border-radius: var(--tadi-radius);
+    overflow: hidden;
+    box-shadow: var(--tadi-shadow-lg);
+}
+#student_tadi_section #modal .modal-header {
+    background: linear-gradient(135deg, var(--tadi-primary), var(--tadi-primary-light));
+    color: #fff;
+    padding: 1.25rem 1.75rem;
+    border-bottom: none;
+}
+#student_tadi_section #modal .modal-header .modal-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+#student_tadi_section #modal .modal-header .subject-details,
+#student_tadi_section #modal .modal-header #date_now {
+    font-size: .85rem;
+    opacity: .85;
+}
+#student_tadi_section #modal .modal-body {
+    padding: 1.5rem 1.75rem;
+    max-height: 55vh;
+    overflow-y: auto;
+    background: #fafbfc;
+}
+#student_tadi_section #modal .modal-body::-webkit-scrollbar {
+    width: 5px;
+}
+#student_tadi_section #modal .modal-body::-webkit-scrollbar-thumb {
+    background: var(--tadi-border);
+    border-radius: 10px;
+}
+#student_tadi_section #modal .modal-footer {
+    border-top: 1px solid var(--tadi-border);
+    padding: 1rem 1.75rem;
+    background: #fff;
+}
+
+/* Form elements inside modal */
+#student_tadi_section .form-label {
+    font-weight: 600;
+    font-size: .85rem;
+    color: var(--tadi-text);
+    margin-bottom: .35rem;
+}
+#student_tadi_section .form-control,
+#student_tadi_section .form-select {
+    border-radius: var(--tadi-radius-sm);
+    border: 1.5px solid var(--tadi-border);
+    padding: .55rem .85rem;
+    font-size: .875rem;
+    transition: border-color var(--tadi-transition), box-shadow var(--tadi-transition);
+}
+#student_tadi_section input[type="time"].form-control,
+#student_tadi_section input[type="date"].form-control {
+    background-image: none !important;
+    padding-right: .85rem;
+}
+#student_tadi_section .form-control:focus,
+#student_tadi_section .form-select:focus {
+    border-color: var(--tadi-accent-light);
+    box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+}
+#student_tadi_section textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+}
+#student_tadi_section .form-check-input {
+    border-radius: 4px;
+    border: 1.5px solid var(--tadi-border);
+    width: 1.15em;
+    height: 1.15em;
+}
+#student_tadi_section .form-check-input:checked {
+    background-color: var(--tadi-accent);
+    border-color: var(--tadi-accent);
+}
+#student_tadi_section .form-check-label {
+    font-size: .875rem;
+    color: var(--tadi-text);
+    font-weight: 500;
+}
+#student_tadi_section .btn-submit-tadi {
+    background: linear-gradient(135deg, var(--tadi-primary), var(--tadi-primary-light));
+    color: #fff;
+    border: none;
+    border-radius: var(--tadi-radius-sm);
+    padding: .6rem 2rem;
+    font-weight: 600;
+    font-size: .9rem;
+    transition: opacity var(--tadi-transition), box-shadow var(--tadi-transition);
+}
+#student_tadi_section .btn-submit-tadi:hover:not(:disabled) {
+    opacity: .9;
+    box-shadow: 0 4px 12px rgba(24,26,70,.3);
+}
+#student_tadi_section .btn-submit-tadi:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+/* ===== View Records Modal ===== */
+#student_tadi_section #Instructor_Tadi_List .modal-header {
+    background: linear-gradient(135deg, var(--tadi-primary), var(--tadi-primary-light));
+    color: #fff;
+    padding: 1rem 1.5rem;
+    border-bottom: none;
+}
+#student_tadi_section #Instructor_Tadi_List #tadi-date {
+    font-weight: 600;
+    font-size: 1rem;
+}
+#student_tadi_section #Instructor_Tadi_List .modal-body {
+    background: var(--tadi-bg);
+    padding: 1.25rem;
+    max-height: 75vh;
+    overflow-y: auto;
+}
+#student_tadi_section #Instructor_Tadi_List .modal-footer {
+    border-top: 1px solid var(--tadi-border);
+    background: #fff;
+}
+
+/* Record tabs */
+#student_tadi_section .nav-tabs {
+    border-bottom: 2px solid var(--tadi-border);
+    gap: .25rem;
+    flex-wrap: nowrap;
+    padding-bottom: 0;
+}
+#student_tadi_section .nav-tabs .nav-link {
+    border: none;
+    border-bottom: 3px solid transparent;
+    border-radius: 0;
+    color: var(--tadi-text-secondary);
+    font-size: .85rem;
+    font-weight: 500;
+    padding: .65rem 1.15rem;
+    white-space: nowrap;
+    transition: color var(--tadi-transition), border-color var(--tadi-transition);
+}
+#student_tadi_section .nav-tabs .nav-link:hover {
+    color: var(--tadi-accent);
+    border-bottom-color: var(--tadi-accent-light);
+}
+#student_tadi_section .nav-tabs .nav-link.active {
+    color: var(--tadi-accent);
+    font-weight: 700;
+    border-bottom-color: var(--tadi-accent);
+    background: transparent;
+}
+
+/* Record panel */
+#student_tadi_section .record-panel {
+    background: var(--tadi-card-bg);
+    border-radius: 0 0 var(--tadi-radius) var(--tadi-radius);
+    padding: 1.25rem;
+}
+#student_tadi_section .record-field {
+    display: flex;
+    align-items: flex-start;
+    gap: .5rem;
+    padding: .6rem 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: .875rem;
+}
+#student_tadi_section .record-field:last-of-type {
+    border-bottom: none;
+}
+#student_tadi_section .record-field .field-label {
+    font-weight: 600;
+    color: var(--tadi-text);
+    min-width: 90px;
+    flex-shrink: 0;
+}
+#student_tadi_section .record-field .field-value {
+    color: var(--tadi-text-secondary);
+}
+
+/* Status badges */
+#student_tadi_section .badge-verified {
+    background: var(--tadi-success-light);
+    color: #065f46;
+    font-weight: 600;
+    font-size: .75rem;
+    padding: .3rem .65rem;
+    border-radius: 50px;
+}
+#student_tadi_section .badge-unverified {
+    background: var(--tadi-warning-light);
+    color: #92400e;
+    font-weight: 600;
+    font-size: .75rem;
+    padding: .3rem .65rem;
+    border-radius: 50px;
+}
+
+/* ===== Image Preview Modal ===== */
+#student_tadi_section .fixed-modal {
+    width: 600px;
+    max-width: 92vw;
+    max-height: 92vh;
+    border-radius: var(--tadi-radius);
+    overflow: hidden;
+}
+#student_tadi_section .modalHead {
+    display: flex;
+    justify-content: flex-end;
+    padding: .65rem .85rem;
+    background: #fff;
+    border-bottom: 1px solid var(--tadi-border);
+}
+#student_tadi_section .img-container {
+    width: 100%;
+    height: 400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background: #f8fafc;
+}
+#student_tadi_section .img-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+#student_tadi_section .img_details {
+    padding: .75rem 1rem;
+    background: #fff;
+    border-top: 1px solid var(--tadi-border);
+    font-size: .8rem;
+    color: var(--tadi-text-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+}
+
+/* ===== Activity text (view records) ===== */
+#student_tadi_section .activity-text {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-width: 100%;
+    display: inline-block;
+    text-align: justify;
+    cursor: pointer;
+    color: var(--tadi-text-secondary);
+    font-size: .875rem;
+    line-height: 1.5;
+}
+
+/* ===== Toast ===== */
+#student_tadi_section .toast {
+    border: none;
+    border-radius: var(--tadi-radius-sm);
+    box-shadow: var(--tadi-shadow-lg);
+    overflow: hidden;
+}
+#student_tadi_section .toast .toast-header.bg-success {
+    background: var(--tadi-success) !important;
+}
+
+/* ===== Error Alert ===== */
+#student_tadi_section #error_alert {
+    border-radius: var(--tadi-radius-sm);
+    font-size: .875rem;
+    border: none;
+    background: #fef2f2;
+    color: #991b1b;
+}
+
+/* ===== Late Submission & Makeup Fields ===== */
+#student_tadi_section .form-check {
+    padding-left: 1.75em;
+}
+#student_tadi_section .mkup-class-in {
+    background-color: #fef3c7;
+    border-color: #fcd34d;
+}
+#student_tadi_section .mkup-class-in:focus {
+    border-color: var(--tadi-warning);
+    box-shadow: 0 0 0 3px rgba(245,158,11,.12);
+}
+
+/* ===== Misc ===== */
+/* #student_tadi_section .table_tadi_responsive {
+    max-height: 60vh;
+    overflow-y: auto;
+} */
+.tab-content{
+    max-height: 60vh;
+    overflow-y: auto;
+}
+#student_tadi_section .rcrd-preview-mdl {
+    max-width: 90%;
+    width: 55%;
+    margin: auto;
+}
+#student_tadi_section .subj-list-wrapper {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+/* ===== Empty State ===== */
+#student_tadi_section .tadi-empty {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    color: var(--tadi-text-secondary);
+}
+#student_tadi_section .tadi-empty i {
+    font-size: 2.5rem;
+    margin-bottom: .75rem;
+    opacity: .4;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+    #student_tadi_section .subj-card {
+        max-width: 100%;
+        padding: .85rem 1rem;
+    }
+    #student_tadi_section .subj-card .subj-desc {
+        font-size: .88rem;
+    }
+    #student_tadi_section .subj-card .subj-actions {
+        flex-direction: row;
+        gap: .4rem;
+    }
+    #student_tadi_section .btn-tadi {
+        font-size: .72rem;
+        padding: .35rem .75rem;
+    }
+    #student_tadi_section #modal .modal-body,
+    #student_tadi_section #modal .modal-header {
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+    }
+    #student_tadi_section .rcrd-preview-mdl {
+        width: auto;
+        max-width: 95%;
+    }
+    #student_tadi_section .record-field {
+        flex-direction: column;
+        gap: .15rem;
+    }
+    #student_tadi_section .record-field .field-label {
+        min-width: unset;
+    }
+    #student_tadi_section .fixed-modal {
+        width: auto;
+        max-width: 95vw;
+    }
+    #student_tadi_section .img-container {
+        height: 280px;
+    }
+}
+
+@media (max-width: 576px) {
+    #student_tadi_section .tadi-section-header h4 {
+        font-size: 1.15rem;
+    }
+    #student_tadi_section .subj-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: .75rem;
+    }
+    #student_tadi_section .subj-card .subj-actions {
+        width: 100%;
+        flex-direction: row;
+        justify-content: flex-end;
+    }
+    #student_tadi_section .nav-tabs .nav-link {
+        font-size: .78rem;
+        padding: .55rem .85rem;
+    }
+}

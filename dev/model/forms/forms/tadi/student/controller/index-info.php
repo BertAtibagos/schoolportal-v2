@@ -11,6 +11,30 @@ ini_set('log_errors', 1);
 session_start();
 include('../../../../../configuration/connection-config.php');
 
+function rateLimit(int $window, int $max, string $key){
+    $rateLimitWindowSec = $window;
+    $rateLimitMax = $max;
+    $rateLimitKey = $key;
+    $now = time();
+
+    if (!isset($_SESSION[$rateLimitKey])) {
+        $_SESSION[$rateLimitKey] = ['count' => 1, 'start' => $now];
+    } else {
+        $elapsed = $now - $_SESSION[$rateLimitKey]['start'];
+        if ($elapsed > $rateLimitWindowSec) {
+            $_SESSION[$rateLimitKey] = ['count' => 1, 'start' => $now];
+        } else {
+            $_SESSION[$rateLimitKey]['count']++;
+            if ($_SESSION[$rateLimitKey]['count'] > $rateLimitMax) {
+                http_response_code(429);
+                $fetch['message'] = 'Too many submissions. Please try again later.';
+                echo json_encode($fetch);
+                exit;
+            }
+        }
+    }
+}
+
 $fetch = "";
 
 $type = $_POST['type'] ?? '';
@@ -79,21 +103,26 @@ if ($type === 'GET_SUBJECT_LIST') {
     $PRDID  = $_SESSION['STUDENT']['PRDID']; 
 
     $qry_get_subj_list = "SELECT `schl_enr_as`.`SchlAcadSubj_ID` AS `schl_acad_subj_id`
-                          FROM `schoolstudent` `schl_stud`
-                          LEFT JOIN `schoolenrollmentregistration` `schl_enr_reg`
-                            ON `schl_stud`.`SchlEnrollRegColl_ID` = `schl_enr_reg`.`SchlEnrollRegSms_ID`
-                          LEFT JOIN `schoolenrollmentregistrationstudentinformation` `schl_enr_reg_stud_info`
-                            ON `schl_enr_reg`.`SchlEnrollRegSms_ID` = `schl_enr_reg_stud_info`.`SchlEnrollReg_ID`
-                          LEFT JOIN `schoolenrollmentassessment` `schl_enr_as`
-                            ON `schl_enr_reg`.`SchlStud_ID` = `schl_enr_as`.`SchlStud_ID`
-                          WHERE `schl_stud`.`SchlStudSms_ID` = $USERID
-                            AND `schl_enr_as`.`SchlAcadLvl_ID` = $LVLID
-                            AND `schl_enr_as`.`SchlAcadYr_ID` = $YRID
-                            AND `schl_enr_as`.`SchlAcadPrd_ID` = $PRDID
-                            AND `schl_enr_reg`.`SchlAcadLvl_ID` = $LVLID";
-                            
-    $rreg = $dbConn->query($qry_get_subj_list);
-    $stud_subj_list = $rreg->fetch_assoc();          
+                                                FROM `schoolstudent` `schl_stud`
+                                                LEFT JOIN `schoolenrollmentregistration` `schl_enr_reg`
+                                                    ON `schl_stud`.`SchlEnrollRegColl_ID` = `schl_enr_reg`.`SchlEnrollRegSms_ID`
+                                                LEFT JOIN `schoolenrollmentregistrationstudentinformation` `schl_enr_reg_stud_info`
+                                                    ON `schl_enr_reg`.`SchlEnrollRegSms_ID` = `schl_enr_reg_stud_info`.`SchlEnrollReg_ID`
+                                                LEFT JOIN `schoolenrollmentassessment` `schl_enr_as`
+                                                    ON `schl_enr_reg`.`SchlStud_ID` = `schl_enr_as`.`SchlStud_ID`
+                                                WHERE `schl_stud`.`SchlStudSms_ID` = ?
+                                                    AND `schl_enr_as`.`SchlAcadLvl_ID` = ?
+                                                    AND `schl_enr_as`.`SchlAcadYr_ID` = ?
+                                                    AND `schl_enr_as`.`SchlAcadPrd_ID` = ?
+                                                    AND `schl_enr_reg`.`SchlAcadLvl_ID` = ?";
+
+    $stmt_subj_list = $dbConn->prepare($qry_get_subj_list);
+    $stmt_subj_list->bind_param("iiiii", $USERID, $LVLID, $YRID, $PRDID, $LVLID);
+    $stmt_subj_list->execute();
+    $rreg = $stmt_subj_list->get_result();
+    $stud_subj_list = $rreg->fetch_assoc();
+    $stmt_subj_list->close();
+
     $subj_list = $stud_subj_list['schl_acad_subj_id'];
 
     $qry = "SELECT `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID` AS `subj_id`,
@@ -120,6 +149,7 @@ if ($type === 'GET_SUBJECT_LIST') {
             LEFT JOIN schooltadi studrec
                 ON schl_enr_subj_off.SchlEnrollSubjOffSms_ID = studrec.schlenrollsubjoff_id
                 AND DATE(studrec.schltadi_date) = CURDATE()
+                AND studrec.schltadi_isactive = 1
             WHERE 
                 schl_enr_subj_off.SchlEnrollSubjOffSms_ID IN ($subj_list)
             GROUP BY schl_enr_subj_off.SchlEnrollSubjOffSms_ID";
@@ -149,7 +179,8 @@ if($type === 'GET_SUBMITTED_REC'){
 				schl_tadi.`schltadi_status` AS tadi_status,
 				schl_tadi.`schltadi_filepath` AS tadi_filepath,
 				schl_tadi.schlenrollsubjoff_id AS sub_off_id,
-				schl_tadi.SchlProf_ID 
+				schl_tadi.SchlProf_ID,
+                schl_tadi.schlstud_id
 			FROM `schooltadi` AS schl_tadi 
 			
 			LEFT JOIN `schoolstudent` AS schl_stud 
@@ -163,6 +194,7 @@ if($type === 'GET_SUBMITTED_REC'){
 
 			WHERE FIND_IN_SET(`schlprof_id`, ?) > 0
 			AND `schlenrollsubjoff_id` =  ?
+            AND schltadi_isactive = 1
 			-- AND `schl_tadi`.`schlstud_id` = ?
             AND `schltadi_date` = CURDATE()
 			ORDER BY schl_tadi.`schltadi_date`, schl_tadi.`schltadi_timein`";
@@ -176,6 +208,8 @@ if($type === 'GET_SUBMITTED_REC'){
 }
 
 if($type == 'GET_IMAGE'){
+
+    rateLimit(60, 5, 'get_image_rate_limit');
 
 	$prof_id = $_POST['prof_id'];
 	$REC_ID = $_POST['tadi_id'];
@@ -196,6 +230,53 @@ if($type == 'GET_IMAGE'){
 	$result = $stmt->get_result();
 	$fetch = $result->fetch_assoc();
 	$stmt->close();
+}
+
+if($type == 'REVERT_SUBMISSION'){
+
+    $tadi_id = intval($_POST['tadi_id'] ?? 0);
+    $subj_id = intval($_POST['subj_id'] ?? 0);
+    $prof_id = intval($_POST['prof_id'] ?? 0);
+
+    $session_stud_id = intval($_SESSION['STUDENT']['ID'] ?? 0);
+
+    if($tadi_id <= 0 || $subj_id <= 0 || $prof_id <= 0 || $session_stud_id <= 0){
+        $fetch = ['success' => false, 'message' => 'Missing required information.'];
+    } else {
+        $verify_stmt = $dbConn->prepare(
+            "SELECT schltadi_id FROM schooltadi 
+             WHERE schltadi_id = ? AND schlstud_id = ? AND schltadi_isactive = 1"
+        );
+        $verify_stmt->bind_param("ii", $tadi_id, $session_stud_id);
+        $verify_stmt->execute();
+        $verify_stmt->store_result();
+
+        if($verify_stmt->num_rows === 0){
+            $fetch = ['success' => false, 'message' => 'Unauthorized action.'];
+            $verify_stmt->close();
+        } else {
+            $verify_stmt->close();
+
+            $qry = "UPDATE schooltadi tadi
+                    SET tadi.schltadi_isactive = 0
+                    WHERE tadi.schltadi_id = ?
+                        AND tadi.schlenrollsubjoff_id = ?
+                        AND tadi.schlstud_id = ?
+                        AND tadi.schlprof_id = ?";
+            
+            $stmt = $dbConn->prepare($qry);
+            $stmt->bind_param("iiii", $tadi_id, $subj_id, $session_stud_id, $prof_id);
+            $executed = $stmt->execute();
+            $affected = $stmt->affected_rows;
+            $stmt->close();
+
+            if($executed && $affected > 0){
+                $fetch = ['success' => true, 'message' => 'Record successfully deleted.'];
+            } else {
+                $fetch = ['success' => false, 'message' => 'Failed to delete record. It may have already been removed.'];
+            }
+        }
+    }
 }
 
 $dbConn->close();

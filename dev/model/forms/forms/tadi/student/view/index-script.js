@@ -63,6 +63,7 @@ button.addEventListener("click", function (e) {
     }
 
     const comments = document.getElementById("comments");
+    comments.value = comments.value.replace(/[\r\n]+/g, " ");
     const specialCharsRegex = /[<>{}[\]\/;()&$#@!%^*+=|`]/;
 
     if (specialCharsRegex.test(comments.value)) {
@@ -77,7 +78,6 @@ button.addEventListener("click", function (e) {
         isValid = false;
     }
 
-
     if (isValid) {
         const confirmed = confirm("Are you sure you want to submit this TADI?");
         const submitBtn = document.querySelector(".submitTadi");
@@ -85,7 +85,6 @@ button.addEventListener("click", function (e) {
             const formData = new FormData(form);
             formData.append("type", "SUBMIT_TADI");
 
-            // Remove late submission fields if checkbox is not checked
             const lateSubmissionCheckbox = document.getElementById("chck_late_submt");
             if (!lateSubmissionCheckbox.checked) {
                 formData.delete("late_class_date");
@@ -108,9 +107,7 @@ button.addEventListener("click", function (e) {
                         form.reset();
                         document.getElementById("error_alert").classList.add("d-none");
 
-                        const toast = new bootstrap.Toast(document.getElementById("successToast"));
-                        document.getElementById("toastMessage").textContent = result.message;
-                        toast.show();
+                        showToastMessage(result.message, "success", "Success");
 
                         GET_SUBJECTLIST();
 
@@ -126,7 +123,6 @@ button.addEventListener("click", function (e) {
                     }
                 })
                 .catch(error => {
-                    console.error("Submission error:", error);
                     alert("Something Went Wrong. Please Try Again.");
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = ``;

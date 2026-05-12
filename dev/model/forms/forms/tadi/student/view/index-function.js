@@ -1,12 +1,45 @@
-const spinner = `<tr class="loading-spinner hide">
-                                    <td colspan="4">
-                                        <div class="text-center">
-                                            <div class="spinner-border " role="status">
-                                                <span class="sr-only"></span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>`;
+const spinner = `<div class="tadi-loading">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <span>Loading subjects...</span>
+                </div>`;
+
+function showToastMessage(message, variant = "success", title = "Success") {
+    const toastEl = document.getElementById("successToast");
+    if (!toastEl) {
+        alert(message);
+        return;
+    }
+
+    const headerEl = document.getElementById("toastHeader");
+    const titleEl = document.getElementById("toastTitle");
+    const closeBtn = document.getElementById("toastCloseBtn");
+
+    if (headerEl) {
+        headerEl.classList.remove("bg-success", "bg-warning", "text-white", "text-dark");
+        if (variant === "warning") {
+            headerEl.classList.add("bg-warning", "text-dark");
+        } else {
+            headerEl.classList.add("bg-success", "text-white");
+        }
+    }
+
+    if (titleEl) {
+        titleEl.textContent = title;
+    }
+
+    if (closeBtn) {
+        closeBtn.classList.remove("btn-close-white");
+        if (variant !== "warning") {
+            closeBtn.classList.add("btn-close-white");
+        }
+    }
+
+    document.getElementById("toastMessage").textContent = message;
+    const toast = new bootstrap.Toast(toastEl);
+    toast.show();
+}
 
 function GET_SUBJECTLIST() {
     const formData = new FormData();
@@ -25,7 +58,6 @@ function GET_SUBJECTLIST() {
     })
     .catch(err => {
         alert("Failed to load subject list. Please try again.");
-        console.error("Subject List Error:", err);
     })
 }
 
@@ -86,34 +118,30 @@ function displaySubjectTable(result) {
     const tbody = document.getElementById('card_container');
     
     tbody.innerHTML = result.map((item, index) => 
-        `<div class="card d-flex flex-row align-items-center justify-content-between" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px; width: 100%; max-width: 600px;">
-            <div class="faculty-record">
-                <span class="badge bg-warning text-dark" style="width: fit-content;">${item.subj_code}</span>
-                <div style="font-weight:bold">${item.subj_desc}</div>
-                <div style="font-size: smaller">${item.prof_name || "No faculty"}</div>
+        `<div class="subj-card">
+            <div class="subj-info">
+                <span class="subj-code">${item.subj_code}</span>
+                <div class="subj-desc">${item.subj_desc}</div>
+                <div class="subj-faculty">${item.prof_name || "No faculty assigned"}</div>
             </div>
-
-            <div class="d-flex flex-column align-items-end gap-2 tadi-bttn" style="margin-left: 20px;">
+            <div class="subj-actions">
                 <button 
-                    class="btn btn-sm"
+                    class="btn-tadi btn-tadi-primary"
                     ${item.prof_name ? "" : "disabled"}
-                    style="background-color: #181a46; color: white;" 
                     id="tadiModalHandler${index}" 
                     data-bs-toggle="modal" 
                     data-bs-target="#modal"
                     ${item.record_count_today == 3 ? "hidden" : ""}>
-                    TADI
+                    Submit
                 </button>
-
                 <button 
-                    class="btn btn-sm vw_tadi_rec"
-                    style="background-color: #43dd81ff; color: white;" 
-                    data-subj-id = "${item.subj_id}"
-                    data-prof-id = "${item.prof_id}"
+                    class="btn-tadi btn-tadi-success vw_tadi_rec"
+                    data-subj-id="${item.subj_id}"
+                    data-prof-id="${item.prof_id}"
                     data-bs-toggle="modal" 
                     data-bs-target="#Instructor_Tadi_List"
                     ${item.record_count_today == 0 ? "hidden" : ""}>
-                    VIEW
+                    View
                 </button>
             </div>
         </div>`
@@ -186,11 +214,28 @@ function GET_IMAGE(event) {
     method: "POST",
     body: formData
   })
-  .then(res => res.json())
-  .then(data => {
+    .then(res => {
+        if (res.status === 429) {
+            return res.json().then(data => {
+                showToastMessage(
+                    data.message || "Too many requests. Please try again later.",
+                    "warning",
+                    "Notice"
+                );
+                return null;
+            });
+        }
+
+        return res.json();
+    })
+    .then(data => {
+        if (!data) {
+            return;
+        }
+
     if (data && data.tadi_filepath) {
       const imgPrev = document.getElementById('attchPrev');
-      imgPrev.src = `forms/tadi/${data.tadi_filepath}`;
+      imgPrev.src = `/schoolportal-v2/dev/public/${data.tadi_filepath}`;
 
       const dateTimeUpldStr = `${data.upld_date}T${data.upld_time}`;
       const upldObj = new Date(dateTimeUpldStr);
@@ -304,8 +349,8 @@ function viewSubmitted(subj_Id, prof_Id){
 
                 
                 const viewUploadCell = record.tadi_filepath
-                    ? `<button class="btn btn-sm w-70 viewAttch" style="background-color: #2980B9; color: white" value="${record.schltadi_ID}">VIEW</button>`
-                    : `<span class="btn btn-sm w-70" style="background-color: #95A5A6; color: white; pointer-events: none;">No Attachment</span>`;
+                    ? `<button class="btn-tadi btn-tadi-view viewAttch" value="${record.schltadi_ID}">View</button>`
+                    : `<span class="btn-tadi" style="background: #cbd5e1; color: #64748b; cursor: default;">No Attachment</span>`;
 
                 const modeTypeMap = {
                     'online_learning regular': 'Online Regular',
@@ -314,10 +359,14 @@ function viewSubmitted(subj_Id, prof_Id){
                     'onsite_learning makeup': 'Onsite Make-Up'
                 };
 
+                const deletebtn = record.tadi_status == 0
+                    ? `<button class="btn-tadi btn-tadi-danger" onclick="revertTADISubmission(${record.schltadi_ID}, ${record.sub_off_id}, ${record.SchlProf_ID})">Delete Record</button>`
+                    : '';
+
                 let activity = record.tadi_act.replace(/\\r\\n/g, "<br>");
                 const statusConfig = record.tadi_status == 1
-                    ? { text: "Verified", color: "success" }
-                    : { text: "Unverified", color: "warning" };
+                    ? { text: "Verified", badgeClass: "badge-verified" }
+                    : { text: "Unverified", badgeClass: "badge-unverified" };
 
                 const tabPane = document.createElement('div');
                 tabPane.className = `tab-pane fade show ${isActive} bg-white`;
@@ -332,26 +381,30 @@ function viewSubmitted(subj_Id, prof_Id){
                 })}`;
 
                 tabPane.innerHTML = `
-                    <div class="p-3" id="preview-${record.schltadi_ID}">
-
-                        <div style="margin-bottom:2%" id="timeLabel${record.schltadi_ID}">
-                            <span><span class="label">Time:</span> ${formatTimeToAmPm(record.tadi_timeIn)} - ${formatTimeToAmPm(record.tadi_timeOut)}</span>
+                    <div class="record-panel" id="preview-${record.schltadi_ID}">
+                        <div class="record-field" id="timeLabel${record.schltadi_ID}">
+                            <span class="field-label">Time</span>
+                            <span class="field-value">${formatTimeToAmPm(record.tadi_timeIn)} &ndash; ${formatTimeToAmPm(record.tadi_timeOut)}</span>
                         </div>
-                        <div style="margin-bottom:2%" id="classTypeLabel${record.schltadi_ID}">
-                            <span><span class="label">Class Type:</span> ${modeTypeMap[record.tadi_modeType] || record.tadi_modeType}</span>
+                        <div class="record-field" id="classTypeLabel${record.schltadi_ID}">
+                            <span class="field-label">Class Type</span>
+                            <span class="field-value">${modeTypeMap[record.tadi_modeType] || record.tadi_modeType}</span>
                         </div>
-                        <div style="margin-bottom:2%"  id="actLabel${record.schltadi_ID}">
-                            <span class="label">Activity:</span>
-                            <span class="activity-text" style="cursor: pointer;">${activity}</span>
+                        <div class="record-field" id="actLabel${record.schltadi_ID}">
+                            <span class="field-label">Activity</span>
+                            <span class="activity-text field-value">${activity}</span>
                         </div>
-                        <div style="margin-bottom:2%" id="attchLabel${record.schltadi_ID}">
-                            <span><span class="label">Attachment:</span> ${viewUploadCell}</span>
+                        <div class="record-field" id="attchLabel${record.schltadi_ID}">
+                            <span class="field-label">Attachment</span>
+                            <span class="field-value">${viewUploadCell}</span>
                             <input type="hidden" id="imgProf_id" value="${record.SchlProf_ID}">
                         </div>
-                        <div style="margin-bottom:2%" class="status" id="status${record.schltadi_ID}">
-                            <span class="label">Status:</span>
-                            <span class="acknw badge bg-${statusConfig.color}" value="${record.schltadi_ID}" name="${record.tadi_status}" 
-                            style="color:white; font-weight:bold;">${statusConfig.text}</span>
+                        <div class="record-field" id="status${record.schltadi_ID}">
+                            <span class="field-label">Status</span>
+                            <span class="${statusConfig.badgeClass}" value="${record.schltadi_ID}" name="${record.tadi_status}">${statusConfig.text}</span>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2 pt-2">
+                            ${deletebtn}
                         </div>
                     </div>`;
 
@@ -401,11 +454,9 @@ document.getElementById('session_type').addEventListener('change', (e)=>{
     }
 })
 
-// Hide late submission fields and makeup date section when modal is closed
 const tadiModal = document.getElementById('modal');
 if (tadiModal) {
     tadiModal.addEventListener('hidden.bs.modal', () => {
-        // Hide and reset late submission fields
         const lateSubmtField = document.querySelector(".late-submission-fields");
         const lateSubmtCheckbox = document.getElementById("chck_late_submt");
         
@@ -430,17 +481,51 @@ if (tadiModal) {
             lateReason.value = "";
         }
 
-        // Hide and reset makeup date section
         const mkupSection = document.getElementById('makeup_date_section');
         if (mkupSection) {
             mkupSection.classList.add('d-none');
             mkupSection.innerHTML = '';
         }
 
-        // Reset session type dropdown
         const sessionType = document.getElementById('session_type');
         if (sessionType) {
             sessionType.value = '';
         }
     });
+}
+
+async function revertTADISubmission(tadiId, subOffId, profId){
+
+    if(tadiId && subOffId && profId){
+        if(confirm("Are you sure you want to delete this record? This action cannot be undone.")){
+            try{
+                const req = await fetch(`forms/tadi/student/controller/index-info.php`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: new URLSearchParams({
+                        type: 'REVERT_SUBMISSION',
+                        tadi_id: tadiId,
+                        subj_id: subOffId,
+                        prof_id: profId
+                    })
+                });
+
+                const res = await req.json();
+
+                if(res.success){
+                    alert(res.message);
+                    viewSubmitted(subOffId, profId);
+                }else{
+                    alert(res.message || "Failed to revert submission. Please try again.");
+                }
+            }catch(err){
+                alert("Failed to revert submission. Please try again.");
+            }
+        }
+    }else{
+        alert("Missing necessary information to delete the record. Please try again.");
+        return;
+    }
 }
