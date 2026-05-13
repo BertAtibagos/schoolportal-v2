@@ -1,5 +1,53 @@
+function showRateLimitToast(message) {
+  const toastEl = document.getElementById("successToast");
+  const toastHeader = document.getElementById("toastHeader");
+  const toastTitle = document.getElementById("toastTitle");
+  const toastMessage = document.getElementById("toastMessage");
+
+  if (!toastEl || !toastHeader || !toastTitle || !toastMessage) {
+    return;
+  }
+
+  toastTitle.textContent = "Notice";
+  toastMessage.textContent = message || "Too many submissions. Please try again later.";
+
+  toastHeader.classList.remove(
+    "bg-success",
+    "bg-danger",
+    "bg-info",
+    "bg-primary",
+    "bg-secondary",
+    "bg-warning",
+    "text-white",
+    "text-dark"
+  );
+  toastHeader.classList.add("bg-warning", "text-dark");
+
+  const toast = bootstrap.Toast.getOrCreateInstance(toastEl);
+  toast.show();
+}
+
+function handleRateLimitJson(response) {
+  if (response.status === 429) {
+    return response.json().then(data => {
+      const message = data && data.message ? data.message : "Too many submissions. Please try again later.";
+      showRateLimitToast(message);
+      throw new Error("Rate limit reached");
+    }).catch(() => {
+      showRateLimitToast("Too many submissions. Please try again later.");
+      throw new Error("Rate limit reached");
+    });
+  }
+
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+
+  return response.json();
+}
+
 function GET_ACADEMICLEVEL() {
-    let isFirstLoad = true;  // Flag to track initial load
+    let isFirstLoad = true;
 
     fetch("forms/tadi/prof/controller/index-info.php", {
         method: "POST",
@@ -10,7 +58,7 @@ function GET_ACADEMICLEVEL() {
             type: "GET_ACADEMIC_LEVEL"
         })
     })
-    .then(res => res.json())
+    .then(handleRateLimitJson)
     .then(result => {
         let optLevel = result.length
             ? result.map(value => `<option value="${value.AcadLvl_ID}">${value.AcadLvl_Name}</option>`).join("")
@@ -26,7 +74,6 @@ function GET_ACADEMICLEVEL() {
             isFirstLoad = false;
         }
 
-        // Event listener for subsequent changes
         lvlid.addEventListener("change", function() {
             const lvlid = this.value;
             getAcademicYearLevels(lvlid);
@@ -47,7 +94,7 @@ function getAcademicYearLevels(lvlid) {
       lvl_id: lvlid
     })
   })
-  .then(res => res.json())
+  .then(handleRateLimitJson)
   .then(result => {
     const select = document.querySelector("#academicYearLevel");
     select.innerHTML = result.length
@@ -58,7 +105,6 @@ function getAcademicYearLevels(lvlid) {
 }
 
 function getAcademicPeriods(lvlid) {
-    // Remove existing event listener first
     const periodSelect = document.querySelector("#period");
     const existingHandler = periodSelect._changeHandler;
     if (existingHandler) {
@@ -75,26 +121,22 @@ function getAcademicPeriods(lvlid) {
             lvl_id: lvlid
         })
     })
-    .then(res => res.json())
+    .then(handleRateLimitJson)
     .then(result => {
         periodSelect.innerHTML = result.length
             ? result.map(value => `<option value="${value.acad_prd_id}" ${value.is_current == 1 ? "selected" : ""}>${value.acad_prd_name}</option>`).join("")
             : "<option>No Period Found.</option>";
 
-        // Create new handler
         const changeHandler = function() {
             const lvlid = document.querySelector("#academiclevel").value;
             const prdid = this.value;
             getAcademicYears(lvlid, prdid, true);
         };
 
-        // Store handler reference
         periodSelect._changeHandler = changeHandler;
 
-        // Add new event listener
         periodSelect.addEventListener("change", changeHandler);
 
-        // Only dispatch change event on first load
         if (!periodSelect._initialized) {
             periodSelect.dispatchEvent(new Event("change"));
             periodSelect._initialized = true;
@@ -117,7 +159,7 @@ function getAcademicYears(lvlid, prdid) {
       prd_id: prdid
     })
   })
-  .then(res => res.json())
+  .then(handleRateLimitJson)
   .then(result => {
     const select = document.querySelector("#acadyear");
     select.innerHTML = result.length
@@ -144,7 +186,7 @@ function searchTadiDataByDate(searchDate) {
       search_date: searchDate
     })
   })
-  .then(res => res.json())
+  .then(handleRateLimitJson)
   .then(result => {
     displaySubjectTadi(result);
   })
@@ -208,6 +250,7 @@ function disable_acknw_bttn() {
       if (status == 1 && approved == 0) {
         let acknowledgedText = document.createTextNode('Pending Approval');
             let span = document.createElement('span');
+            span.className = 'tadi-badge tadi-badge-pending';
             span.style.color = '#eed038';
             span.style.fontWeight = 'bold';
             span.style.whiteSpace = 'nowrap';
@@ -216,6 +259,7 @@ function disable_acknw_bttn() {
       } else if (status == 1 && approved == 1){
         let acknowledgedText = document.createTextNode('Approved');
             let span = document.createElement('span');
+            span.className = 'tadi-badge tadi-badge-approved';
             span.style.color = '#198754';
             span.style.fontWeight = 'bold';
             span.appendChild(acknowledgedText);
@@ -236,11 +280,11 @@ function GET_IMAGE(event) {
     method: 'POST',
     body: formData
   })
-    .then(res => res.json())
+    .then(handleRateLimitJson)
     .then(data => {
       if (data && data.tadi_filepath) {
         const imgPrev = document.getElementById('attchPrev');
-        imgPrev.src = `forms/tadi/${data.tadi_filepath}`;
+        imgPrev.src = `/schoolportal-v2/dev/public/${data.tadi_filepath}`;
 
         const dateTimeUpldStr = `${data.upld_date}T${data.upld_time}`;
         const upldObj = new Date(dateTimeUpldStr);
@@ -327,11 +371,11 @@ function UPLOAD_IMAGE_PROF(){
         }
 
       } catch (err) {
-        console.error("Failed to parse JSON:", err.message);
+        console.error("Failed to parse JSON:");
       }
     })
     .catch(error =>{
-       console.error("Error:", error);
+       console.error("Error");
     })
 }
 
@@ -350,7 +394,6 @@ function UPLOAD_IMAGE_PROF_MODAL() {
     imageModal.hide();
   };
 }
-
 
 function DISPLAY_TADI_LOG(subj_off_id, summary = false) {
   const strtDateSearch = document.getElementById('strtDateSearch').value;
@@ -394,7 +437,7 @@ function DISPLAY_TADI_LOG(subj_off_id, summary = false) {
     method: 'POST',
     body: formData
   })
-    .then(response => response.json())
+    .then(handleRateLimitJson)
     .then(data => {
 
       tbody.innerHTML = data.length ? "" : "<tr><td colspan='6' class='text-center'>No records found</td></tr>";
@@ -475,7 +518,7 @@ function DISPLAYALL_TADI_RECORDS(subj_off_id,subjDesc = null,subjSec = null, sum
     method: 'POST',
     body: formData
   })
-  .then(response => response.json())
+  .then(handleRateLimitJson)
   .then(data => {
     tbody.innerHTML = data.length ? "" : "<tr><td colspan='6' class='text-center'>No records found</td></tr>";
 
@@ -531,8 +574,6 @@ function DISPLAYALL_TADI_RECORDS(subj_off_id,subjDesc = null,subjSec = null, sum
   .catch(error => console.error('Error fetching data:', error));
 }
 
-
-
 function attachSubjectClickHandlers(results) {
   results.forEach((value, index) => {
     const button = document.getElementById(`viewTadiRecord${index}`);
@@ -581,7 +622,7 @@ function UPDATE_TADI_STATUS() {
       });
 
       if (!response.ok) throw new Error('Network response was not ok');
-      const data = await response.json();
+      const data = await handleRateLimitJson(response);
 
       if (data.status === 'session_expired') {
         alert('Your session has expired. Please log in again.');
@@ -590,13 +631,15 @@ function UPDATE_TADI_STATUS() {
       }
 
       if (data.error) {
-        alert(data.error);
+        console.log(data.error);
         return;
       }
 
       const span = document.createElement('span');
-      span.style.cssText = 'color: #eed038; font-weight: bold;';
+      span.className = 'tadi-badge tadi-badge-pending';
       span.style.whiteSpace = 'nowrap';
+      span.style.fontWeight = 'bold';
+      span.style.color = '#eed038';
       span.textContent = 'Pending Approval';
       button.replaceWith(span);
 
@@ -614,7 +657,7 @@ function UPDATE_TADI_STATUS() {
           throw new Error('Failed to get unverified count');
         }
 
-        const result = await countResponse.json();
+        const result = await handleRateLimitJson(countResponse);
         
         if (result.status === 'session_expired') {
           alert('Your session has expired. Please log in again.');
@@ -623,7 +666,7 @@ function UPDATE_TADI_STATUS() {
         }
 
         if (result.error) {
-          alert(result.error);
+          console.log(result.error);
           return;
         }
 
@@ -658,12 +701,11 @@ function UPDATE_TADI_STATUS() {
         alert('Session expired. Please log in again.');
         window.location.href = 'index.php';
       } else {
-        alert(error.message || "An error occurred");
+        alert("An error occurred");
       }
     }
   });
 }
-
 
 async function tadiSummary(){
   const lvlid = document.getElementById("academiclevel").value;
@@ -704,7 +746,7 @@ async function tadiSummary(){
                 body: formData
     });
 
-    const result = await response.json();
+    const result = await handleRateLimitJson(response);
     const dashTable = document.querySelector('.prof_dashboard_table');
     dashTable.innerHTML = result.length ? "" : "<tr><td colspan='4' class='text-center'>No subjects available</td></tr>";
 
@@ -784,7 +826,6 @@ async function TOTAL_COUNT_SUMMARY(){
     console.error("Error:", error);
   }
 }
-
 
 async function UPDATE_TADI_COUNT(subjOff){
 

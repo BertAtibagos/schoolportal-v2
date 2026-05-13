@@ -56,7 +56,7 @@ document.getElementById("searchButton").addEventListener("click", function () {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
+    .then(handleRateLimitJson)
     .then((result) => {
         DISPLAY_PROFESSOR_SUBJECT(result);
     })
@@ -130,7 +130,6 @@ document.addEventListener("hidden.bs.modal", function (e) {
     }
 });
 
-// Handle ESC key to only close the topmost modal - use capture phase to run before Bootstrap
 document.addEventListener("keydown", function(e) {
     if (e.key === 'Escape') {
         const visibleModals = document.querySelectorAll('.modal.show');
@@ -157,7 +156,7 @@ document.addEventListener("keydown", function(e) {
             }
         }
     }
-}, true); // Use capture phase to intercept before Bootstrap
+}, true);
 
 function showAlertModal(message) {
   const modalEl = document.getElementById('alertModal');

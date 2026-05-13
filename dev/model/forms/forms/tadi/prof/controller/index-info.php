@@ -1,19 +1,43 @@
 <?php 
-    // ✅ Secure cookie flags (must be set before session_start)
     ini_set('session.cookie_httponly', 1);
     ini_set('session.cookie_secure', 1);
     ini_set('session.cookie_samesite', 'Strict');
 
-    // PHP error handling
     ini_set('display_errors', 0);
     ini_set('log_errors', 1);
 
     session_start();
     include('../../../../../configuration/connection-config.php');
 
+    function rateLimit(int $window, int $max, string $key){
+        $rateLimitWindowSec = $window;
+        $rateLimitMax = $max;
+        $rateLimitKey = $key;
+        $now = time();
+
+        if (!isset($_SESSION[$rateLimitKey])) {
+            $_SESSION[$rateLimitKey] = ['count' => 1, 'start' => $now];
+        } else {
+            $elapsed = $now - $_SESSION[$rateLimitKey]['start'];
+            if ($elapsed > $rateLimitWindowSec) {
+                $_SESSION[$rateLimitKey] = ['count' => 1, 'start' => $now];
+            } else {
+                $_SESSION[$rateLimitKey]['count']++;
+                if ($_SESSION[$rateLimitKey]['count'] > $rateLimitMax) {
+                    http_response_code(429);
+                    $fetch['message'] = 'Too many submissions. Please try again later.';
+                    echo json_encode($fetch);
+                    exit;
+                }
+            }
+        }
+    }
+
     $type = $_POST['type'];
 
     if ($type == 'GET_SUBJECT_LIST') {
+        rateLimit(60, 10, 'get_subject_list_rate_limit');
+
         $lvlid = $_POST['lvl_id'];
         $prdid = $_POST['prd_id'];
         $yrid = $_POST['yr_id'];
@@ -34,13 +58,15 @@
                     FROM
                         `schooltadi` AS t 
                         WHERE t.`schlprof_id` = ? 
-                        AND t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`) AS total_count,
+                            AND t.schltadi_isactive = 1
+                            AND t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`) AS total_count,
                     (
                         SELECT COUNT(*) 
                         FROM `schooltadi` AS t
                         WHERE t.`schltadi_status` = 0
-                        AND t.`schlprof_id` = ?
-                        AND t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`
+                            AND t.schltadi_isactive = 1
+                            AND t.`schlprof_id` = ?
+                            AND t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`
                     ) AS unverified_count
                 FROM
                     `schoolenrollmentsubjectoffered` AS `schl_enr_subj_off`
@@ -64,12 +90,12 @@
                 LEFT JOIN
                     `schoolacademicyear` AS `schl_yr` ON `schl_acad_yr_prd`.`SchlAcadYr_ID` = `schl_yr`.`SchlAcadYrSms_ID`
                 WHERE`schl_enr_subj_off`.`SchlAcadLvl_ID` = ?
-                AND `schl_acad_yr_prd`.`SchlAcadYr_ID` = ?
-                AND `schl_enr_subj_off`.`SchlAcadPrd_ID` = ?
-                AND FIND_IN_SET(?, `schl_enr_subj_off`.`SchlProf_ID`) > 0
-                AND schl_enr_subj_off.`SchlAcadYrLvl_ID`= ?
-                AND `schl_enr_subj_off`.`SchlEnrollSubjOff_ISACTIVE` = 1 
-                AND `schl_acad_subj`.`SchlAcadSubj_CODE` LIKE ? ";
+                    AND `schl_acad_yr_prd`.`SchlAcadYr_ID` = ?
+                    AND `schl_enr_subj_off`.`SchlAcadPrd_ID` = ?
+                    AND FIND_IN_SET(?, `schl_enr_subj_off`.`SchlProf_ID`) > 0
+                    AND schl_enr_subj_off.`SchlAcadYrLvl_ID`= ?
+                    AND `schl_enr_subj_off`.`SchlEnrollSubjOff_ISACTIVE` = 1 
+                    AND `schl_acad_subj`.`SchlAcadSubj_CODE` LIKE ? ";
 
              $stmt = $dbConn->prepare($qry);
 
@@ -153,49 +179,49 @@
         $dbConn->close();
     }
 
-    if($type == 'SEARCH_TADI_DATA_BY_DATE'){
+    // if($type == 'SEARCH_TADI_DATA_BY_DATE'){
 
-        $search_date = $_POST['search_date'];
+    //     $search_date = $_POST['search_date'];
 
-        $qry = "SELECT 
-                    `schl_tadi`.`schltadi_id` AS `tadi_id`,
-                    `schl_acad_subj`.`SchlAcadSubj_CODE` AS `subj_code`,
-                    `schl_acad_subj`.`SchlAcadSubj_NAME` AS `subj_name`,
-                    `schl_acad_subj`.`SchlAcadSubj_DESC` AS `subj_desc`,
-                    CONCAT(`schl_emp`.`SchlEmp_FNAME`, ' ', `schl_emp`.`SchlEmp_LNAME`) AS `prof_name`,
-                    `schl_tadi`.`schltadi_date` AS `schltadi_date`,
-                    `schl_tadi`.`schltadi_mode` AS `tadi_mode`,
-                    `schl_tadi`.`schltadi_type` AS `tadi_type`,
-                    `schl_tadi`.`schltadi_timein` AS `schltadi_timein`,
-                    `schl_tadi`.`schltadi_timeout` AS `schltadi_timeout`,
-                    `schl_tadi`.`schltadi_activity` AS `tadi_activity`,
-                    CONCAT(`SchlEnrollRegStudInfo_FIRST_NAME`, ' ', `SchlEnrollRegStudInfo_MIDDLE_NAME`, ' ', `SchlEnrollRegStudInfo_LAST_NAME`) AS `STUD_NAME`
-                FROM `schooltadi` AS `schl_tadi`
-                LEFT JOIN `schoolstudent` AS `schl_stud` 
-                    ON `schl_tadi`.`schlstud_id` = `schl_stud`.`SchlStudSms_ID`
-                LEFT JOIN `schoolenrollmentregistration` AS `schl_enr_reg` 
-                    ON `schl_stud`.`SchlEnrollRegColl_ID` = `schl_enr_reg`.`SchlEnrollRegSms_ID`
-                LEFT JOIN `schoolenrollmentregistrationstudentinformation` AS `schl_reg_stud` 
-                    ON `schl_enr_reg`.`SchlEnrollRegSms_ID` = `schl_reg_stud`.`SchlEnrollReg_ID`
-                LEFT JOIN `schoolenrollmentsubjectoffered` AS `schl_enr_subj_off` 
-                    ON `schl_tadi`.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`
-                LEFT JOIN `schoolacademicsubject` AS `schl_acad_subj` 
-                    ON `schl_enr_subj_off`.`SchlAcadSubj_ID` = `schl_acad_subj`.`SchlAcadSubjSms_ID`
-                LEFT JOIN `schoolemployee` AS `schl_emp` 
-                    ON `schl_tadi`.`schlprof_id` = `schl_emp`.`SchlEmpSms_ID`
+    //     $qry = "SELECT 
+    //                 `schl_tadi`.`schltadi_id` AS `tadi_id`,
+    //                 `schl_acad_subj`.`SchlAcadSubj_CODE` AS `subj_code`,
+    //                 `schl_acad_subj`.`SchlAcadSubj_NAME` AS `subj_name`,
+    //                 `schl_acad_subj`.`SchlAcadSubj_DESC` AS `subj_desc`,
+    //                 CONCAT(`schl_emp`.`SchlEmp_FNAME`, ' ', `schl_emp`.`SchlEmp_LNAME`) AS `prof_name`,
+    //                 `schl_tadi`.`schltadi_date` AS `schltadi_date`,
+    //                 `schl_tadi`.`schltadi_mode` AS `tadi_mode`,
+    //                 `schl_tadi`.`schltadi_type` AS `tadi_type`,
+    //                 `schl_tadi`.`schltadi_timein` AS `schltadi_timein`,
+    //                 `schl_tadi`.`schltadi_timeout` AS `schltadi_timeout`,
+    //                 `schl_tadi`.`schltadi_activity` AS `tadi_activity`,
+    //                 CONCAT(`SchlEnrollRegStudInfo_FIRST_NAME`, ' ', `SchlEnrollRegStudInfo_MIDDLE_NAME`, ' ', `SchlEnrollRegStudInfo_LAST_NAME`) AS `STUD_NAME`
+    //             FROM `schooltadi` AS `schl_tadi`
+    //             LEFT JOIN `schoolstudent` AS `schl_stud` 
+    //                 ON `schl_tadi`.`schlstud_id` = `schl_stud`.`SchlStudSms_ID`
+    //             LEFT JOIN `schoolenrollmentregistration` AS `schl_enr_reg` 
+    //                 ON `schl_stud`.`SchlEnrollRegColl_ID` = `schl_enr_reg`.`SchlEnrollRegSms_ID`
+    //             LEFT JOIN `schoolenrollmentregistrationstudentinformation` AS `schl_reg_stud` 
+    //                 ON `schl_enr_reg`.`SchlEnrollRegSms_ID` = `schl_reg_stud`.`SchlEnrollReg_ID`
+    //             LEFT JOIN `schoolenrollmentsubjectoffered` AS `schl_enr_subj_off` 
+    //                 ON `schl_tadi`.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`
+    //             LEFT JOIN `schoolacademicsubject` AS `schl_acad_subj` 
+    //                 ON `schl_enr_subj_off`.`SchlAcadSubj_ID` = `schl_acad_subj`.`SchlAcadSubjSms_ID`
+    //             LEFT JOIN `schoolemployee` AS `schl_emp` 
+    //                 ON `schl_tadi`.`schlprof_id` = `schl_emp`.`SchlEmpSms_ID`
 
-                WHERE `schl_tadi`.`schltadi_date` = ? 
-                AND `schl_tadi`.`schltadi_isconfirm` = 1
-                ORDER BY `schl_tadi`.`schltadi_date` DESC ";
+    //             WHERE `schl_tadi`.`schltadi_date` = ? 
+    //             AND `schl_tadi`.`schltadi_isconfirm` = 1
+    //             ORDER BY `schl_tadi`.`schltadi_date` DESC ";
 
-        $stmt = $dbConn->prepare($qry);
-        $stmt->bind_param("i", $search_date);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $fetch = $result->fetch_all(MYSQLI_ASSOC);
-        $stmt->close();
-        $dbConn->close();
-    }
+    //     $stmt = $dbConn->prepare($qry);
+    //     $stmt->bind_param("i", $search_date);
+    //     $stmt->execute();
+    //     $result = $stmt->get_result();
+    //     $fetch = $result->fetch_all(MYSQLI_ASSOC);
+    //     $stmt->close();
+    //     $dbConn->close();
+    // }
 
     if($type == 'GET_ACADEMIC_LEVEL'){
         $user = $_SESSION['EMPLOYEE']['ID'];
@@ -329,6 +355,7 @@
     }
 
     if($type == 'GET_TADI_RECORD'){
+        rateLimit(60, 5, 'get_tadi_record_rate_limit'); // 60-second window, max 10 requests
 
         $USERID = $_SESSION['EMPLOYEE']['ID'];
         $strtDateSearch = $_POST['strtDateSearch'];
@@ -367,8 +394,9 @@
                     LEFT JOIN `schoolenrollmentregistrationstudentinformation` AS schl_reg_stud 
                         ON schl_enr_reg.`SchlEnrollRegSms_ID` = `schl_reg_stud`.`SchlEnrollReg_ID`
                     WHERE `schlprof_id` = ?
-                    AND  `schlenrollsubjoff_id`= ?
-                    AND `schl_tadi`.`schltadi_date` BETWEEN ? AND ?
+                        AND schl_tadi.schltadi_isactive = 1
+                        AND  `schlenrollsubjoff_id`= ?
+                        AND `schl_tadi`.`schltadi_date` BETWEEN ? AND ?
                     ORDER BY schl_tadi.`schltadi_date` DESC";
 
         $stmt = $dbConn->prepare($qry);
@@ -381,6 +409,7 @@
     }
 
     if($type == 'GETALL_TADI_RECORD'){
+        rateLimit(60, 20, 'get_all_tadi_record_rate_limit');
 
         $USERID = $_SESSION['EMPLOYEE']['ID'];
         $subj_off_id = $_POST['subj_off_id'];
@@ -407,14 +436,15 @@
                     schl_tadi.schltadi_isconfirm AS approve
 
                     FROM `schooltadi` AS schl_tadi
-                    LEFT JOIN `schoolstudent` AS schl_stud 
-                        ON schl_tadi.`schlstud_id` = schl_stud.`SchlStudSms_ID` 
-                    LEFT JOIN `schoolenrollmentregistration` AS schl_enr_reg 
-                        ON schl_stud.`SchlEnrollRegColl_ID` = schl_enr_reg.`SchlEnrollRegSms_ID` 
-                    LEFT JOIN `schoolenrollmentregistrationstudentinformation` AS schl_reg_stud 
-                        ON schl_enr_reg.`SchlEnrollRegSms_ID` = `schl_reg_stud`.`SchlEnrollReg_ID`
+                        LEFT JOIN `schoolstudent` AS schl_stud 
+                            ON schl_tadi.`schlstud_id` = schl_stud.`SchlStudSms_ID` 
+                        LEFT JOIN `schoolenrollmentregistration` AS schl_enr_reg 
+                            ON schl_stud.`SchlEnrollRegColl_ID` = schl_enr_reg.`SchlEnrollRegSms_ID` 
+                        LEFT JOIN `schoolenrollmentregistrationstudentinformation` AS schl_reg_stud 
+                            ON schl_enr_reg.`SchlEnrollRegSms_ID` = `schl_reg_stud`.`SchlEnrollReg_ID`
                     WHERE `schlprof_id` = ?
-                    AND  `schlenrollsubjoff_id`= ?
+                        AND  `schlenrollsubjoff_id`= ?
+                        AND schl_tadi.schltadi_isactive = 1
                     ORDER BY schl_tadi.`schltadi_date` DESC, schl_tadi.`schltadi_timein` DESC";
 
         $stmt = $dbConn->prepare($qry);
@@ -426,6 +456,7 @@
     }
 
     if($type == 'GET_IMAGE'){
+        rateLimit(60, 5, 'get_image_rate_limit');
 
         $USERID = $_SESSION['EMPLOYEE']['ID'];
         $REC_ID = $_POST['tadi_id'];
@@ -469,36 +500,38 @@
                     COUNT(*) 
                 FROM
                     `schooltadi` AS t 
-                WHERE FIND_IN_SET(?, schl_enr_subj_off.`SchlProf_ID`) > 0 
+                WHERE FIND_IN_SET(?, schl_enr_subj_off.`SchlProf_ID`) > 0
+                    AND t.schltadi_isactive = 1
                     AND t.`schlprof_id` = ?
                     AND t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`) AS total_count,
                 (SELECT 
                     COUNT(*) 
                 FROM
                     `schooltadi` AS t 
-                WHERE t.`schltadi_status` = 0 
+                WHERE t.`schltadi_status` = 0
+                    AND t.schltadi_isactive = 1
                     AND t.`schlprof_id` = ?
                     AND FIND_IN_SET(?, schl_enr_subj_off.`SchlProf_ID`) > 0
                     AND t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`) AS unverified_count 
                 FROM
                 `schoolenrollmentsubjectoffered` AS `schl_enr_subj_off` 
-                LEFT JOIN `schoolacademicsubject` AS `schl_acad_subj` 
-                    ON `schl_enr_subj_off`.`SchlAcadSubj_ID` = `schl_acad_subj`.`SchlAcadSubjSms_ID` 
-                LEFT JOIN `schoolacademicsection` AS `schl_acad_sec` 
-                    ON `schl_enr_subj_off`.`SchlAcadSec_ID` = `schl_acad_sec`.`SchlAcadSecSms_ID` 
-                LEFT JOIN `schoolacademiccourses` AS `schl_acad_crses` 
-                    ON `schl_enr_subj_off`.`SchlAcadCrses_ID` = `schl_acad_crses`.`SchlAcadCrseSms_ID` 
-                LEFT JOIN `schooldepartment` AS `schl_dept` 
-                    ON `schl_acad_crses`.`SchlDept_ID` = `schl_dept`.`SchlDeptSms_ID` 
-                LEFT JOIN `schoolacademicyearperiod` AS `schl_acad_yr_prd` 
-                    ON `schl_enr_subj_off`.`SchlAcadYr_ID` = `schl_acad_yr_prd`.`SchlAcadYr_ID` 
-                LEFT JOIN `schoolacademicyear` AS `schl_yr` 
-                    ON `schl_acad_yr_prd`.`SchlAcadYr_ID` = `schl_yr`.`SchlAcadYrSms_ID` 
+                    LEFT JOIN `schoolacademicsubject` AS `schl_acad_subj` 
+                        ON `schl_enr_subj_off`.`SchlAcadSubj_ID` = `schl_acad_subj`.`SchlAcadSubjSms_ID` 
+                    LEFT JOIN `schoolacademicsection` AS `schl_acad_sec` 
+                        ON `schl_enr_subj_off`.`SchlAcadSec_ID` = `schl_acad_sec`.`SchlAcadSecSms_ID` 
+                    LEFT JOIN `schoolacademiccourses` AS `schl_acad_crses` 
+                        ON `schl_enr_subj_off`.`SchlAcadCrses_ID` = `schl_acad_crses`.`SchlAcadCrseSms_ID` 
+                    LEFT JOIN `schooldepartment` AS `schl_dept` 
+                        ON `schl_acad_crses`.`SchlDept_ID` = `schl_dept`.`SchlDeptSms_ID` 
+                    LEFT JOIN `schoolacademicyearperiod` AS `schl_acad_yr_prd` 
+                        ON `schl_enr_subj_off`.`SchlAcadYr_ID` = `schl_acad_yr_prd`.`SchlAcadYr_ID` 
+                    LEFT JOIN `schoolacademicyear` AS `schl_yr` 
+                        ON `schl_acad_yr_prd`.`SchlAcadYr_ID` = `schl_yr`.`SchlAcadYrSms_ID` 
                 WHERE `schl_enr_subj_off`.`SchlAcadLvl_ID` = ? 
-                AND `schl_acad_yr_prd`.`SchlAcadYr_ID` = ?
-                AND `schl_enr_subj_off`.`SchlAcadPrd_ID` = ? 
-                AND FIND_IN_SET(?, schl_enr_subj_off.`SchlProf_ID`) > 0
-                AND `schl_enr_subj_off`.`SchlEnrollSubjOff_ISACTIVE` = 1 
+                    AND `schl_acad_yr_prd`.`SchlAcadYr_ID` = ?
+                    AND `schl_enr_subj_off`.`SchlAcadPrd_ID` = ? 
+                    AND FIND_IN_SET(?, schl_enr_subj_off.`SchlProf_ID`) > 0
+                    AND `schl_enr_subj_off`.`SchlEnrollSubjOff_ISACTIVE` = 1 
                 ORDER BY unverified_count DESC, total_count DESC ";
 
 
@@ -517,14 +550,15 @@
 
         $qry = "WITH counts AS (
                     SELECT 
-                        SUM(CASE WHEN schltadi_status = 1 THEN 1 ELSE 0 END) AS verified_count,
-                        SUM(CASE WHEN schltadi_status = 0 THEN 1 ELSE 0 END) AS total_unverified,
+                        SUM(CASE WHEN schltadi_status = 1 AND schltadi_isactive = 1 THEN 1 ELSE 0 END) AS verified_count,
+                        SUM(CASE WHEN schltadi_status = 0 AND schltadi_isactive = 1 THEN 1 ELSE 0 END) AS total_unverified,
                         COUNT(*) AS total_count
                     FROM schooltadi t
                     LEFT JOIN `schoolenrollmentsubjectoffered` AS `schl_enr_subj_off`
                         ON t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`
                     WHERE t.schlprof_id = ?
-                    AND FIND_IN_SET(?, schl_enr_subj_off.`SchlProf_ID`) > 0
+                        AND t.schltadi_isactive = 1
+                        AND FIND_IN_SET(?, schl_enr_subj_off.`SchlProf_ID`) > 0
                 )
                 SELECT 
                     verified_count,
@@ -583,9 +617,4 @@
     }
 
     echo json_encode($fetch);
-
 ?>
-
-
-
-

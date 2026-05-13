@@ -1,0 +1,608 @@
+:root {
+    --tp-primary:       #071976;
+    --tp-primary-hover: #141651;
+    --tp-primary-light: rgba(26, 28, 94, 0.07);
+    --tp-accent:        #4f52b8;
+    --tp-success:       #10b981;
+    --tp-success-bg:    #d1fae5;
+    --tp-danger:        #ef4444;
+    --tp-danger-bg:     #fee2e2;
+    --tp-warning:       #f59e0b;
+    --tp-warning-bg:    #fef3c7;
+    --tp-bg:            #f0f2f9;
+    --tp-card:          #ffffff;
+    --tp-text:          #1e293b;
+    --tp-muted:         #64748b;
+    --tp-border:        #e2e8f0;
+    --tp-shadow:        0 1px 3px rgba(0,0,0,.07), 0 4px 14px rgba(0,0,0,.04);
+    --tp-shadow-md:     0 6px 24px rgba(0,0,0,.11);
+    --tp-radius:        12px;
+    --tp-radius-sm:     8px;
+}
+
+label { font-weight: bold; }
+
+.tadi-header {
+    margin-bottom: 1.5rem;
+    padding: 0 .25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .75rem;
+    flex-wrap: wrap;
+}
+.tadi-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--tp-primary);
+    margin-bottom: .1rem;
+    letter-spacing: -.3px;
+}
+.tadi-subtitle {
+    font-size: .8rem;
+    color: var(--tp-muted);
+    letter-spacing: .3px;
+    margin-bottom: 0;
+}
+
+.tadi-back-btn {
+    background: var(--tp-card);
+    color: var(--tp-primary);
+    border: 1.5px solid var(--tp-primary);
+    border-radius: var(--tp-radius-sm);
+    font-size: .83rem;
+    font-weight: 600;
+    padding: .42rem 1rem;
+    transition: all .2s ease;
+    white-space: nowrap;
+}
+.tadi-back-btn:hover {
+    background: var(--tp-primary);
+    color: white;
+}
+
+.filter-card {
+    background: var(--tp-card);
+    border-radius: var(--tp-radius);
+    box-shadow: var(--tp-shadow);
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+}
+.filter-card-header {
+    background: var(--tp-primary);
+    color: white;
+    padding: .6rem 1.25rem;
+    font-size: .82rem;
+    font-weight: 600;
+    letter-spacing: .4px;
+}
+.filter-card-body { padding: 1.25rem; }
+
+.filter-label {
+    display: block;
+    font-size: .72rem;
+    font-weight: 700;
+    color: var(--tp-muted);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: .3rem;
+}
+.filter-select {
+    border: 1.5px solid var(--tp-border);
+    border-radius: var(--tp-radius-sm);
+    font-size: .87rem;
+    color: var(--tp-text);
+    background-color: #fafbff;
+    padding: .48rem .85rem;
+    transition: border-color .2s, box-shadow .2s;
+    height: 42px;
+}
+.filter-select:focus {
+    border-color: var(--tp-accent);
+    box-shadow: 0 0 0 3px rgba(79,82,184,.12);
+    outline: none;
+    background-color: white;
+}
+.filter-select.border-danger,
+.filter-select.is-invalid { border-color: var(--tp-danger) !important; }
+
+.tadi-search-btn {
+    background: var(--tp-primary);
+    color: white;
+    border: none;
+    border-radius: var(--tp-radius-sm);
+    font-size: .87rem;
+    font-weight: 600;
+    padding: .48rem 1.5rem;
+    height: 42px;
+    transition: all .2s ease;
+    white-space: nowrap;
+    min-width: 130px;
+}
+.tadi-search-btn:hover:not(:disabled) {
+    background: var(--tp-primary-hover);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(26,28,94,.28);
+}
+.tadi-search-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.main-content-card {
+    background: var(--tp-card);
+    border-radius: var(--tp-radius);
+    box-shadow: var(--tp-shadow);
+    overflow: hidden;
+}
+.main-content-body { padding: 1.25rem; }
+
+.section-label {
+    font-size: .92rem;
+    font-weight: 700;
+    color: var(--tp-text);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.stats-row {
+    display: flex;
+    gap: .9rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+}
+.stat-card {
+    flex: 1;
+    min-width: 130px;
+    border-radius: var(--tp-radius-sm);
+    padding: .9rem 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: .9rem;
+    transition: transform .2s ease, box-shadow .2s ease;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.09); }
+
+.stat-total     { background: linear-gradient(135deg,#e8eaf6,#c5cae9); border: 1px solid #9fa8da; }
+.stat-verified  { background: linear-gradient(135deg,#e8f5e9,#c8e6c9); border: 1px solid #a5d6a7; }
+.stat-unverified{ background: linear-gradient(135deg,#fce4ec,#f8bbd0); border: 1px solid #f48fb1; }
+
+.stat-icon      { font-size: 1.75rem; opacity: .6; flex-shrink: 0; }
+.stat-total     .stat-icon  { color: #3949ab; }
+.stat-verified  .stat-icon  { color: #2e7d32; }
+.stat-unverified.stat-icon  { color: #c62828; }
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: .15rem;
+}
+.stat-total     .stat-value  { color: #283593; }
+.stat-verified  .stat-value  { color: #1b5e20; }
+.stat-unverified .stat-value { color: #b71c1c; }
+
+.stat-label {
+    font-size: .72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    opacity: .7;
+}
+.stat-total     .stat-label  { color: #283593; }
+.stat-verified  .stat-label  { color: #1b5e20; }
+.stat-unverified .stat-label { color: #b71c1c; }
+
+.summary-hide { display: none !important; }
+
+.inst_list_tbl_wrapper {
+    max-height: 55vh;
+    overflow-y: auto;
+    border-radius: var(--tp-radius-sm);
+    border: 1px solid var(--tp-border);
+}
+.inst_list_tbl_wrapper.dashboard { max-height: 24vh; }
+
+.tadi-table {
+    margin-bottom: 0;
+    width: 100%;
+    border-collapse: collapse;
+}
+.tadi-table thead th {
+    background-color: var(--tp-primary);
+    color: white;
+    font-size: .75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    padding: .7rem 1rem;
+    border: none;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    white-space: nowrap;
+}
+.tadi-table tbody tr { border-bottom: 1px solid var(--tp-border); transition: background .15s ease; }
+.tadi-table tbody tr:last-child { border-bottom: none; }
+.tadi-table tbody tr:hover { background-color: var(--tp-primary-light); }
+.tadi-table tbody td {
+    padding: .7rem 1rem;
+    font-size: .87rem;
+    color: var(--tp-text);
+    vertical-align: middle;
+    border: none;
+}
+
+.button-bg-change {
+    background-color: #eef0fc;
+    border: 1.5px solid var(--tp-primary);
+    color: var(--tp-primary);
+    border-radius: 6px;
+    font-size: .78rem;
+    font-weight: 600;
+    transition: all .2s ease;
+    padding: .3rem .85rem;
+}
+.button-bg-change:hover {
+    background-color: var(--tp-primary);
+    color: white;
+}
+
+.view-tadi-summary {
+    background-color: var(--tp-primary) !important;
+    color: white !important;
+    border: none;
+    border-radius: 6px;
+    font-size: .76rem;
+    font-weight: 600;
+    padding: .28rem .85rem;
+    transition: all .2s ease;
+}
+.view-tadi-summary:hover:not(:disabled) {
+    background-color: var(--tp-primary-hover) !important;
+    color: white !important;
+}
+.view-tadi-summary:disabled {
+    background-color: #94a3b8 !important;
+    color: white !important;
+    cursor: not-allowed;
+}
+
+.viewAttch {
+    background-color: #e0e7ff;
+    color: #3730a3;
+    border: 1px solid #818cf8;
+    border-radius: 5px;
+    font-size: .74rem;
+    font-weight: 600;
+    padding: .24rem .6rem;
+    transition: all .2s ease;
+    white-space: nowrap;
+}
+.viewAttch:hover { background-color: #6366f1; color: white; border-color: #6366f1; }
+
+.upldprof {
+    background-color: var(--tp-success-bg);
+    color: #065f46;
+    border: 1px solid var(--tp-success);
+    border-radius: 5px;
+    font-size: .74rem;
+    font-weight: 600;
+    padding: .24rem .6rem;
+    transition: all .2s ease;
+    white-space: nowrap;
+}
+.upldprof:hover { background-color: var(--tp-success); color: white; }
+
+
+.acknw {
+    background-color: #dcfce7 !important;
+    color: #15803d !important;
+    border: 1px solid #4ade80 !important;
+    border-radius: 5px !important;
+    font-size: .74rem !important;
+    font-weight: 600 !important;
+    padding: .24rem .6rem !important;
+    transition: all .2s ease !important;
+    white-space: nowrap;
+}
+.acknw:hover:not(:disabled) { background-color: #22c55e !important; color: white !important; }
+
+.tadi-table tbody .table-warning,
+.tadi-records-table tbody .table-warning { background-color: #fffbeb !important; }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+.tadi-modal-content {
+    border: none;
+    border-radius: var(--tp-radius);
+    overflow: hidden;
+    box-shadow: var(--tp-shadow-md);
+}
+.tadi-modal-header {
+    background: var(--tp-primary);
+    color: white;
+    padding: .9rem 1.25rem;
+    border: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+.tadi-close-btn {
+    background: rgba(255,255,255,.15);
+    border: none;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background .2s ease;
+    flex-shrink: 0;
+    margin-left: .75rem;
+    padding: 0;
+    font-size: .82rem;
+}
+.tadi-close-btn:hover { background: rgba(255,255,255,.3); color: white; }
+
+.tadi-modal-xl { max-width: 95%; }
+.tadi-modal-header .modal-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: .1rem;
+}
+.modal-subject-badge {
+    font-size: .68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .9px;
+    opacity: .7;
+    margin-bottom: .25rem;
+}
+.modal-section-text { font-size: .8rem; opacity: .8; }
+.tadi-modal-body { padding: 1.1rem 1.25rem; }
+
+.date-filter-bar {
+    background: #f8fafc;
+    border: 1px solid var(--tp-border);
+    border-radius: var(--tp-radius-sm);
+    padding: .8rem 1.1rem;
+    margin-bottom: 1rem;
+}
+.date-filter-inner {
+    display: flex;
+    align-items: flex-end;
+    gap: .65rem;
+    flex-wrap: wrap;
+}
+.date-filter-group { display: flex; flex-direction: column; min-width: 155px; }
+.date-filter-label {
+    font-size: .7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--tp-muted);
+    margin-bottom: .28rem;
+}
+.date-input {
+    border: 1.5px solid var(--tp-border);
+    border-radius: 6px;
+    font-size: .85rem;
+    height: 38px;
+    color: var(--tp-text);
+    padding: .3rem .7rem;
+    transition: border-color .2s, box-shadow .2s;
+}
+.date-input:focus {
+    border-color: var(--tp-accent);
+    box-shadow: 0 0 0 3px rgba(79,82,184,.12);
+    outline: none;
+}
+.date-input.border-danger,
+.date-input.is-invalid { border-color: var(--tp-danger) !important; }
+
+.date-separator { color: var(--tp-muted); padding-bottom: 9px; font-size: .95rem; }
+
+.tadi-date-search-btn {
+    background: var(--tp-primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: .83rem;
+    font-weight: 600;
+    padding: .42rem 1.15rem;
+    height: 38px;
+    transition: all .2s ease;
+    white-space: nowrap;
+}
+.tadi-date-search-btn:hover {
+    background: var(--tp-primary-hover);
+    color: white;
+    box-shadow: 0 3px 10px rgba(26,28,94,.22);
+}
+
+.records-table-wrapper {
+    border: 1px solid var(--tp-border);
+    border-radius: var(--tp-radius-sm);
+    overflow: hidden;
+    max-height: 420px;
+    overflow-y: auto;
+}
+.tadi-records-table {
+    margin-bottom: 0;
+    width: 100%;
+    min-width: 680px;
+    border-collapse: collapse;
+}
+.tadi-records-table thead th {
+    background-color: var(--tp-primary);
+    color: white;
+    font-size: .73rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    padding: .65rem .85rem;
+    border: none;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    white-space: nowrap;
+}
+.tadi-records-table tbody tr { border-bottom: 1px solid var(--tp-border); transition: background .15s ease; }
+.tadi-records-table tbody tr:last-child { border-bottom: none; }
+.tadi-records-table tbody tr:hover { background-color: var(--tp-primary-light); }
+.tadi-records-table tbody td {
+    padding: .6rem .85rem;
+    font-size: .82rem;
+    color: var(--tp-text);
+    vertical-align: middle;
+    border: none;
+}
+
+.tadi-img-modal { border: none; border-radius: var(--tp-radius); overflow: hidden; }
+.tadi-img-modal-header {
+    background: var(--tp-primary);
+    color: white;
+    padding: .8rem 1.1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.img-modal-title { font-size: .88rem; font-weight: 600; }
+.img-container {
+    width: 100%;
+    height: 370px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background: #f8fafc;
+    border-radius: var(--tp-radius-sm);
+}
+.img-container img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.img_details { padding: 4px 0; }
+.img-meta-item {
+    font-size: .8rem;
+    color: var(--tp-muted);
+    display: flex;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.upload-area {
+    text-align: center;
+    padding: 1.4rem;
+    border: 2px dashed var(--tp-border);
+    border-radius: var(--tp-radius-sm);
+    background: #fafbff;
+}
+.upload-icon { font-size: 2.2rem; color: var(--tp-accent); margin-bottom: .6rem; opacity: .65; }
+.upload-hint { font-size: .8rem; color: var(--tp-muted); margin-bottom: .75rem; }
+
+.tadi-cancel-btn {
+    background: #f1f5f9;
+    color: var(--tp-text);
+    border: 1px solid var(--tp-border);
+    border-radius: 6px;
+    font-size: .83rem;
+    font-weight: 600;
+    padding: .42rem 1.15rem;
+    transition: all .2s ease;
+}
+.tadi-cancel-btn:hover { background: #e2e8f0; color: var(--tp-text); }
+
+.tadi-upload-submit-btn {
+    background: var(--tp-primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: .83rem;
+    font-weight: 600;
+    padding: .42rem 1.4rem;
+    transition: all .2s ease;
+}
+.tadi-upload-submit-btn:hover { background: var(--tp-primary-hover); color: white; }
+
+.tadi-confirm-btn {
+    background: #22c55e;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: .83rem;
+    font-weight: 600;
+    padding: .42rem 1.4rem;
+    transition: all .2s ease;
+}
+.tadi-confirm-btn:hover { background: #16a34a; color: white; }
+
+.tadi-alert-header {
+    background: #fff7ed;
+    border-bottom: 1px solid #fed7aa;
+    padding: .8rem 1.25rem;
+    border: none;
+}
+.tadi-alert-header .modal-title {
+    color: #9a3412;
+    font-size: .92rem;
+}
+
+.activity-text {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-width: 600px;
+    display: inline-block;
+    text-align: left;
+}
+.spinner-border { color: var(--tp-primary); }
+
+.table > :not(caption) > * > * { border-bottom-width: 0; }
+
+#rcrd_tbl_body td {
+    text-align: center;
+}
+#rcrd_tbl th {
+    text-align: center;
+}
+.tadi-badge{
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+.tadi-badge-pending{
+    background: #fffbd9;
+    font-size: .8rem;
+}
+.tadi-badge-approved{
+    background: #d1fae5;
+    color: #065f46;
+    font-size: .8rem;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .tadi-title { font-size: 1.25rem; }
+    .stats-row { gap: .6rem; }
+    .stat-card { min-width: 0; padding: .7rem .9rem; }
+    .stat-value { font-size: 1.5rem; }
+    .stat-icon { font-size: 1.4rem; }
+    .main-content-body { padding: .9rem; }
+    .filter-card-body { padding: 1rem; }
+    .tadi-modal-xl { max-width: 100%; margin: .4rem; }
+    .date-filter-group { min-width: 120px; flex: 1; }
+    .tadi-date-search-btn { width: 100%; }
+}
+@media (max-width: 480px) {
+    .stat-label { display: none; }
+    .stat-card { flex-direction: column; text-align: center; gap: .25rem; padding: .55rem; }
+    .tadi-title { font-size: 1.1rem; }
+    .tadi-back-btn { font-size: .75rem; padding: .38rem .7rem; }
+}
