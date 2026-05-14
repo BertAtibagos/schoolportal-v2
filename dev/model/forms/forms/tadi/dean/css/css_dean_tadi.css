@@ -1,0 +1,513 @@
+label {
+    font-weight: bold;
+}
+
+:root {
+    --td-primary:        #181a46;
+    --td-primary-deep:   #12143a;
+    --td-primary-grad:   #2a2e7a;
+    --td-primary-light:  #eaebf5;
+    --td-accent:         #0d6efd;
+    --td-accent-hover:   #0b5ed7;
+    --td-success:        #198754;
+    --td-success-hover:  #157347;
+    --td-warning:        #d59432;
+    --td-warning-hover:  #b37e2b;
+    --td-danger:         #dc3545;
+    --td-gray:           #6c757d;
+    --td-page-bg:        #f0f2f8;
+    --td-card-bg:        #ffffff;
+    --td-border:         #e2e6f0;
+    --td-radius:         12px;
+    --td-radius-sm:      8px;
+    --td-shadow:         0 4px 18px rgba(24,26,70,.09);
+    --td-shadow-lg:      0 8px 28px rgba(24,26,70,.16);
+    --td-transition:     all .2s cubic-bezier(.4,0,.2,1);
+}
+
+/* --- Page wrapper --- */
+.tadi-section {
+    /* background: var(--td-page-bg); */
+    min-height: 100%;
+    padding: 20px 0 32px;
+}
+
+/* --- Main card --- */
+.tadi-main-card {
+    background: var(--td-card-bg);
+    border-radius: var(--td-radius);
+    box-shadow: var(--td-shadow);
+    border: none;
+    overflow: hidden;
+}
+
+/* --- Page header --- */
+.tadi-page-header {
+    background: linear-gradient(135deg, var(--td-primary) 0%, var(--td-primary-grad) 100%);
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.tadi-page-title {
+    color: #fff;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: .4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.tadi-title-chip {
+    width: 34px;
+    height: 34px;
+    background: rgba(255,255,255,.15);
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.tadi-header-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* --- Buttons --- */
+.tadi-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border-radius: var(--td-radius-sm);
+    font-size: .875rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: var(--td-transition);
+    white-space: nowrap;
+    text-decoration: none;
+    line-height: 1.4;
+}
+.tadi-btn:disabled { opacity: .6; cursor: not-allowed; transform: none !important; }
+.tadi-btn-sm { padding: 5px 12px; font-size: .8rem; }
+
+.tadi-btn-outline-white {
+    background: rgba(255,255,255,.12);
+    color: #fff;
+    border: 1.5px solid rgba(255,255,255,.45);
+}
+.tadi-btn-outline-white:hover:not(:disabled) {
+    background: rgba(255,255,255,.22);
+    color: #fff;
+}
+.tadi-btn-primary {
+    background: var(--td-primary);
+    color: #fff;
+}
+.tadi-btn-primary:hover:not(:disabled) {
+    background: var(--td-primary-deep);
+    color: #fff;
+    box-shadow: var(--td-shadow-lg);
+    transform: translateY(-1px);
+}
+.tadi-btn-accent {
+    background: var(--td-accent);
+    color: #fff;
+}
+.tadi-btn-accent:hover:not(:disabled) {
+    background: var(--td-accent-hover);
+    color: #fff;
+    box-shadow: var(--td-shadow-lg);
+    transform: translateY(-1px);
+}
+.tadi-btn-success {
+    background: var(--td-success);
+    color: #fff;
+}
+.tadi-btn-success:hover:not(:disabled) {
+    background: var(--td-success-hover);
+    color: #fff;
+    box-shadow: var(--td-shadow-lg);
+    transform: translateY(-1px);
+}
+.tadi-btn-warning-solid {
+    background: var(--td-warning);
+    color: #fff;
+}
+.tadi-btn-warning-solid:hover:not(:disabled) {
+    background: var(--td-warning-hover);
+    color: #fff;
+    box-shadow: var(--td-shadow-lg);
+    transform: translateY(-1px);
+}
+.tadi-btn-muted {
+    background: #e9ecef;
+    color: #495057;
+    border: 1px solid #dee2e6;
+}
+.tadi-btn-muted:hover:not(:disabled) {
+    background: #d5d9de;
+    color: #212529;
+}
+.tadi-btn-ghost {
+    background: var(--td-primary-light);
+    color: var(--td-primary);
+    border: 1.5px solid var(--td-primary);
+}
+.tadi-btn-ghost:hover:not(:disabled) {
+    background: var(--td-primary);
+    color: #fff;
+    transform: translateY(-1px);
+}
+.tadi-btn-ghost-blue {
+    background: #e8f0fe;
+    color: var(--td-accent);
+    border: 1.5px solid var(--td-accent);
+}
+.tadi-btn-ghost-blue:hover:not(:disabled) {
+    background: var(--td-accent);
+    color: #fff;
+    transform: translateY(-1px);
+}
+.tadi-btn-ghost-gold {
+    background: #fdf3e1;
+    color: var(--td-warning);
+    border: 1.5px solid var(--td-warning);
+}
+.tadi-btn-ghost-gold:hover:not(:disabled) {
+    background: var(--td-warning);
+    color: #fff;
+    transform: translateY(-1px);
+}
+.tadi-btn-view {
+    background: #2980b9;
+    color: #fff;
+    border-radius: 6px;
+    font-size: .78rem;
+    font-weight: 500;
+    padding: 4px 11px;
+    border: none;
+    cursor: pointer;
+    transition: var(--td-transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.tadi-btn-view:hover:not(:disabled) {
+    background: #2170a3;
+    transform: translateY(-1px);
+}
+.tadi-btn-approve {
+    background: var(--td-primary);
+    color: #fff;
+    border-radius: 6px;
+    font-size: .78rem;
+    font-weight: 500;
+    padding: 4px 11px;
+    border: none;
+    cursor: pointer;
+    transition: var(--td-transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.tadi-btn-approve:hover:not(:disabled) {
+    background: var(--td-primary-deep);
+    transform: translateY(-1px);
+}
+
+/* --- Filter card --- */
+.tadi-filter-card {
+    background: #fff;
+    border-radius: var(--td-radius);
+    border: 1px solid var(--td-border);
+    padding: 20px 22px;
+    margin: 20px 0 4px;
+    box-shadow: 0 2px 10px rgba(24,26,70,.06);
+}
+.tadi-filter-label {
+    font-size: .755rem;
+    font-weight: 600;
+    color: var(--td-primary);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 5px;
+    display: block;
+}
+.tadi-filter-card .form-select,
+.tadi-filter-card .form-control {
+    border: 1.5px solid #cdd2e8;
+    border-radius: var(--td-radius-sm);
+    background-color: #fafbff;
+    font-size: .875rem;
+    padding: 9px 12px;
+    color: #2d3748;
+    transition: var(--td-transition);
+    box-shadow: none;
+}
+.tadi-filter-card .form-select:focus,
+.tadi-filter-card .form-control:focus {
+    border-color: var(--td-primary);
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(24,26,70,.1);
+    outline: none;
+}
+.tadi-filter-card .form-select.is-invalid,
+.tadi-filter-card .form-control.is-invalid {
+    border-color: var(--td-danger) !important;
+    box-shadow: 0 0 0 3px rgba(220,53,69,.1) !important;
+}
+
+/* --- Content card --- */
+.tadi-content-card {
+    background: #fff;
+    border-radius: var(--td-radius);
+    border: 1px solid var(--td-border);
+    margin: 16px 0;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(24,26,70,.07);
+}
+.tadi-content-card-header {
+    background: linear-gradient(90deg, var(--td-primary) 0%, var(--td-primary-grad) 100%);
+    color: #fff;
+    padding: 13px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.tadi-content-card-header h5,
+.tadi-content-card-header h6 { margin: 0; font-weight: 600; font-size: .95rem; }
+
+/* --- Tables --- */
+.tadi-table-wrapper {
+    overflow-y: auto;
+    overflow-x: auto;
+    max-height: 33vh;
+}
+.tadi-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: .875rem;
+    margin: 0;
+}
+.tadi-table thead th {
+    background: var(--td-primary);
+    color: #fff;
+    font-weight: 600;
+    font-size: .775rem;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    padding: 12px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    border: none;
+    white-space: nowrap;
+}
+.tadi-table tbody tr { transition: background-color .15s ease; }
+.tadi-table tbody tr:hover { background-color: #f0f2ff; }
+.tadi-table tbody td {
+    padding: 11px 16px;
+    border-bottom: 1px solid #edf0f7;
+    vertical-align: middle;
+    color: #374151;
+}
+.tadi-table tbody tr:last-child td { border-bottom: none; }
+.tadi-table td.tc { text-align: center; }
+.tadi-row-late { background-color: #fff5f5 !important; }
+.tadi-row-late:hover { background-color: #ffe8e8 !important; }
+
+/* --- Badges --- */
+.tadi-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: .72rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.tadi-badge-success  { background: #d1fae5; color: #065f46; }
+.tadi-badge-danger   { background: #fee2e2; color: #991b1b; }
+.tadi-badge-warning  { background: #fef3c7; color: #92400e; }
+.tadi-badge-muted    { background: #e5e7eb; color: #374151; }
+.tadi-badge-primary  { background: var(--td-primary-light); color: var(--td-primary); }
+.tadi-badge-blue     { background: #dbeafe; color: #1e40af; }
+.tadi-badge-approved { background: #d1fae5; color: #065f46; font-size: .8rem; font-weight: 600; }
+
+/* --- Activity text (expandable) --- */
+.activity-text {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-width: 380px;
+    display: inline-block;
+    text-align: justify;
+}
+
+/* --- Report area --- */
+.tadi-report-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 0 6px;
+}
+.tadi-report-container {
+    max-height: 35vh;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+/* --- Scrollbar --- */
+.tadi-table-wrapper::-webkit-scrollbar,
+.tadi-report-container::-webkit-scrollbar { width: 6px; height: 6px; }
+.tadi-table-wrapper::-webkit-scrollbar-track,
+.tadi-report-container::-webkit-scrollbar-track { background: #f1f2f8; border-radius: 3px; }
+.tadi-table-wrapper::-webkit-scrollbar-thumb,
+.tadi-report-container::-webkit-scrollbar-thumb { background: #c0c4d6; border-radius: 3px; }
+.tadi-table-wrapper::-webkit-scrollbar-thumb:hover,
+.tadi-report-container::-webkit-scrollbar-thumb:hover { background: var(--td-primary); }
+
+/* --- Modal styles --- */
+.tadi-modal .modal-content {
+    border-radius: var(--td-radius);
+    border: none;
+    box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    overflow: hidden;
+}
+.tadi-modal .modal-header {
+    background: linear-gradient(135deg, var(--td-primary) 0%, var(--td-primary-grad) 100%);
+    color: #fff;
+    padding: 16px 20px;
+    border-bottom: none;
+}
+.tadi-modal .modal-header .modal-title { font-size: 1rem; font-weight: 600; }
+.tadi-modal .modal-header .modal-subtitle { font-size: .8rem; opacity: .8; margin-top: 2px; }
+.tadi-modal .modal-body { background: #f7f8fc; padding: 20px; }
+.tadi-modal .modal-footer { background: #fff; border-top: 1px solid #e9ecef; padding: 12px 20px; }
+.tadi-modal-search-bar {
+    background: #fff;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    border: 1px solid #e8ecf4;
+}
+.tadi-modal-search-bar .form-control,
+.tadi-modal-search-bar .form-select {
+    border: 1.5px solid #cdd2e8;
+    border-radius: var(--td-radius-sm);
+    background: #fafbff;
+    font-size: .875rem;
+    padding: 8px 11px;
+    transition: var(--td-transition);
+    box-shadow: none;
+}
+.tadi-modal-search-bar .form-control:focus,
+.tadi-modal-search-bar .form-select:focus {
+    border-color: var(--td-primary);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(24,26,70,.1);
+    outline: none;
+}
+.tadi-modal-table-card {
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,.07);
+}
+
+/* --- Image modal --- */
+.img-container {
+    width: 100%;
+    height: 360px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background: #f0f2f5;
+    border-radius: 8px;
+}
+.img-container img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.img-meta {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: #f8f9fc;
+    border-radius: 8px;
+    font-size: .82rem;
+    color: #6b7280;
+    border: 1px solid #e8ecf4;
+}
+
+/* --- Alert modal --- */
+.tadi-alert-modal .modal-header {
+    background: linear-gradient(135deg, var(--td-primary) 0%, #2563eb 100%);
+}
+
+/* --- Empty state --- */
+.tadi-empty-state {
+    text-align: center;
+    padding: 36px 20px;
+    color: #9ca3af;
+    font-size: .875rem;
+    text-align: -webkit-center;
+}
+
+/* --- Backward-compat shims for JS-generated HTML --- */
+.button-bg-change {
+    background: var(--td-primary-light) !important;
+    color: var(--td-primary) !important;
+    border: 1.5px solid var(--td-primary) !important;
+    border-radius: var(--td-radius-sm) !important;
+    transition: var(--td-transition) !important;
+    font-size: .8rem !important;
+    font-weight: 500 !important;
+}
+.button-bg-change:hover {
+    background: var(--td-primary) !important;
+    color: #fff !important;
+    transform: translateY(-1px);
+}
+.viewAttch {
+    background: #2980b9 !important;
+    color: #fff !important;
+    border-radius: 6px !important;
+    font-size: .78rem !important;
+    font-weight: 500 !important;
+    transition: var(--td-transition) !important;
+}
+.viewAttch:hover { background: #2170a3 !important; transform: translateY(-1px); }
+.approve {
+    background: var(--td-primary) !important;
+    color: #fff !important;
+    border-radius: 6px !important;
+    font-size: .78rem !important;
+    font-weight: 500 !important;
+    transition: var(--td-transition) !important;
+}
+.approve:hover { background: var(--td-primary-deep) !important; transform: translateY(-1px); }
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .tadi-page-header { padding: 14px 16px; }
+    .tadi-page-title  { font-size: 1.05rem; }
+    .tadi-filter-card { padding: 14px 14px; }
+    .tadi-table thead th { font-size: .72rem; padding: 10px 10px; }
+    .tadi-table tbody td { padding: 9px 10px; font-size: .82rem; }
+    .tadi-table-wrapper { max-height: 45vh; }
+    .tadi-modal .modal-body { padding: 12px; }
+}
+@media (max-width: 576px) {
+    .tadi-header-actions { width: 100%; }
+    .tadi-header-actions .tadi-btn { flex: 1; justify-content: center; }
+}

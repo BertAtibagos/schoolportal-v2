@@ -1,9 +1,57 @@
+function showRateLimitToast(message) {
+  const toastEl = document.getElementById("successToast");
+  const toastHeader = document.getElementById("toastHeader");
+  const toastTitle = document.getElementById("toastTitle");
+  const toastMessage = document.getElementById("toastMessage");
+
+  if (!toastEl || !toastHeader || !toastTitle || !toastMessage) {
+    return;
+  }
+
+  toastTitle.textContent = "Notice";
+  toastMessage.textContent = message || "Too many submissions. Please try again later.";
+
+  toastHeader.classList.remove(
+    "bg-success",
+    "bg-danger",
+    "bg-info",
+    "bg-primary",
+    "bg-secondary",
+    "bg-warning",
+    "text-white",
+    "text-dark"
+  );
+  toastHeader.classList.add("bg-warning", "text-dark");
+
+  const toast = bootstrap.Toast.getOrCreateInstance(toastEl);
+  toast.show();
+}
+
+function handleRateLimitJson(response) {
+  if (response.status === 429) {
+    return response.json().then(data => {
+      const message = data && data.message ? data.message : "Too many submissions. Please try again later.";
+      showRateLimitToast(message);
+      throw new Error("Rate limit reached");
+    }).catch(() => {
+      showRateLimitToast("Too many submissions. Please try again later.");
+      throw new Error("Rate limit reached");
+    });
+  }
+
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+
+  return response.json();
+}
+
 function GETACADEMICLEVEL() {
   const formData = new FormData();
   formData.append('type', 'GET_ACADEMIC_LEVEL');
 
   fetch("forms/tadi/dean/controller/index-info.php", { method: "POST", body: formData })
-    .then(res => res.json())
+    .then(handleRateLimitJson)
     .then(result => {
       const select = document.querySelector("#academiclevel");
       select.innerHTML = result.length
@@ -35,7 +83,7 @@ function GET_SUBJECT_BY_INSTRUCTOR({ single_prof_id }) {
   tbody.innerHTML = loadingRow(4);
 
   fetch("forms/tadi/dean/controller/index-info.php", { method: "POST", body: formData })
-    .then(res => res.json())
+    .then(handleRateLimitJson)
     .then(result => {
       displaySubjList(result);
       tbody.dataset.source = JSON.stringify(result); // Cache inside DOM instead of global var
@@ -52,14 +100,15 @@ function displaySubjList(data) {
       <td>${item.subj_desc}</td>
       <td>
         <button 
-          class="btn btn-sm w-100 button-bg-change position-relative vw_tadi" 
+          class="tadi-btn tadi-btn-ghost tadi-btn-sm w-100 position-relative vw_tadi" 
           data-bs-target="#Instructor_Tadi_List" 
           data-bs-toggle="modal"
           data-prof-id="${item.SchlProf_ID}"
           data-suboff-id="${item.sub_off_id}"
           data-sub-desc="${item.subj_desc}"
           data-sub-sect="${item.schl_sec || 'No Section'}">
-          VIEW TADI  <span class="badge bg-secondary ms-2">${item.verified_count}</span>
+          <i class="fas fa-eye me-1"></i> View TADI
+          <span class="tadi-badge tadi-badge-muted ms-1">${item.verified_count}</span>
         </button>
       </td>
     </tr>`).join('');
@@ -91,7 +140,7 @@ function GETALL_TADI_RECORDS(prof_id, subj_id) {
   formData.append('subj_off_id', subj_id);
 
   fetch("forms/tadi/dean/controller/index-info.php", { method: "POST", body: formData })
-    .then(res => res.json())
+    .then(handleRateLimitJson)
     .then(data => {
       if (!data.length) {
         tbody.innerHTML = "<tr><td colspan='8' class='text-center'>No records found</td></tr>";
@@ -101,8 +150,8 @@ function GETALL_TADI_RECORDS(prof_id, subj_id) {
       tbody.innerHTML = data.map(record => {
         const activity = record.tadi_act.replace(/\\r\\n/g, "<br>");
         const viewBtn = record.tadi_filepath
-          ? `<button class="btn btn-sm w-70 viewAttch" style="background-color:#2980B9;color:white" value="${record.schltadi_ID}" data-prof="${record.SchlProf_ID}">VIEW</button>`
-          : `<span class="btn btn-sm w-70" style="background-color:#95A5A6;color:white;pointer-events:none;">No Attachment</span>`;
+          ? `<button class="tadi-btn tadi-btn-view viewAttch" value="${record.schltadi_ID}" data-prof="${record.SchlProf_ID}"><i class="fas fa-eye"></i> View</button>`
+          : `<span class="tadi-badge tadi-badge-muted" style="pointer-events:none;">No Attachment</span>`;
 
         const modeTypeMap = {
           'online_learning regular': 'Online Regular',
@@ -112,34 +161,35 @@ function GETALL_TADI_RECORDS(prof_id, subj_id) {
         };
 
         const status = record.tadi_status == 1
-          ? `<span style="color:green;font-weight:bold;">Verified</span>`
-          : `<span style="color:red;font-weight:bold;">Unverified</span>`;
+          ? `<span class="tadi-badge tadi-badge-success"><i class="fas fa-check-circle"></i> Verified</span>`
+          : `<span class="tadi-badge tadi-badge-danger"><i class="fas fa-times-circle"></i> Unverified</span>`;
 
-        const dangerStyle = record.late_status == 1 ? 'background-color: #f8d7da;' : '';
+        const rowClass = record.late_status == 1 ? 'tadi-row-late' : '';
+        const lateBadge = record.late_status == 1 ? `<br><span class="tadi-badge tadi-badge-warning mt-1"><i class="fas fa-clock"></i> Late</span>` : '';
         return `
-          <tr class="text-center">
-            <td style="${dangerStyle}">${record.stud_name}</td>
-            <td style="${dangerStyle}">${record.tadi_date} ${formatTimeToAmPm(record.tadi_timeIn)} - ${formatTimeToAmPm(record.tadi_timeOut)}</td>
-            <td style="${dangerStyle}">${modeTypeMap[record.tadi_modeType] || record.tadi_modeType}</td>
-            <td style="${dangerStyle}">${record.mkup_date === null ? '--' : record.mkup_date}</td>
-            <td style="${dangerStyle}"><span class="activity-text">${activity}</span></td>
-            <td style="${dangerStyle}">${status}</td>
-            <td style="${dangerStyle}">${viewBtn}</td>
-            <td style="${dangerStyle}">
-            ${record.approved === 0 
-              ? `<button class="btn btn-sm w-70 approve" style="background-color:#2980B9;color:white" 
-                  value="${record.schltadi_ID}" 
-                  data-prof="${record.SchlProf_ID}" 
+          <tr class="text-center ${rowClass}">
+            <td>${record.stud_name}${lateBadge}</td>
+            <td>${record.tadi_date}<br><small class="text-muted">${formatTimeToAmPm(record.tadi_timeIn)} &mdash; ${formatTimeToAmPm(record.tadi_timeOut)}</small></td>
+            <td><span class="tadi-badge tadi-badge-primary">${modeTypeMap[record.tadi_modeType] || record.tadi_modeType}</span></td>
+            <td>${record.mkup_date === null ? '<span class="text-muted">&#8212;</span>' : record.mkup_date}</td>
+            <td><span class="activity-text">${activity}</span></td>
+            <td>${status}</td>
+            <td>${viewBtn}</td>
+            <td>
+            ${record.approved === 0
+              ? `<button class="tadi-btn tadi-btn-approve approve"
+                  value="${record.schltadi_ID}"
+                  data-prof="${record.SchlProf_ID}"
                   data-subj-id="${record.sub_off_id}">
-                    Approve 
+                    <i class="fas fa-check"></i> Approve
                 </button>`
-              : `<span style="color:green;font-weight:bold;">Approved</span>`}
+              : `<span class="tadi-badge tadi-badge-approved"><i class="fas fa-check-circle"></i> Approved</span>`}
             </td>
           </tr>`;
       }).join('');
 
       tbody.querySelectorAll(".viewAttch").forEach(btn =>
-        btn.addEventListener("click", e => GET_IMAGE(e.target.value, e.target.dataset.prof))
+        btn.addEventListener("click", e => GET_IMAGE(e.currentTarget.value, e.currentTarget.dataset.prof))
       );
 
       tbody.querySelectorAll(".approve").forEach(btn =>
@@ -163,14 +213,14 @@ function GET_IMAGE(tadi_id, prof_id) {
   formData.append('prof_id', prof_id);
 
   fetch("forms/tadi/dean/controller/index-info.php", { method: "POST", body: formData })
-    .then(res => res.json())
+    .then(handleRateLimitJson)
     .then(data => {
       if (!data || !data.tadi_filepath) {
         console.error("No image found for TADI ID", tadi_id);
         return;
       }
       const imgPrev = document.getElementById('attchPrev');
-      imgPrev.src = `forms/tadi/${data.tadi_filepath}`;
+      imgPrev.src = `/schoolportal-v2/dev/public/${data.tadi_filepath}`;
       showImageModal(data);
     })
     .catch(err => console.error("Error fetching image:", err));
@@ -193,7 +243,6 @@ function showImageModal(data) {
   imgModal.show();
 }
 
-// helpers
 function setupActivityText(el) {
   Object.assign(el.style, {
     display: '-webkit-box',
@@ -239,7 +288,6 @@ document.getElementById("searchSubjBtn").addEventListener("click", function() {
     return;
   }
 
-  // Get cached data from DOM
   const tbody = document.getElementById('subj_list');
   const cachedData = JSON.parse(tbody.dataset.source || '[]');
   
@@ -265,7 +313,7 @@ document.getElementById("searchSubjBtn").addEventListener("click", function() {
     method: "POST",
     body: formData
   })
-  .then(response => response.json())
+  .then(handleRateLimitJson)
   .then(data => {
     tbody.innerHTML = data.length ? "" : "<tr><td colspan='6' class='text-center'>No records found</td></tr>";
 
@@ -277,14 +325,15 @@ document.getElementById("searchSubjBtn").addEventListener("click", function() {
         <td>${record.subj_desc}</td>
         <td>
           <button 
-            class="btn btn-sm w-100 button-bg-change position-relative vw_tadi" 
+            class="tadi-btn tadi-btn-ghost tadi-btn-sm w-100 position-relative vw_tadi" 
             data-bs-target="#Instructor_Tadi_List" 
             data-bs-toggle="modal"
             data-prof-id="${record.SchlProf_ID}"
             data-suboff-id="${record.sub_off_id}"
             data-sub-desc="${record.subj_desc}"
             data-sub-sect="${record.schl_sec || 'No Section'}">
-            VIEW TADI  <span class="badge bg-secondary">${record.verified_count || 0}</span>
+            <i class="fas fa-eye me-1"></i> View TADI
+            <span class="tadi-badge tadi-badge-muted ms-1">${record.verified_count || 0}</span>
           </button>
         </td>`;
       tbody.appendChild(row);
@@ -306,7 +355,6 @@ document.getElementById("searchSubjBtn").addEventListener("click", function() {
   })
   .catch(error => console.error("Error searching subjects by instructor:", error));
 });
-
 
 document.getElementById("reportSearch").addEventListener("click", function(){
 
@@ -425,22 +473,22 @@ document.getElementById("reportSearch").addEventListener("click", function(){
       method: "POST", 
       body: formData 
   })
-  .then(res => res.json())
+  .then(handleRateLimitJson)
   .then(data => {
     console.log('Raw data:', data); // For debugging
 
     // Check if data is empty or has error
     if (!data || data.error || data.length === 0) {
         reportContainer.innerHTML = `
-            <div class="alert alert-warning text-center mt-4" role="alert">
-                <i class="fas fa-exclamation-circle me-2"></i>
-                ${data?.error ? data.message : 'No TADI records found for the selected criteria.'}
+            <div class="tadi-empty-state py-5">
+                <i class="fas fa-exclamation-triangle d-block mb-2" style="font-size:2rem;opacity:.45;color:#f59e0b"></i>
+                <p>${data?.error ? data.message : 'No TADI records found for the selected criteria.'}</p>
             </div>
         `;
         document.querySelector(".export-content").innerHTML = `
-            <h4>${headerLabel} Report</h4>
-            <button class="btn btn-success export-all-btn" id="exportAll" disabled>
-                <i class="fas fa-file-excel me-2"></i>Export All to Excel
+            <h5 style="font-weight:700;color:#181a46;margin:0">${headerLabel}</h5>
+            <button class="tadi-btn tadi-btn-success" id="exportAll" disabled>
+                <i class="fas fa-file-excel"></i> Export to Excel
             </button>
         `;
         return;
@@ -512,76 +560,93 @@ document.getElementById("reportSearch").addEventListener("click", function(){
 
     // Generate HTML output with summary
     reportContainer.innerHTML = `
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Report Summary</h5>
+        <div class="tadi-content-card mb-3">
+            <div class="tadi-content-card-header">
+                <h5><i class="fas fa-chart-bar me-2" style="opacity:.75"></i>Report Summary</h5>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="border rounded p-3 text-center">
-                            <h6>Total Teachers</h6>
-                            <h3>${stats.totalTeachers}</h3>
+            <div class="p-3">
+                <div class="row g-3">
+                    <div class="col-6 col-md-3">
+                        <div class="text-center p-3 rounded" style="background:#f0f2f8;border:1px solid #e2e6f0">
+                            <div style="font-size:.8rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.4px;">Total Teachers</div>
+                            <div style="font-size:2rem;font-weight:700;color:#181a46;line-height:1.2;margin-top:4px">${stats.totalTeachers}</div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="border rounded p-3 text-center">
-                            <h6>Total Sessions</h6>
-                            <h3>${stats.totalSessions}</h3>
+                    <div class="col-6 col-md-3">
+                        <div class="text-center p-3 rounded" style="background:#f0f2f8;border:1px solid #e2e6f0">
+                            <div style="font-size:.8rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.4px;">Total Sessions</div>
+                            <div style="font-size:2rem;font-weight:700;color:#181a46;line-height:1.2;margin-top:4px">${stats.totalSessions}</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="text-center p-3 rounded" style="background:#f0fff4;border:1px solid #a7f3d0">
+                            <div style="font-size:.8rem;font-weight:600;color:#065f46;text-transform:uppercase;letter-spacing:.4px;">Verified</div>
+                            <div style="font-size:2rem;font-weight:700;color:#059669;line-height:1.2;margin-top:4px">${stats.verifiedSessions}</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="text-center p-3 rounded" style="background:#fff5f5;border:1px solid #fca5a5">
+                            <div style="font-size:.8rem;font-weight:600;color:#991b1b;text-transform:uppercase;letter-spacing:.4px;">Unverified</div>
+                            <div style="font-size:2rem;font-weight:700;color:#dc2626;line-height:1.2;margin-top:4px">${stats.totalSessions - stats.verifiedSessions}</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         ${Object.entries(teacherGroups).map(([profId, teacher]) => `
-            <div class="card mb-4">
-                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">${teacher.prof_name}</h5>
-                    <span class="badge bg-light text-dark">
+            <div class="tadi-content-card mb-3">
+                <div class="tadi-content-card-header">
+                    <h5><i class="fas fa-user-tie me-2" style="opacity:.75"></i>${teacher.prof_name}</h5>
+                    <span class="tadi-badge tadi-badge-muted">
                         ${Object.values(teacher.subjects).reduce((sum, subj) => sum + subj.sessions.length, 0)} session(s)
                     </span>
                 </div>
-                <div class="card-body">
+                <div class="p-3">
                     ${Object.values(teacher.subjects).map(subject => `
                         <div class="mb-4">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h6 class="mb-0">${subject.subject_code} - ${subject.subject_desc}</h6>
-                                <span class="badge bg-primary">${subject.section_name || 'No Section'}</span>
+                            <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
+                                <div>
+                                    <span style="font-weight:600;font-size:.9rem;color:#181a46">${subject.subject_code}</span>
+                                    <span style="color:#6b7280;font-size:.85rem;"> &mdash; ${subject.subject_desc}</span>
+                                </div>
+                                <span class="tadi-badge tadi-badge-primary">${subject.section_name || 'No Section'}</span>
                             </div>
-                            <div class="table-responsive">
-                                <table class="table table-sm table-bordered table-hover">
-                                    <thead class="table-light">
-                                        <tr style="text-align: center;">
-                                            <th>Date</th>
-                                            <th>Time</th>
-                                            <th>Duration</th>
-                                            <th>Session Type</th>
-                                            <th>Make up date</th>
-                                            <th>Submitted By</th>
-                                            <th>Activity</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${subject.sessions.map(session => `
-                                            <tr style="text-align: center">
-                                                <td>${session.date}</td>
-                                                <td>${session.time_in} - ${session.time_out}</td>
-                                                <td>${session.duration}</td>
-                                                <td>${session.mode} ${session.type}</td>
-                                                <td>${hasMakeupDate == "null" ? `--` : session.makeup_date}</td>
-                                                <td>${session.stud_name}</td>
-                                                <td>${session.activity}</td>
-                                                <td>
-                                                    <span class="badge ${session.status == 1 ? 'bg-success' : 'bg-danger'}">
-                                                        ${session.status == 1 ? 'Verified' : 'Unverified'}
-                                                    </span>
-                                                    ${session.late_status == 1 ? '<br><span class="badge bg-warning text-dark mt-1">Late Submission</span>' : ''}
-                                                </td>
+                            <div class="tadi-modal-table-card">
+                                <div class="tadi-table-wrapper" style="max-height:none">
+                                    <table class="tadi-table">
+                                        <thead>
+                                            <tr style="text-align:center">
+                                                <th>Date</th>
+                                                <th>Time</th>
+                                                <th>Duration</th>
+                                                <th>Session Type</th>
+                                                <th>Make-up Date</th>
+                                                <th>Submitted By</th>
+                                                <th>Activity</th>
+                                                <th>Status</th>
                                             </tr>
-                                        `).join('')}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            ${subject.sessions.map(session => `
+                                                <tr style="text-align:center" class="${session.late_status == 1 ? 'tadi-row-late' : ''}">
+                                                    <td>${session.date}</td>
+                                                    <td style="white-space:nowrap">${session.time_in} &mdash; ${session.time_out}</td>
+                                                    <td>${session.duration}</td>
+                                                    <td><span class="tadi-badge tadi-badge-primary">${session.mode} ${session.type}</span></td>
+                                                    <td>${hasMakeupDate == "null" || !session.makeup_date ? '<span style="color:#9ca3af">&#8212;</span>' : session.makeup_date}</td>
+                                                    <td>${session.stud_name}</td>
+                                                    <td style="text-align:left"><span class="activity-text">${session.activity}</span></td>
+                                                    <td>
+                                                        <span class="tadi-badge ${session.status == 1 ? 'tadi-badge-success' : 'tadi-badge-danger'}">
+                                                            ${session.status == 1 ? '<i class="fas fa-check-circle"></i> Verified' : '<i class="fas fa-times-circle"></i> Unverified'}
+                                                        </span>
+                                                        ${session.late_status == 1 ? '<br><span class="tadi-badge tadi-badge-warning mt-1"><i class="fas fa-clock"></i> Late</span>' : ''}
+                                                    </td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     `).join('')}
@@ -592,9 +657,9 @@ document.getElementById("reportSearch").addEventListener("click", function(){
 
     // Add Export button
     document.querySelector(".export-content").innerHTML = `
-        <h4>${headerLabel} Report</h4>
-        <button class="btn btn-success export-all-btn" id="exportAll">
-            <i class="fas fa-file-excel me-2"></i>Export All to Excel
+        <h5 style="font-weight:700;color:#181a46;margin:0">${headerLabel}</h5>
+        <button class="tadi-btn tadi-btn-success" id="exportAll">
+            <i class="fas fa-file-excel"></i> Export to Excel
         </button>
     `;
     document.getElementById("exportAll").addEventListener("click",() =>{
@@ -713,4 +778,3 @@ function tadiReportExport(exprtname){
         // Save file
         XLSX.writeFile(wb, filename);
 };
-

@@ -99,15 +99,7 @@ document.getElementById("search_button").addEventListener("click", function () {
     formData1.append('yrlvl_id', yrlvlid);
 
     const tbodySpinner = document.getElementById('instructor');
-    tbodySpinner.innerHTML =`<tr class="loading-spinner hide">
-                                    <td colspan="4">
-                                        <div class="text-center">
-                                            <div class="spinner-border " role="status">
-                                                <span class="sr-only"></span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>`;
+    tbodySpinner.innerHTML = `<tr><td colspan="2"><div class="text-center p-3"><div class="spinner-border" role="status"><span class="visually-hidden"></span></div></div></td></tr>`;
     
     const srchBtn = document.getElementById("search_button");
     const genReportBtn = document.getElementById("exportBtn"); 
@@ -119,23 +111,22 @@ document.getElementById("search_button").addEventListener("click", function () {
         method: "POST",
         body: formData1
     })
-        .then(res => res.json())
+        .then(handleRateLimitJson)
         .then(result => {
             const tableRows = result.length
                 ? result.map((item, index) => `
-                    <tr class="inst_name" key="${item.subj_id}">
-                        <td>${item.prof_name ? item.prof_name : "No instructor"}</td>
-                        <td class="col-2 text-center">
-                            <button class="btn btn-sm justify-content-md-center w-75 button-bg-change position-relative" ${item.prof_name ? "" : "disabled"} id="instructorModalHandler${index}" data-bs-toggle="modal" data-bs-target="#Instructor_Subject_List">
-                            SECTION LIST
-                            ${item.unverified_count > 0 ? `<span class="position-absolute top-0 start-100 translate-middle  p-2 bg-danger border border-light rounded-circle"></span>` : ''}
+                    <tr>
+                        <td>${item.prof_name ? item.prof_name : '<span class="text-muted fst-italic">No instructor</span>'}</td>
+                        <td class="tc">
+                            <button class="tadi-btn tadi-btn-ghost tadi-btn-sm position-relative" ${item.prof_name ? '' : 'disabled'}
+                                id="instructorModalHandler${index}" data-bs-toggle="modal" data-bs-target="#Instructor_Subject_List">
+                                <i class="fas fa-list-ul me-1"></i> Section List
+                                ${item.unverified_count > 0 ? '<span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width:10px;height:10px;"></span>' : ''}
                             </button>
                         </td>
                     </tr>
-                `).join("")
-                : `<tr>
-                    <td colspan="5" class="text-center">No data available</td>
-                    </tr>`;
+                `).join('')
+                : `<tr><td colspan="2" class="tadi-empty-state"><i class="fas fa-inbox d-block mb-2" style="font-size:1.6rem;opacity:.35"></i>No data available.</td></tr>`;
 
             document.getElementById("instructor").innerHTML = tableRows;
 
@@ -152,37 +143,33 @@ document.getElementById("search_button").addEventListener("click", function () {
         });
 });
 
-// Add to your existing search button handler
 document.getElementById("exportBtn").addEventListener("click", function() {
     document.querySelector(".instr-table").style.display = "none";
-    document.getElementById("tadiBtn").style.display = "block";
+    document.getElementById("tadiBtn").style.display = "";
     document.getElementById("exportBtn").style.display = "none";
     document.getElementById("search_button").style.display = "none";
-    document.getElementById("reportSearch").style.display = "block";
+    document.getElementById("reportSearch").style.display = "";
 
     const repCont = document.getElementById("reportContainer");
     repCont.style.display = "block";
-    repCont.innerHTML = `<div style="text-align: center;">
-                            <p>Select all filters above and click "Generate Report" to generate report.</p>
-                            <p>The start date and end date can be blank.</p>
-                        </div>`;
+    repCont.innerHTML = `<div class="tadi-empty-state py-5">
+        <i class="fas fa-chart-bar d-block mb-2" style="font-size:2rem;opacity:.3"></i>
+        <p class="mb-1">Select all filters above and click <strong>Generate Report</strong>.</p>
+        <p class="text-muted" style="font-size:.82rem">Start date and end date are optional.</p>
+    </div>`;
     document.getElementById("tadiTitle").innerText = "TADI Report";
 
     document.querySelector(".export-header").style.display = "block";
-    document.querySelector(".report-container").style.display = "block";
 
-    document.querySelectorAll(".date-range-xport").forEach(element => {
-        element.style.display = "block";
-    });
-
+    document.querySelectorAll(".date-range-xport").forEach(el => el.style.display = "");
 });
 
 document.getElementById("tadiBtn").addEventListener("click", function() {
     document.querySelector(".instr-table").style.display = "block";
     document.getElementById("tadiBtn").style.display = "none";
     document.querySelector(".export-content").innerHTML = '';
-    document.getElementById("exportBtn").style.display = "block";
-    document.getElementById("search_button").style.display = "block";
+    document.getElementById("exportBtn").style.display = "";
+    document.getElementById("search_button").style.display = "";
     document.getElementById("reportSearch").style.display = "none";
     const start_date = document.getElementById("startDate");
     const end_date = document.getElementById("endDate");
@@ -191,21 +178,14 @@ document.getElementById("tadiBtn").addEventListener("click", function() {
     end_date.value = "";
 
     const repCont = document.getElementById("reportContainer");
-    repCont.innerHTML = `<div style="text-align: center;">
-                            <p>Select all filters above and click "Generate Report" to generate report.</p>
-                            <p>The start date and end date can be blank.</p>
-                        </div>`;
+    repCont.innerHTML = '';
     repCont.style.display = "none";
-    
-    document.getElementById("tadiTitle").innerText = "TADI - Dean";
 
+    document.getElementById("tadiTitle").innerText = "TADI \u2014 Dean";
 
     document.querySelector(".export-header").style.display = "none";
-    document.querySelector(".report-container").style.display = "none";
 
-    document.querySelectorAll(".date-range-xport").forEach(element=>{
-        element.style.display = "none";
-    })
+    document.querySelectorAll(".date-range-xport").forEach(el => el.style.display = "none");
 });
 
 document.getElementById("startDate").addEventListener("focus", function(){
