@@ -443,7 +443,7 @@ function detailedReportView(result, filterRange, date, dept, filterType){
     Object.values(teacherGroups).forEach(teacher => {
         Object.values(teacher.subjects).forEach(subject => {
             subject.sessions.forEach(session => {
-                // Only include verified records in CSV export
+                
                 if(session.status == 1) {
                     const row = document.createElement('tr');
                     row.innerHTML = `
