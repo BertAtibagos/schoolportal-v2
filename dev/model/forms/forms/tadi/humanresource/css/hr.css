@@ -1,48 +1,308 @@
-.filter-section{
-    text-align: center;
+/* ==============================================
+   HR TADI Module — Modern Responsive UI  v2.0
+   ============================================== */
+
+:root {
+  --hr-primary:     #032a74;
+  --hr-primary-mid: #1a4fa8;
+  --hr-accent:      #ffd700;
+  --hr-radius:      12px;
+  --hr-radius-sm:   8px;
+  --hr-shadow:      0 2px 10px rgba(3, 42, 116, 0.08);
+  --hr-shadow-md:   0 6px 24px rgba(3, 42, 116, 0.15);
+  --hr-transition:  all 0.2s ease;
+  --hr-font-sm:     0.8125rem;
 }
-.card-filter{
-    width: 140vh;
+
+/* ---- Root module container ---- */
+.hr-module {
+  overflow-x: hidden;
+  max-width: 100%;
+  min-width: 0;
 }
-.hide{
-    display: none;
+
+/* ---- Layout ---- */
+.filter-section { text-align: center; }
+
+/* ---- Filter Panel ---- */
+.card-filter {
+  width: 100%;
+  max-width: 100%;
+  background: #ffffff;
+  border-radius: var(--hr-radius) !important;
+  border: 1px solid rgba(3, 42, 116, 0.1) !important;
+  box-shadow: var(--hr-shadow) !important;
 }
-.stats{
-    text-align:center;
+.card-filter .d-flex { flex-wrap: wrap !important; }
+.card-filter .form-select,
+.card-filter .form-control {
+  border-radius: var(--hr-radius-sm);
+  border-color: #cdd5e0;
+  font-size: var(--hr-font-sm);
+  min-height: 38px;
+  transition: var(--hr-transition);
 }
-.gen-rep{
-    background-color: #032a74;
+.card-filter .form-select:focus,
+.card-filter .form-control:focus {
+  border-color: var(--hr-primary-mid);
+  box-shadow: 0 0 0 3px rgba(26, 79, 168, 0.12);
 }
-.verified{
-    background-color: #9bbdff70;
-    color:#032a74;
+
+/* ---- Visibility ---- */
+.hide { display: none !important; }
+
+/* ---- Generate Button ---- */
+.gen-rep {
+  background: linear-gradient(135deg, var(--hr-primary) 0%, var(--hr-primary-mid) 100%) !important;
+  border: none !important;
+  border-radius: var(--hr-radius-sm) !important;
+  font-weight: 600;
+  color: #fff !important;
+  padding: 0.5rem 1.5rem;
+  transition: var(--hr-transition);
+  white-space: nowrap;
 }
-.unverified{
-    background-color: #ffd70061;
-    color:#a96200;
+.gen-rep:not(:disabled):hover {
+  background: linear-gradient(135deg, var(--hr-primary-mid) 0%, #2563c4 100%) !important;
+  box-shadow: 0 4px 16px rgba(3, 42, 116, 0.35);
+  transform: translateY(-1px);
 }
-.total-rec{
-    background-color: #c9c9c9;
+.gen-rep:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ---- Stat Cards ---- */
+.stats {
+  text-align: center;
+  border-radius: var(--hr-radius) !important;
+  border: none !important;
+  padding: 1.25rem 1rem !important;
+  transition: var(--hr-transition);
 }
+.stats:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--hr-shadow-md) !important;
+}
+.stats h6 {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.4rem;
+  opacity: 0.75;
+}
+.stats h3 {
+  font-size: 2.25rem;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.1;
+}
+.verified {
+  background: linear-gradient(135deg, #dbeafe, #eff6ff);
+  color: #1d4ed8;
+  border-left: 4px solid #3b82f6 !important;
+}
+.unverified {
+  background: linear-gradient(135deg, #fef3c7, #fffbeb);
+  color: #b45309;
+  border-left: 4px solid #f59e0b !important;
+}
+.total-rec {
+  background: linear-gradient(135deg, #f1f5f9, #f8fafc);
+  color: #1e293b;
+  border-left: 4px solid #94a3b8 !important;
+}
+
+/* ---- Charts ---- */
 .chart-container1 {
-    max-width: 350px;  
-    height: 300px;
-    margin: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  border-radius: var(--hr-radius) !important;
+  border: 1px solid rgba(3, 42, 116, 0.07) !important;
+  box-shadow: var(--hr-shadow) !important;
+  position: relative;
+  height: 300px;
+  overflow: hidden;
+  padding: 1rem !important;
 }
 .chart-container2 {
-    /* max-width: 500px;   */
-    height: 400px;
-    margin: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  border-radius: var(--hr-radius) !important;
+  border: 1px solid rgba(3, 42, 116, 0.07) !important;
+  box-shadow: var(--hr-shadow) !important;
+  position: relative;
+  height: 380px;
+  overflow: hidden;
+  padding: 1rem !important;
 }
-.card-header-summary{
-    background-color: #032a74;
+
+/* ---- Report View Panel ---- */
+.report-view {
+  width: 100%;
+  border-radius: var(--hr-radius) !important;
+  border: 1px solid rgba(3, 42, 116, 0.07) !important;
+  box-shadow: var(--hr-shadow);
+  overflow: hidden;
+  min-width: 0;
 }
-.badge-bg{
-    background-color: #415B8B;
+
+/* ---- Summary / report card header ---- */
+.card-header-summary {
+  background: linear-gradient(135deg, var(--hr-primary) 0%, var(--hr-primary-mid) 100%);
+  border-radius: calc(var(--hr-radius) - 1px) calc(var(--hr-radius) - 1px) 0 0 !important;
+}
+
+/* ---- Dept / Teacher card header ---- */
+.hr-card-header {
+  background: linear-gradient(90deg, var(--hr-primary) 0%, var(--hr-primary-mid) 100%);
+  border-radius: 10px 10px 0 0;
+  padding: 0.7rem 1.25rem;
+  color: #fff !important;
+}
+.hr-card-header h5 { margin: 0; font-size: 1rem; }
+
+/* ---- Badge utilities ---- */
+.badge-bg { background-color: #415B8B; }
+.badge-dept {
+  background-color: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  padding: 0.25em 0.75em;
+  font-size: 0.73rem;
+  font-weight: 500;
+}
+
+/* ---- Export container / report label ---- */
+#exportContainer { align-items: center; }
+#exportContainer h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--hr-primary);
+  border-left: 4px solid var(--hr-accent);
+  padding-left: 0.75rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ---- Export CSV button ---- */
+.btn-hr-export {
+  background: #009b00 !important;
+  border: none !important;
+  border-radius: var(--hr-radius-sm) !important;
+  color: #fff !important;
+  font-weight: 600;
+  padding: 0.45rem 1.2rem;
+  font-size: var(--hr-font-sm);
+  transition: var(--hr-transition);
+  white-space: nowrap;
+}
+.btn-hr-export:hover {
+  background: linear-gradient(135deg, #166534 0%, #16a34a 100%) !important;
+  box-shadow: 0 4px 14px rgba(21, 128, 61, 0.3);
+  transform: translateY(-1px);
+  color: #fff !important;
+}
+
+/* ---- Modern Table ---- */
+.tadi-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--hr-font-sm);
+}
+.tadi-table thead th {
+  background-color: var(--hr-primary);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 0.65rem 0.75rem;
+  border: none;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.tadi-table thead th:first-child { border-radius: 8px 0 0 0; }
+.tadi-table thead th:last-child  { border-radius: 0 8px 0 0; }
+.tadi-table tbody td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #e8edf5;
+  vertical-align: middle;
+}
+.tadi-table tbody tr:nth-child(even) { background-color: #f8fafd; }
+.tadi-table tbody tr:hover           { background-color: #eef2fb; transition: background 0.15s; }
+.tadi-table tbody tr:last-child td   { border-bottom: none; }
+
+/* ---- Status Pill Badges ---- */
+.badge-verified-pill {
+  display: inline-block;
+  background: #dcfce7;
+  color: #166534;
+  border-radius: 999px;
+  padding: 0.2em 0.75em;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.badge-unverified-pill {
+  display: inline-block;
+  background: #fef3c7;
+  color: #92400e;
+  border-radius: 999px;
+  padding: 0.2em 0.75em;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.badge-late-pill {
+  display: inline-block;
+  background: #fee2e2;
+  color: #991b1b;
+  border-radius: 999px;
+  padding: 0.2em 0.75em;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+/* ---- Tabulation override cells ---- */
+.tab-override-input {
+  background-color: #f0f4ff !important;
+  border-color: #a5b4fc !important;
+  border-radius: 6px !important;
+}
+.tab-override-input:focus {
+  border-color: var(--hr-primary-mid) !important;
+  box-shadow: 0 0 0 2px rgba(26, 79, 168, 0.15) !important;
+}
+.tab-total-sem-cell  { background-color: #f0f4ff !important; }
+.tab-remaining-cell  { background-color: #f0f4ff !important; font-weight: 700; }
+
+/* ---- Date filter (tabulation) ---- */
+#tabDateFilterBtn {
+  background-color: var(--hr-primary) !important;
+  border-color: var(--hr-primary) !important;
+  border-radius: var(--hr-radius-sm) !important;
+  color: #fff !important;
+  font-weight: 600;
+  transition: var(--hr-transition);
+}
+#tabDateFilterBtn:hover {
+  background-color: var(--hr-primary-mid) !important;
+  border-color: var(--hr-primary-mid) !important;
+}
+
+/* ---- Responsive Breakpoints ---- */
+@media (max-width: 992px) {
+  .card-filter .d-flex { gap: 0.5rem !important; }
+}
+@media (max-width: 768px) {
+  .card-filter { padding: 0.875rem !important; }
+  .card-filter .col-auto { width: 100%; }
+  .card-filter .form-select,
+  .card-filter .form-control { width: 100%; }
+  .gen-rep { width: 100%; }
+  .stats h3 { font-size: 1.75rem; }
+  .chart-container2 { height: 280px; }
+  #exportContainer {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.5rem;
+  }
 }

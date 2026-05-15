@@ -48,25 +48,24 @@ function barChartMonthlyBuilder(result){
             datasets: [
                 {
                     label: "Verified",
-                    backgroundColor: "#ffd700",
+                    backgroundColor: "#3b82f6",
+                    borderRadius: 5,
                     data: verifiedData
                 },
                 {
                     label: "Unverified",
-                    backgroundColor: "#032a74",
+                    backgroundColor: "#f59e0b",
+                    borderRadius: 5,
                     data: unverifiedData
                 }
             ]
         },
         options:{
+            responsive: true,
+            maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    display: true
-                },
-                title: {
-                    display: true,
-                    text: "Monthly TADI Records"
-                }
+                legend: { display: true },
+                title: { display: true, text: "Monthly TADI Records" }
             }
         }
     });
@@ -93,26 +92,24 @@ function barChartPerCutBuilder(result){
             datasets: [
                 {
                     label: "Verified",
-                    backgroundColor: "#ffd700",
+                    backgroundColor: "#3b82f6",
+                    borderRadius: 5,
                     data: verifiedData
                 },
                 {
                     label: "Unverified",
-                    backgroundColor: "#032a74",
+                    backgroundColor: "#f59e0b",
+                    borderRadius: 5,
                     data: unverifiedData
                 }
             ]
         },
         options:{
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    display: true
-                },
-                title: {
-                    display: true,
-                    text: "Per Cut-off TADI Records"
-                }
+                legend: { display: true },
+                title: { display: true, text: "Per Cut-off TADI Records" }
             }
         }
     });
@@ -139,12 +136,14 @@ function vertBarChartPerDeptBuilder(result){
             datasets: [
                 {
                     label: "Verified",
-                    backgroundColor: "#ffd700",
+                    backgroundColor: "#3b82f6",
+                    borderRadius: 5,
                     data: verifiedData
                 },
                 {
                     label: "Unverified",
-                    backgroundColor: "#032a74",
+                    backgroundColor: "#f59e0b",
+                    borderRadius: 5,
                     data: unverifiedData
                 }
             ]
@@ -152,14 +151,10 @@ function vertBarChartPerDeptBuilder(result){
         options:{
             indexAxis: 'y',
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    display: true
-                },
-                title: {
-                    display: true,
-                    text: "Per Program TADI Records"
-                }
+                legend: { display: true },
+                title: { display: true, text: "Per Program TADI Records" }
             }
         }
     });
@@ -246,7 +241,7 @@ function detailedReportView(result, filterRange, date, dept, filterType){
     exportDiv.className = 'mb-3 d-flex justify-content-between';
     
     const exportBtn = document.createElement('button');
-    exportBtn.className = 'btn btn-success';
+    exportBtn.className = 'btn btn-hr-export';
     exportBtn.textContent = 'Export to CSV';
 
     const reportLabel = document.createElement('h3');
@@ -358,9 +353,9 @@ function detailedReportView(result, filterRange, date, dept, filterType){
         const totalSessions = Object.values(teacher.subjects).reduce((sum, subj) => sum + subj.sessions.length, 0);
         
         teacherCard.innerHTML = `
-            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+            <div class="card-header hr-card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">${teacher.prof_name}</h5>
-                <span class="badge bg-light text-dark">${totalSessions} sessions</span>
+                <span class="badge badge-dept">${totalSessions} sessions</span>
             </div>
             <div class="card-body">
                 ${Object.values(teacher.subjects).map((subject, idx) => `
@@ -370,17 +365,17 @@ function detailedReportView(result, filterRange, date, dept, filterType){
                             <span class="badge badge-bg">${subject.section_name || 'No Section'}</span>
                         </div>
                         <div class="table-responsive">
-                            <table class="table table-sm table-bordered table-hover">
-                                <thead class="table-light">
+                            <table class="tadi-table">
+                                <thead>
                                     <tr>
-                                        <th class="col-1 text-black">Date</th>
-                                        <th class="col-1 text-black">Time In</th>
-                                        <th class="col-1 text-black">Time Out</th>
-                                        <th class="col-1 text-black">Duration</th>
-                                        <th class="col-1 text-black">Mode</th>
-                                        <th class="col-1 text-black">Type</th>
-                                        <th class="text-black">Activity</th>
-                                        <th class="col-1 text-black">Status</th>
+                                        <th>Date</th>
+                                        <th>Time In</th>
+                                        <th>Time Out</th>
+                                        <th>Duration</th>
+                                        <th>Mode</th>
+                                        <th>Type</th>
+                                        <th>Activity</th>
+                                        <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -399,11 +394,11 @@ function detailedReportView(result, filterRange, date, dept, filterType){
                                             <td>${session.mode == 'online learning' ? 'Online' : 'Onsite'}</td>
                                             <td>${session.type == 'regular' ? 'Regular' : 'Make-up'}</td>
                                             <td>${session.activity || '-'}</td>
-                                            <td style="text-align: center;">
-                                                <span class="badge ${session.status == 1 ? 'bg-success' : 'bg-warning'}">
+                                            <td class="text-center">
+                                                <span class="${session.status == 1 ? 'badge-verified-pill' : 'badge-unverified-pill'}">
                                                     ${session.status == 1 ? 'Verified' : 'Unverified'}
                                                 </span>
-                                                ${session.late_status == 1 ? `<br><span class="badge bg-warning">Late Submission</span>` : ''}
+                                                ${session.late_status == 1 ? `<br><span class="badge-late-pill">Late</span>` : ''}
                                             </td>
                                         </tr>`
                                         }
@@ -563,7 +558,7 @@ function summaryReportView(result, filterRange, date, dept){
     exportDiv.className = 'mb-3 d-flex justify-content-between';
     
     const exportBtn = document.createElement('button');
-    exportBtn.className = 'btn btn-success';
+    exportBtn.className = 'btn btn-hr-export';
     exportBtn.textContent = 'Export to CSV';
 
     const reportLabel = document.createElement('h3');
@@ -667,22 +662,22 @@ function summaryReportView(result, filterRange, date, dept){
         const deptTotal = dept.instructors.reduce((sum, instr) => sum + parseInt(instr.total_count), 0);
         
         deptCard.innerHTML = `
-            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+            <div class="card-header hr-card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">${deptInitial}</h5>
-                <span class="badge bg-light text-dark">${dept.instructors.length} instructors</span>
+                <span class="badge badge-dept">${dept.instructors.length} instructors</span>
             </div> 
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-sm table-bordered table-hover">
-                        <thead class="table-light">
+                    <table class="tadi-table">
+                        <thead>
                             <tr>
-                                <th class="text-black">Instructor Name</th>
-                                <th class="text-center text-black" style="background-color: #9bbdff70;">Verified</th>
-                                <th class="text-center text-black" style="background-color: #ff970678;">Unverified</th>
-                                <th class="text-center text-black">Total</th>
-                                <th class="text-center text-black" style="background-color: #ff000070;">To Approve</th>
-                                <th class="text-center text-black" style="background-color: #53c45e;">Approved</th>
-                                <th class="text-center text-black">Verification Rate</th>
+                                <th>Instructor Name</th>
+                                <th class="text-center">Verified</th>
+                                <th class="text-center">Unverified</th>
+                                <th class="text-center">Total</th>
+                                <th class="text-center">To Approve</th>
+                                <th class="text-center">Approved</th>
+                                <th class="text-center">Verification Rate</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -814,7 +809,7 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
     exportDiv.className = 'mb-3 d-flex justify-content-between';
     
     const exportBtn = document.createElement('button');
-    exportBtn.className = 'btn btn-success';
+    exportBtn.className = 'btn btn-hr-export';
     exportBtn.textContent = 'Export to CSV';
 
     const reportLabel = document.createElement('h3');
@@ -910,26 +905,26 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
     const deptCard = document.createElement('div');
     deptCard.className = 'card mb-4';
     deptCard.innerHTML = `
-        <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+        <div class="card-header hr-card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">${deptName}</h5>
-            <span class="badge bg-light text-dark">${totalInstructors > 1 ? totalInstructors + ' instructors' : totalInstructors + ' instructor'}</span>
+            <span class="badge badge-dept">${totalInstructors > 1 ? totalInstructors + ' instructors' : totalInstructors + ' instructor'}</span>
         </div>
         <div class="card-body">
             <div class="table-responsive" style="max-height: 36vh; overflow-y: auto;">
-                <table class="table table-sm table-bordered table-hover">
-                    <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
+                <table class="tadi-table">
+                    <thead>
                         <tr>
-                            <th class="text-white text-center" style="background-color: #071976">Instructor Name</th>
-                            <th class="text-white text-center" style="background-color: #071976">Code</th>
-                            <th class="text-white text-center" style="background-color: #071976">Subject</th>
-                            <th class="text-white text-center" style="background-color: #071976">No. of Students</th>
-                            <th class="text-white text-center" style="background-color: #071976">Total Hours Conducted${dateRange.startDate && dateRange.endDate ? ` for ${dateRange.startDate} to ${dateRange.endDate}` : ' for this month'}</th>
-                            <th class="text-white text-center" style="background-color: #071976">Total Accumulated Hours per Subject</th>
-                            <th class="text-white text-center" style="background-color: #071976">Total Accumulated hours per Faculty</th>
-                            <th class="text-white text-center" style="background-color: #071976">No. of Units</th>
-                            <th class="text-white text-center bg-dark">Units Override</th>
-                            <th class="text-white text-center bg-dark">Total Hours for Sem</th>
-                            <th class="text-white text-center bg-dark">Remaining Hours for Sem</th>
+                            <th class="text-center">Instructor Name</th>
+                            <th class="text-center">Code</th>
+                            <th class="text-center">Subject</th>
+                            <th class="text-center">No. of Students</th>
+                            <th class="text-center">Total Hours Conducted${dateRange.startDate && dateRange.endDate ? ` for ${dateRange.startDate} to ${dateRange.endDate}` : ' for this month'}</th>
+                            <th class="text-center">Total Accumulated Hours per Subject</th>
+                            <th class="text-center">Total Accumulated Hours per Faculty</th>
+                            <th class="text-center">No. of Units</th>
+                            <th class="text-center">Units Override</th>
+                            <th class="text-center">Total Hours for Sem</th>
+                            <th class="text-center">Remaining Hours for Sem</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -953,16 +948,16 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
                                     <td class="text-center align-middle">${Math.round(subj.filtered_hours)}</td>
                                     ${idx === 0 ? `<td rowspan="${subjects.length}" class="text-center align-middle">${Math.round(facultyFilteredTotal)}</td>` : ''}
                                     <td class="text-center align-middle">${num_units}</td>
-                                    <td class="text-center align-middle" style="background-color:#ededed">
-                                        <input type="number" class="form-control form-control-sm text-center mx-auto" style="width:70px" min="0" value="${num_units}"
+                                    <td class="text-center align-middle tab-total-sem-cell">
+                                        <input type="number" class="form-control form-control-sm tab-override-input text-center mx-auto" style="width:70px" min="0" value="${num_units}"
                                             data-section-count="${subj.section_count}"
                                             data-accumulated-hours="${subj.total_accumulated_hours}"
                                             data-original-units="${num_units}"
                                             data-row-key="${profName}|||${subj.subject_code}"
                                             oninput="recalcTabRow(this)">
                                     </td>
-                                    <td class="text-center align-middle tab-total-sem" style="background-color:#ededed">${totalForSem}</td>
-                                    <td class="text-center align-middle fw-bold tab-remaining" style="background-color:#ededed">${remaining}</td>
+                                    <td class="text-center align-middle tab-total-sem tab-total-sem-cell">${totalForSem}</td>
+                                    <td class="text-center align-middle fw-bold tab-remaining tab-remaining-cell">${remaining}</td>
                                 </tr>
                             `;
                             }).join('');

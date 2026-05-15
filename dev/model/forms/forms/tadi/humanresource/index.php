@@ -1,8 +1,16 @@
-<link rel="stylesheet" type="text/css" href="forms/tadi/humanresource/css/hr.css">
-<section>
+<link rel="stylesheet" href="forms/tadi/humanresource/css/hr.css?t=<?php echo time(); ?>">
+
+<section class="hr-module">
+
+    <div class="d-flex align-items-center gap-2 mb-3 ms-1">
+        <div>
+            <h5 class="mb-0 fw-bold" style="color: #032a74; letter-spacing: 0.3px;">TADI Records</h5>
+            <small class="text-muted" style="font-size: 0.78rem;">Teaching &amp; Learning Activity Dashboard &mdash; Report Generator</small>
+        </div>
+    </div>
 
     <div class="card-filter mb-3 p-3">
-        <div class="d-flex gap-3 align-items-end">
+        <div class="d-flex flex-wrap gap-2 align-items-end">
 
             <div class="col-auto">
                 <select class="form-select shadow" id="filterMode">
@@ -79,35 +87,38 @@
     </div>
 
     <div class="card mx-auto p-3 report-view" id="reportView">
-        <div class="row">
-            <div class="card col-md m-3 shadow stats verified">
-                <h6>Total Verified</h6>
-                <h3 id="verified">0</h3>
+        <div class="row g-2 mb-3">
+            <div class="col-md-4">
+                <div class="card shadow stats verified h-100">
+                    <h6>Total Verified</h6>
+                    <h3 id="verified">0</h3>
+                </div>
             </div>
-            <div class="card col-md m-3 shadow stats unverified">
-                <h6>Total Unverified</h6>
-                <h3 id="unverified">0</h3>
+            <div class="col-md-4">
+                <div class="card shadow stats unverified h-100">
+                    <h6>Total Unverified</h6>
+                    <h3 id="unverified">0</h3>
+                </div>
             </div>
-            <div class="card col-md m-3 shadow text-dark stats total-rec">
-                <h6>Total Records</h6>
-                <h3 id="total">0</h3>
+            <div class="col-md-4">
+                <div class="card shadow stats total-rec h-100">
+                    <h6>Total Records</h6>
+                    <h3 id="total">0</h3>
+                </div>
             </div>
         </div>
 
-        <div class="row">
-            <div class="card col border shadow p-3 m-1 chart-container2">
+        <div class="row g-2">
+            <div class="col-md card border shadow p-3 m-1 chart-container2">
                 <canvas id="monthlyTotalChart"></canvas>
             </div>
-            <div class="card col border shadow p-3 m-1 chart-container2">
+            <div class="col-md card border shadow p-3 m-1 chart-container2">
                 <canvas id="vertPerDeptChart"></canvas>
             </div>
         </div>
 
-        <div class="row">
-            <!-- <div class="card col border shadow p-3 m-1 chart-container1">
-                <canvas id="totalChart"></canvas>
-            </div> -->
-            <div class="card col border shadow p-3 m-1 chart-container2">
+        <div class="row g-2 mt-0">
+            <div class="col-md card border shadow p-3 m-1 chart-container2">
                 <canvas id="perCutOffChart"></canvas>
             </div>
         </div>

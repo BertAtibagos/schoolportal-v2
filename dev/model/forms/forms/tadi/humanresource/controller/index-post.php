@@ -17,10 +17,12 @@ if($type == 'GET_ALL_TOTAL'){
     $qry="SELECT COUNT(*) total_rec,
         (SELECT COUNT(*)
         FROM `schooltadi`
-        WHERE `schltadi_status` = 1) verified,
+        WHERE `schltadi_status` = 1
+            AND schltadi_isactive = 1) verified,
         (SELECT COUNT(*)
         FROM schooltadi
-        WHERE `schltadi_status` = 0) unverified
+        WHERE `schltadi_status` = 0
+            AND schltadi_isactive = 1) unverified
         FROM schooltadi";
 
     $stmt = $dbConn->prepare($qry);
@@ -40,7 +42,7 @@ if($type == 'GET_TOTAL_PER_MONTH'){
                 COUNT(*) AS total
             FROM schooltadi
             GROUP BY MONTH(`schltadi_date`)
-            ORDER BY MONTH(`schltadi_date`)";
+            ORDER BY MIN(`schltadi_date`)";
     
     $stmt = $dbConn->prepare($qry);
     $stmt->execute();
@@ -129,8 +131,8 @@ if($type == 'GET_ALL_PROG_TOTAL'){
             LEFT JOIN schoolemployee emp  
                 ON tadi.`schlprof_id` = emp.`SchlEmpSms_ID` 
             WHERE off.`SchlAcadLvl_ID` = 2 
-            AND off.`SchlAcadYr_ID` = 19 
-            AND off.`SchlAcadPrd_ID` = 5  
+                AND off.`SchlAcadYr_ID` = 19 
+                AND off.`SchlAcadPrd_ID` = 5  
             GROUP BY dept.`SchlDept_NAME` 
             ORDER BY unverified_count DESC ";
 
@@ -333,13 +335,11 @@ if($type == 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY'){
     $bind = "";
     $values = [];
 
-     // Calculate current and previous cut-off dates
     $today = date('Y-m-d');
     $current_day = date('d');
     $current_month = date('m');
     $current_year = date('Y');
 
-    // Determine current cut-off period
     if ($current_day <= 15) {
         $current_cutoff_start = date('Y-m-01');
         $current_cutoff_end = date('Y-m-15');
