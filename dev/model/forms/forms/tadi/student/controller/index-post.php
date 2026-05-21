@@ -8,8 +8,27 @@ ini_set('log_errors', 1);
 
 session_start();
 include('../../../../../configuration/connection-config.php');
+include('../../shared/logging.php');
 
 $fetch = ['success' => false];
+
+function logStudentTadiSubmit(mysqli $dbConn, int $userId, ?string $errorMessage): void {
+    logTadiActivity($dbConn, 'student.SUBMIT_TADI', $errorMessage, $userId, 2);
+}
+
+function normalizeTimeInput(string $input): ?string {
+    $input = trim($input);
+    $formats = ['H:i', 'H:i:s'];
+
+    foreach ($formats as $format) {
+        $dt = DateTime::createFromFormat($format, $input);
+        if ($dt instanceof DateTime && $dt->format($format) === $input) {
+            return $dt->format('H:i:s');
+        }
+    }
+
+    return null;
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['type'] === 'SUBMIT_TADI') {
     $STUDID = $_SESSION['STUDENT']['ID'] ?? 0;
@@ -19,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
 
     if (!$STUDID || !$LVLID || !$YRID || !$PRDID) {
         $fetch['message'] = "Invalid session. Please log in again.";
+        logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
         echo json_encode($fetch);
         exit;
     }
@@ -39,6 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
             if ($_SESSION[$rateLimitKey]['count'] > $rateLimitMax) {
                 http_response_code(429);
                 $fetch['message'] = 'Too many submissions. Please try again later.';
+                logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
                 echo json_encode($fetch);
                 exit;
             }
@@ -46,14 +67,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
     }
 
     try {
+        $rawTimeIn = $_POST['classStartDateTime'] ?? '';
+        $rawTimeOut = $_POST['classEndDateTime'] ?? '';
+        $normalizedTimeIn = normalizeTimeInput($rawTimeIn);
+        $normalizedTimeOut = normalizeTimeInput($rawTimeOut);
+
+        if ($normalizedTimeIn === null || $normalizedTimeOut === null) {
+            $fetch['message'] = "Invalid time format. Please use HH:MM or HH:MM:SS.";
+            logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
+            echo json_encode($fetch);
+            exit;
+        }
+
         $prof_id = $dbConn->real_escape_string($_POST['instructor']);
-        $schltadi_mode = $dbConn->real_escape_string($_POST['learning_delivery_modalities']);
+        $schltadi_mode_raw = $_POST['learning_delivery_modalities'] ?? '';
+        $allowedModes = ['online_learning', 'onsite_learning'];
+        if (!in_array($schltadi_mode_raw, $allowedModes, true)) {
+            $fetch['message'] = "Invalid learning delivery modality.";
+            logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
+            echo json_encode($fetch);
+            exit;
+        }
+
+        $schltadi_mode = $dbConn->real_escape_string($schltadi_mode_raw);
         $schltadi_type = $dbConn->real_escape_string($_POST['session_type']);
         $schltadi_date = date('Y-m-d');
-        $schltadi_timein = date('H:i:s', strtotime($_POST['classStartDateTime']));
-        $schltadi_timeout = date('H:i:s', strtotime($_POST['classEndDateTime']));
+        $schltadi_timein = $normalizedTimeIn;
+        $schltadi_timeout = $normalizedTimeOut;
         $schltadi_activity = $dbConn->real_escape_string($_POST['comments']);
-        $subj_id = $dbConn->real_escape_string($_POST['subjoff_id']);
+        $subj_id_raw = $_POST['subjoff_id'] ?? '';
+        if (!ctype_digit((string)$subj_id_raw) || (int)$subj_id_raw <= 0) {
+            $fetch['message'] = "Invalid subject ID.";
+            logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
+            echo json_encode($fetch);
+            exit;
+        }
+
+        $subj_id = $dbConn->real_escape_string($subj_id_raw);
 
         $schltadi_late_status = isset($_POST['late_class_date']) && !empty($_POST['late_class_date']) ? 1 : 0;
         $schltadi_late_date = $schltadi_late_status ? $dbConn->real_escape_string($_POST['late_class_date']) : null;
@@ -63,8 +113,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
 
         $check_sql = "SELECT COUNT(*) as count 
                       FROM schooltadi 
-                      WHERE schlenrollsubjoff_id = ? 
+                      WHERE schlenrollsubjoff_id = ?
                       AND schlprof_id = ? 
+                      AND schltadi_isactive = 1
                       AND DATE(schltadi_date) = ?";
 
         $check_stmt = $dbConn->prepare($check_sql);
@@ -81,6 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
 
         if ($count >= 3) {
             $fetch['message'] = "You have already submitted 3 TADIs today.";
+            logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
             echo json_encode($fetch);
             exit;
         }
@@ -118,36 +170,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
 
         if ((int)$overlapCount > 0) {
             $fetch['message'] = "A TADI with an overlapping time range already exists for this instructor.";
+            logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
             echo json_encode($fetch);
             exit;
         }
-
-        // Time overlap check
-        // $overlap_sql = "SELECT COUNT(*) as count 
-        //                 FROM schooltadi 
-        //                 WHERE schlenrollsubjoff_id = $subj_id 
-        //                 AND schlprof_id = $prof_id 
-        //                 AND DATE(schltadi_date) = '$schltadi_date'
-        //                 AND (
-        //                     (schltadi_timein <= '$schltadi_timein' AND schltadi_timeout >= '$schltadi_timein') OR
-        //                     (schltadi_timein <= '$schltadi_timeout' AND schltadi_timeout >= '$schltadi_timeout')
-        //                 )";
-
-        // $overlap_result = $dbConn->query($overlap_sql);
-        // $overlap_row = $overlap_result->fetch_assoc();
-
-        // if ((int)$overlap_row['count'] > 0) {
-        //     $fetch['message'] = "Submission time overlaps with a previous entry.";
-        //     echo json_encode($fetch);
-        //     exit;
-        // }
-
-        // image upload
         $image_path = null;
         $taken_date = null; // for storing original taken date from EXIF
-        error_log(print_r($_FILES, true));
 
         if (isset($_FILES['attach']) && $_FILES['attach']['error'] === UPLOAD_ERR_OK) {
+            if (empty($_FILES['attach']['tmp_name']) || (int)$_FILES['attach']['size'] <= 0) {
+                $fetch['message'] = "Uploaded file is empty.";
+                logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
+                echo json_encode($fetch);
+                exit;
+            }
+
             $prof_id = $_POST['instructor'] ?? 'unknown_prof';
             $date_folder = date('Y-m-d');
 
@@ -157,6 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
             if (!is_dir($uploadDir)) {
                 if (!mkdir($uploadDir, 0777, true)) {
                     $fetch['message'] = "Failed to create upload directory.";
+                    logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
                     echo json_encode($fetch);
                     exit;
                 }
@@ -170,6 +208,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
             $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
             if (!in_array($extension, $allowedExtensions)) {
                 $fetch['message'] = "Invalid file type. Only JPG, PNG, GIF, and WEBP are allowed.";
+                logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
                 echo json_encode($fetch);
                 exit;
             }
@@ -181,6 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
             $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
             if (!in_array($mimeType, $allowedMimeTypes)) {
                 $fetch['message'] = "Invalid file format.";
+                logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
                 echo json_encode($fetch);
                 exit;
             }
@@ -210,6 +250,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
                 }
             } else {
                 $fetch['message'] = "Failed to upload image.";
+                logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
                 echo json_encode($fetch);
                 exit;
             }
@@ -217,6 +258,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
 
         if (empty($image_path)) {
             $fetch['message'] = "Image is required to submit TADI.";
+            logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
             echo json_encode($fetch);
             exit;
         }
@@ -278,6 +320,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
             $fetch['success'] = true;
             $fetch['message'] = "TADI submitted successfully.";
             $fetch['count'] = $count + 1;
+            logStudentTadiSubmit($dbConn, (int)$STUDID, null);
         } else {
             throw new Exception("Insert failed: " . $stmt->error);
         }
@@ -285,6 +328,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
         $stmt->close();
     } catch (Exception $e) {
         $fetch['message'] = "Server error: " . $e->getMessage();
+        logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
     } finally {
         $dbConn->close();
     }

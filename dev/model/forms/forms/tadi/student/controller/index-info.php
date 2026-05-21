@@ -10,8 +10,14 @@ ini_set('log_errors', 1);
 
 session_start();
 include('../../../../../configuration/connection-config.php');
+include('../../shared/logging.php');
 
-function rateLimit(int $window, int $max, string $key){
+function logStudentTadiInfo(mysqli $dbConn, string $access, ?string $errorMessage): void {
+    $userId = intval($_SESSION['STUDENT']['ID'] ?? 0);
+    logTadiActivity($dbConn, $access, $errorMessage, $userId, 2);
+}
+
+function rateLimit(int $window, int $max, string $key, mysqli $dbConn, string $access){
     $rateLimitWindowSec = $window;
     $rateLimitMax = $max;
     $rateLimitKey = $key;
@@ -28,6 +34,7 @@ function rateLimit(int $window, int $max, string $key){
             if ($_SESSION[$rateLimitKey]['count'] > $rateLimitMax) {
                 http_response_code(429);
                 $fetch['message'] = 'Too many submissions. Please try again later.';
+                logStudentTadiInfo($dbConn, $access, $fetch['message']);
                 echo json_encode($fetch);
                 exit;
             }
@@ -51,6 +58,7 @@ if ($type === 'GET_SCHOOL_YEAR') {
 
     $rreg = $dbConn->query($qry);
     $fetch = $rreg->fetch_all(MYSQLI_ASSOC);
+    logStudentTadiInfo($dbConn, 'student.GET_SCHOOL_YEAR', null);
 }
 
 if ($type === 'GET_ACADEMIC_PRD') {
@@ -65,6 +73,7 @@ if ($type === 'GET_ACADEMIC_PRD') {
 
     $rreg = $dbConn->query($qry);
     $fetch = $rreg->fetch_all(MYSQLI_ASSOC);
+    logStudentTadiInfo($dbConn, 'student.GET_ACADEMIC_PRD', null);
 }
 
 if ($type === 'GET_YEAR_LEVEL') {
@@ -79,6 +88,7 @@ if ($type === 'GET_YEAR_LEVEL') {
 
     $rreg = $dbConn->query($qry);
     $fetch = $rreg->fetch_all(MYSQLI_ASSOC);
+    logStudentTadiInfo($dbConn, 'student.GET_YEAR_LEVEL', null);
 }
 
 if ($type === 'GET_ACADEMIC_LEVEL') {
@@ -93,6 +103,7 @@ if ($type === 'GET_ACADEMIC_LEVEL') {
 
     $rreg = $dbConn->query($qry);
     $fetch = $rreg->fetch_all(MYSQLI_ASSOC);
+    logStudentTadiInfo($dbConn, 'student.GET_ACADEMIC_LEVEL', null);
 }
 
 if ($type === 'GET_SUBJECT_LIST') {
@@ -161,6 +172,8 @@ if ($type === 'GET_SUBJECT_LIST') {
         $row['user_id'] = $USERID;
     }
     unset($row);
+
+    logStudentTadiInfo($dbConn, 'student.GET_SUBJECT_LIST', null);
 }
 
 if($type === 'GET_SUBMITTED_REC'){
@@ -205,11 +218,13 @@ if($type === 'GET_SUBMITTED_REC'){
 	$result = $stmt->get_result();
 	$fetch = $result->fetch_all(MYSQLI_ASSOC);
 	$stmt->close();
+
+    logStudentTadiInfo($dbConn, 'student.GET_SUBMITTED_REC', null);
 }
 
 if($type == 'GET_IMAGE'){
 
-    rateLimit(60, 5, 'get_image_rate_limit');
+    rateLimit(60, 5, 'get_image_rate_limit', $dbConn, 'student.GET_IMAGE');
 
 	$prof_id = $_POST['prof_id'];
 	$REC_ID = $_POST['tadi_id'];
@@ -230,6 +245,19 @@ if($type == 'GET_IMAGE'){
 	$result = $stmt->get_result();
 	$fetch = $result->fetch_assoc();
 	$stmt->close();
+
+    if (!$fetch || empty($fetch['tadi_filepath'])) {
+        $fetch = ['message' => 'Image not found.'];
+        logStudentTadiInfo($dbConn, 'student.GET_IMAGE', $fetch['message']);
+    } else {
+        $publicPath = __DIR__ . '/../../../../../../public/' . $fetch['tadi_filepath'];
+        if (!is_file($publicPath)) {
+            $fetch['message'] = 'Image file missing on server.';
+            logStudentTadiInfo($dbConn, 'student.GET_IMAGE', $fetch['message']);
+        } else {
+            logStudentTadiInfo($dbConn, 'student.GET_IMAGE', null);
+        }
+    }
 }
 
 if($type == 'REVERT_SUBMISSION'){
@@ -242,6 +270,7 @@ if($type == 'REVERT_SUBMISSION'){
 
     if($tadi_id <= 0 || $subj_id <= 0 || $prof_id <= 0 || $session_stud_id <= 0){
         $fetch = ['success' => false, 'message' => 'Missing required information.'];
+        logStudentTadiInfo($dbConn, 'student.REVERT_SUBMISSION', $fetch['message']);
     } else {
         $verify_stmt = $dbConn->prepare(
             "SELECT schltadi_id FROM schooltadi 
@@ -254,6 +283,7 @@ if($type == 'REVERT_SUBMISSION'){
         if($verify_stmt->num_rows === 0){
             $fetch = ['success' => false, 'message' => 'Unauthorized action.'];
             $verify_stmt->close();
+            logStudentTadiInfo($dbConn, 'student.REVERT_SUBMISSION', $fetch['message']);
         } else {
             $verify_stmt->close();
 
@@ -272,8 +302,10 @@ if($type == 'REVERT_SUBMISSION'){
 
             if($executed && $affected > 0){
                 $fetch = ['success' => true, 'message' => 'Record successfully deleted.'];
+                logStudentTadiInfo($dbConn, 'student.REVERT_SUBMISSION', null);
             } else {
                 $fetch = ['success' => false, 'message' => 'Failed to delete record. It may have already been removed.'];
+                logStudentTadiInfo($dbConn, 'student.REVERT_SUBMISSION', $fetch['message']);
             }
         }
     }
