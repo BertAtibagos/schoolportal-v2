@@ -42,6 +42,24 @@ function rateLimit(int $window, int $max, string $key, mysqli $dbConn, string $a
     }
 }
 
+function sanitizeText(?string $value): string {
+    $value = trim((string)$value);
+    $value = strip_tags($value);
+    return preg_replace('/\s+/', ' ', $value) ?? '';
+}
+
+function isSafeAttachmentPath(string $path): bool {
+    if ($path === '') {
+        return false;
+    }
+
+    if (strpos($path, '..') !== false || strpos($path, '\\') !== false || strpos($path, ':') !== false) {
+        return false;
+    }
+
+    return (bool)preg_match('/^attachment\/[A-Za-z0-9._-]+\/\d{4}-\d{2}-\d{2}\/[A-Za-z0-9._-]+$/', $path);
+}
+
 $fetch = "";
 
 $type = $_POST['type'] ?? '';
@@ -170,6 +188,9 @@ if ($type === 'GET_SUBJECT_LIST') {
 
     foreach ($fetch as &$row) {
         $row['user_id'] = $USERID;
+        $row['subj_code'] = sanitizeText($row['subj_code'] ?? '');
+        $row['subj_desc'] = sanitizeText($row['subj_desc'] ?? '');
+        $row['prof_name'] = sanitizeText($row['prof_name'] ?? '');
     }
     unset($row);
 
@@ -219,6 +240,12 @@ if($type === 'GET_SUBMITTED_REC'){
 	$fetch = $result->fetch_all(MYSQLI_ASSOC);
 	$stmt->close();
 
+    foreach ($fetch as &$row) {
+        $row['tadi_act'] = sanitizeText($row['tadi_act'] ?? '');
+        $row['tadi_modeType'] = sanitizeText($row['tadi_modeType'] ?? '');
+    }
+    unset($row);
+
     logStudentTadiInfo($dbConn, 'student.GET_SUBMITTED_REC', null);
 }
 
@@ -248,6 +275,9 @@ if($type == 'GET_IMAGE'){
 
     if (!$fetch || empty($fetch['tadi_filepath'])) {
         $fetch = ['message' => 'Image not found.'];
+        logStudentTadiInfo($dbConn, 'student.GET_IMAGE', $fetch['message']);
+    } elseif (!isSafeAttachmentPath($fetch['tadi_filepath'])) {
+        $fetch = ['message' => 'Invalid image path.'];
         logStudentTadiInfo($dbConn, 'student.GET_IMAGE', $fetch['message']);
     } else {
         $publicPath = __DIR__ . '/../../../../../../public/' . $fetch['tadi_filepath'];
