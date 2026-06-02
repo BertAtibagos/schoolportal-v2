@@ -5,6 +5,34 @@ const spinner = `<div class="tadi-loading">
                     <span>Loading subjects...</span>
                 </div>`;
 
+const htmlEscapes = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+};
+
+function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (match) => htmlEscapes[match]);
+}
+
+function formatActivityText(value) {
+    return escapeHtml(value ?? "").replace(/\\r\\n|\r?\n/g, "<br>");
+}
+
+function isSafeAttachmentPath(value) {
+    if (typeof value !== "string") {
+        return false;
+    }
+
+    if (value.includes("..") || value.includes("\\") || value.includes(":")) {
+        return false;
+    }
+
+    return /^attachment\/[A-Za-z0-9._-]+\/\d{4}-\d{2}-\d{2}\/[A-Za-z0-9._-]+$/.test(value);
+}
+
 function showToastMessage(message, variant = "success", title = "Success") {
     const toastEl = document.getElementById("successToast");
     if (!toastEl) {
@@ -120,9 +148,9 @@ function displaySubjectTable(result) {
     tbody.innerHTML = result.map((item, index) => 
         `<div class="subj-card">
             <div class="subj-info">
-                <span class="subj-code">${item.subj_code}</span>
-                <div class="subj-desc">${item.subj_desc}</div>
-                <div class="subj-faculty">${item.prof_name || "No faculty assigned"}</div>
+                <span class="subj-code">${escapeHtml(item.subj_code)}</span>
+                <div class="subj-desc">${escapeHtml(item.subj_desc)}</div>
+                <div class="subj-faculty">${item.prof_name ? escapeHtml(item.prof_name) : "No faculty assigned"}</div>
             </div>
             <div class="subj-actions">
                 <button 
@@ -136,8 +164,8 @@ function displaySubjectTable(result) {
                 </button>
                 <button 
                     class="btn-tadi btn-tadi-success vw_tadi_rec"
-                    data-subj-id="${item.subj_id}"
-                    data-prof-id="${item.prof_id}"
+                    data-subj-id="${escapeHtml(item.subj_id)}"
+                    data-prof-id="${escapeHtml(item.prof_id)}"
                     data-bs-toggle="modal" 
                     data-bs-target="#Instructor_Tadi_List"
                     ${item.record_count_today == 0 ? "hidden" : ""}>
@@ -179,25 +207,36 @@ function displayTadi(value) {
     document.getElementById("subject_details").textContent = `Course Code: ${value.subj_code}`;
     document.getElementById("date_now").textContent = formattedDate;
 
-    let instructor = "";
-    
+    const instructorSelect = document.getElementById("instructor");
+    instructorSelect.innerHTML = "";
+
     if (value.prof_name && value.prof_id) {
         const profNames = value.prof_name.split(/[\/,]\s*/);
         const profIds = value.prof_id.split(/[\/,]\s*/);
-        
-        // Add placeholder if multiple professors
-        if (profNames.length > 1) {
-            instructor = "<option value='' selected disabled>Select an Instructor</option>";
-        }
-        
-        instructor += profNames.map((name, index) => 
-            `<option value='${profIds[index]?.trim()}'>${name.trim()}</option>`
-        ).join("");
-    } else {
-        instructor = "<option value='' selected disabled>No faculty assigned</option>";
-    }
 
-    document.getElementById("instructor").innerHTML = instructor;
+        if (profNames.length > 1) {
+            const placeholder = document.createElement("option");
+            placeholder.value = "";
+            placeholder.selected = true;
+            placeholder.disabled = true;
+            placeholder.textContent = "Select an Instructor";
+            instructorSelect.appendChild(placeholder);
+        }
+
+        profNames.forEach((name, index) => {
+            const option = document.createElement("option");
+            option.value = (profIds[index] || "").trim();
+            option.textContent = name.trim();
+            instructorSelect.appendChild(option);
+        });
+    } else {
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.selected = true;
+        placeholder.disabled = true;
+        placeholder.textContent = "No faculty assigned";
+        instructorSelect.appendChild(placeholder);
+    }
 }
 
 function GET_IMAGE(event) {
@@ -233,9 +272,14 @@ function GET_IMAGE(event) {
             return;
         }
 
-    if (data && data.tadi_filepath) {
-      const imgPrev = document.getElementById('attchPrev');
-      imgPrev.src = `/schoolportal-v2/dev/public/${data.tadi_filepath}`;
+        if (data && data.tadi_filepath) {
+            if (!isSafeAttachmentPath(data.tadi_filepath)) {
+                showToastMessage("Invalid image path.", "warning", "Notice");
+                return;
+            }
+
+            const imgPrev = document.getElementById('attchPrev');
+            imgPrev.src = `/schoolportal-v2/dev/public/${data.tadi_filepath}`;
 
       const dateTimeUpldStr = `${data.upld_date}T${data.upld_time}`;
       const upldObj = new Date(dateTimeUpldStr);
@@ -349,7 +393,7 @@ function viewSubmitted(subj_Id, prof_Id){
 
                 
                 const viewUploadCell = record.tadi_filepath
-                    ? `<button class="btn-tadi btn-tadi-view viewAttch" value="${record.schltadi_ID}">View</button>`
+                    ? `<button class="btn-tadi btn-tadi-view viewAttch" value="${escapeHtml(record.schltadi_ID)}">View</button>`
                     : `<span class="btn-tadi" style="background: #cbd5e1; color: #64748b; cursor: default;">No Attachment</span>`;
 
                 const modeTypeMap = {
@@ -360,10 +404,10 @@ function viewSubmitted(subj_Id, prof_Id){
                 };
 
                 const deletebtn = record.tadi_status == 0
-                    ? `<button class="btn-tadi btn-tadi-danger" onclick="revertTADISubmission(${record.schltadi_ID}, ${record.sub_off_id}, ${record.SchlProf_ID})">Delete Record</button>`
+                    ? `<button class="btn-tadi btn-tadi-danger delete-tadi" data-tadi-id="${escapeHtml(record.schltadi_ID)}" data-subj-id="${escapeHtml(record.sub_off_id)}" data-prof-id="${escapeHtml(record.SchlProf_ID)}">Delete Record</button>`
                     : '';
 
-                let activity = record.tadi_act.replace(/\\r\\n/g, "<br>");
+                const activity = formatActivityText(record.tadi_act);
                 const statusConfig = record.tadi_status == 1
                     ? { text: "Verified", badgeClass: "badge-verified" }
                     : { text: "Unverified", badgeClass: "badge-unverified" };
@@ -388,7 +432,7 @@ function viewSubmitted(subj_Id, prof_Id){
                         </div>
                         <div class="record-field" id="classTypeLabel${record.schltadi_ID}">
                             <span class="field-label">Class Type</span>
-                            <span class="field-value">${modeTypeMap[record.tadi_modeType] || record.tadi_modeType}</span>
+                            <span class="field-value">${escapeHtml(modeTypeMap[record.tadi_modeType] || record.tadi_modeType)}</span>
                         </div>
                         <div class="record-field" id="actLabel${record.schltadi_ID}">
                             <span class="field-label">Activity</span>
@@ -397,11 +441,11 @@ function viewSubmitted(subj_Id, prof_Id){
                         <div class="record-field" id="attchLabel${record.schltadi_ID}">
                             <span class="field-label">Attachment</span>
                             <span class="field-value">${viewUploadCell}</span>
-                            <input type="hidden" id="imgProf_id" value="${record.SchlProf_ID}">
+                            <input type="hidden" id="imgProf_id" value="${escapeHtml(record.SchlProf_ID)}">
                         </div>
                         <div class="record-field" id="status${record.schltadi_ID}">
                             <span class="field-label">Status</span>
-                            <span class="${statusConfig.badgeClass}" value="${record.schltadi_ID}" name="${record.tadi_status}">${statusConfig.text}</span>
+                            <span class="${statusConfig.badgeClass}" value="${escapeHtml(record.schltadi_ID)}" name="${escapeHtml(record.tadi_status)}">${statusConfig.text}</span>
                         </div>
                         <div class="d-flex justify-content-end gap-2 pt-2">
                             ${deletebtn}
@@ -409,6 +453,22 @@ function viewSubmitted(subj_Id, prof_Id){
                     </div>`;
 
                 navTabContent.appendChild(tabPane);
+
+                const deleteBtn = tabPane.querySelector('.delete-tadi');
+                if (deleteBtn) {
+                    deleteBtn.addEventListener('click', () => {
+                        const tadiId = Number(deleteBtn.dataset.tadiId);
+                        const subOffId = Number(deleteBtn.dataset.subjId);
+                        const profId = Number(deleteBtn.dataset.profId);
+
+                        if (!Number.isFinite(tadiId) || !Number.isFinite(subOffId) || !Number.isFinite(profId)) {
+                            alert("Missing necessary information to delete the record. Please try again.");
+                            return;
+                        }
+
+                        revertTADISubmission(tadiId, subOffId, profId);
+                    });
+                }
 
                 const text = tabPane.querySelector('.activity-text');
                 setupActivityText(text);
