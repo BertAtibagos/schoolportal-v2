@@ -1,49 +1,163 @@
-function showRateLimitToast(message) {
-  const toastEl = document.getElementById("successToast");
-  const toastHeader = document.getElementById("toastHeader");
-  const toastTitle = document.getElementById("toastTitle");
-  const toastMessage = document.getElementById("toastMessage");
+GETACADEMICLEVEL();
 
-  if (!toastEl || !toastHeader || !toastTitle || !toastMessage) {
-    return;
-  }
+function GETYEARLVL(){
+    const lvlid = document.getElementById('academiclevel').value;
 
-  toastTitle.textContent = "Notice";
-  toastMessage.textContent = message || "Too many submissions. Please try again later.";
+    const formData = new FormData();
+    formData.append('type', 'GET_ACADEMIC_YEAR_LEVEL');
+    formData.append('lvl_id', lvlid)
 
-  toastHeader.classList.remove(
-    "bg-success",
-    "bg-danger",
-    "bg-info",
-    "bg-primary",
-    "bg-secondary",
-    "bg-warning",
-    "text-white",
-    "text-dark"
-  );
-  toastHeader.classList.add("bg-warning", "text-dark");
+    fetch(`forms/tadi/dean/controller/index-info.php`, {
+        method: "POST",
+        body: formData
+    })
+        .then(res => res.json())
+        .then(result => {
+            let optYearLevel = result.length
+                ? result.map(value => `<option value="${value.ACAD_YRLVL_ID}">${value.ACAD_YRLVL_NAME}</option>`).join("")
+                : "<option>No Year Level Found.</option>";
+            document.getElementById("academicyearlevel").innerHTML = optYearLevel;
+        });
 
-  const toast = bootstrap.Toast.getOrCreateInstance(toastEl);
-  toast.show();
-}
+    const formData1 = new FormData();
+    formData1.append('type', 'GET_ACADEMIC_PERIOD');
+    formData1.append('lvl_id', lvlid);
 
-function handleRateLimitJson(response) {
-  if (response.status === 429) {
-    return response.json().then(data => {
-      const message = data && data.message ? data.message : "Too many submissions. Please try again later.";
-      showRateLimitToast(message);
-      throw new Error("Rate limit reached");
-    }).catch(() => {
-      showRateLimitToast("Too many submissions. Please try again later.");
-      throw new Error("Rate limit reached");
-    });
-  }
+    fetch(`forms/tadi/dean/controller/index-info.php`, {
+        method: "POST",
+        body: formData1
+    })
+        .then(res => res.json())
+        .then(result => {
+            let optPeriod = result.length
+                ? result.map(value => `<option value="${value.acad_prd_id}" ${value.is_current == 1 ? "selected" : ""}>${value.acad_prd_name}</option>`).join("")
+                : "<option>No Period Found.</option>";
+            document.getElementById("academicperiod").innerHTML = optPeriod;
 
-  if (!response.ok) {
-    throw new Error("Network response was not ok");
-  }
+            document.getElementById("academicperiod").dispatchEvent(new Event("change"));
+        });
+};
 
-  return response.json();
+document.getElementById("academicperiod").addEventListener("change", function () {
+    const lvlid = document.getElementById("academiclevel").value;
+    const prdid = this.value;
+
+    const formData = new FormData();
+    formData.append('type', 'GET_ACAD_YEAR');
+    formData.append('lvl_id', lvlid);
+    formData.append('prd_id', prdid)
+
+    fetch(`forms/tadi/dean/controller/index-info.php`, {
+        method: "POST",
+        body: formData
+    })
+        .then(res => res.json())
+        .then(result => {
+            let optYear = result.length
+                ? result.map(value => `<option value="${value.SchlAcadYrSms_ID}">${value.YEAR_NAME}</option>`).join("")
+                : "<option>No Year Found.</option>";
+            document.getElementById("acadyear").innerHTML = optYear;
+        });
+});
+
+document.getElementById("search_button").addEventListener("click", function () {
+    const lvlid = document.getElementById("academiclevel").value;
+    const yrlvlid = document.getElementById("academicyearlevel").value;
+    const prdid = document.getElementById("academicperiod").value;
+    const yrid = document.getElementById("acadyear").value;
+
+    if(!lvlid || !yrlvlid || !prdid || !yrid){
+        showAlertModal("Please select all filters to generate the report");
+        emptyCriteriaReport();
+        return;
+    }else{
+        resetCriteriaReport();
+    }
+
+    const formData1 = new FormData();
+    formData1.append('type', 'GET_INSTRUCTOR_LIST');
+    formData1.append('lvl_id', lvlid);
+    formData1.append('prd_id', prdid);
+    formData1.append('yr_id', yrid);
+    formData1.append('yrlvl_id', yrlvlid);
+
+    const tbodySpinner = document.getElementById('instructor');
+    tbodySpinner.innerHTML = `<tr><td colspan="2"><div class="text-center p-3"><div class="spinner-border" role="status"><span class="visually-hidden"></span></div></div></td></tr>`;
+    
+    const srchBtn = document.getElementById("search_button");
+    const genReportBtn = document.getElementById("exportBtn"); 
+    srchBtn.disabled = true;
+    genReportBtn.disabled = true;
+
+
+    fetch(`forms/tadi/dean/controller/index-info.php`, {
+        method: "POST",
+        body: formData1
+    })
+        .then(handleRateLimitJson)
+        .then(result => {
+            const tableRows = result.length
+                ? result.map((item, index) => `
+                    <tr>
+                        <td>${item.prof_name ? item.prof_name : '<span class="text-muted fst-italic">No instructor</span>'}</td>
+                        <td class="tc">
+                            <button class="tadi-btn tadi-btn-ghost tadi-btn-sm position-relative" ${item.prof_name ? '' : 'disabled'}
+                                id="instructorModalHandler${index}" data-bs-toggle="modal" data-bs-target="#Instructor_Subject_List">
+                                <i class="fas fa-list-ul me-1"></i> Section List
+                                ${item.unverified_count > 0 ? '<span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width:10px;height:10px;"></span>' : ''}
+                            </button>
+                        </td>
+                    </tr>
+                `).join('')
+                : `<tr><td colspan="2" class="tadi-empty-state"><i class="fas fa-inbox d-block mb-2" style="font-size:1.6rem;opacity:.35"></i>No data available.</td></tr>`;
+
+            document.getElementById("instructor").innerHTML = tableRows;
+
+            result.forEach((value, index) => {
+                document.getElementById(`instructorModalHandler${index}`)?.addEventListener("click", function () {
+                    GET_SUBJECT_BY_INSTRUCTOR(value);
+                });
+            });
+        })
+        .catch(err => console.error("Error:", err))
+        .finally(()=>{
+            srchBtn.disabled = false;
+            genReportBtn.disabled = false;
+        });
+});
+
+async function approveTadiRequest(tadiId, profId, subjId) {
+    if(confirm("Are you sure you want to approve this TADI request?") == true){
+        document.querySelectorAll(".approve").forEach(btn => btn.disabled = true);
+        const formData = new FormData();
+        formData.append('type', 'APPROVE_TADI_REQUEST');
+        formData.append('tadi_id', tadiId);
+        formData.append('prof_id', profId);
+        formData.append('subj_id', subjId);
+
+        try{
+            const resquest = await fetch(`forms/tadi/dean/controller/index-info.php`, {
+                method: "POST",
+                body: formData
+            });
+
+            const respond = await resquest.json();
+
+            if(respond.status === 'success'){
+                const currentProfId = profId;
+                const currentSubjId = subjId;
+                GETALL_TADI_RECORDS(currentProfId, currentSubjId);
+            }else{
+                showAlertModal("Failed to approve TADI request. Please try again.");
+            }
+        }catch(err){
+            console.error("Error:", err);
+            showAlertModal("An error occurred while processing the request. Please try again.");
+        }
+    }else{
+        document.querySelectorAll(".approve").forEach(btn => btn.disabled = false);
+        return;
+    }
 }
 
 function GETACADEMICLEVEL() {
@@ -89,45 +203,6 @@ function GET_SUBJECT_BY_INSTRUCTOR({ single_prof_id }) {
       tbody.dataset.source = JSON.stringify(result); // Cache inside DOM instead of global var
     })
     .catch(err => console.error("Error fetching instructor subjects:", err));
-}
-
-function displaySubjList(data) {
-  const tbody = document.querySelector("#subj_list");
-  tbody.innerHTML = data.map((item, i) => `
-    <tr>
-      <td>${item.schl_sec || 'No Section'}</td>
-      <td>${item.subj_code}</td>
-      <td>${item.subj_desc}</td>
-      <td>
-        <button 
-          class="tadi-btn tadi-btn-ghost tadi-btn-sm w-100 position-relative vw_tadi" 
-          data-bs-target="#Instructor_Tadi_List" 
-          data-bs-toggle="modal"
-          data-prof-id="${item.SchlProf_ID}"
-          data-suboff-id="${item.sub_off_id}"
-          data-sub-desc="${item.subj_desc}"
-          data-sub-sect="${item.schl_sec || 'No Section'}">
-          <i class="fas fa-eye me-1"></i> View TADI
-          <span class="tadi-badge tadi-badge-muted ms-1">${item.verified_count}</span>
-        </button>
-      </td>
-    </tr>`).join('');
-
-  document.querySelector(".tadi_inst_name").textContent = data[0]?.prof_name || "No Instructor";
-
-  tbody.querySelectorAll(".vw_tadi").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const prof_id = btn.dataset.profId;
-      const subj_id = btn.dataset.suboffId;
-      const subj_desc = btn.dataset.subDesc;
-      const subj_sect = btn.dataset.subSect;
-
-      document.getElementById("tadi_subj_name").innerText = subj_desc;
-      document.getElementById("section_name").innerText = subj_sect;
-
-      GETALL_TADI_RECORDS(prof_id, subj_id);
-    });
-  });
 }
 
 function GETALL_TADI_RECORDS(prof_id, subj_id) {
@@ -224,58 +299,6 @@ function GET_IMAGE(tadi_id, prof_id) {
       showImageModal(data);
     })
     .catch(err => console.error("Error fetching image:", err));
-}
-
-function showImageModal(data) {
-  const imgModal = new bootstrap.Modal(document.getElementById('imageModal'), { backdrop: true });
-  const format = (d, t) => new Date(`${d}T${t}`).toLocaleString('en-US', {
-    year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: true
-  });
-
-  document.getElementById('dateTimeTaken').innerText = data.exif_date ? `Taken: ${format(data.exif_date, data.exif_time)}` : 'Taken: Not Available';
-  document.getElementById('dateTimeUpld').innerText = `Uploaded: ${format(data.upld_date, data.upld_time)}`;
-
-  document.getElementById('closeModalBtn').onclick = () => {
-    imgModal.hide();
-    document.getElementById('attchPrev').src = '';
-  };
-
-  imgModal.show();
-}
-
-function setupActivityText(el) {
-  Object.assign(el.style, {
-    display: '-webkit-box',
-    WebkitLineClamp: '2',
-    WebkitBoxOrient: 'vertical',
-    overflow: 'hidden',
-    cursor: 'pointer'
-  });
-
-  el.addEventListener('click', () => {
-    const expanded = el.style.WebkitLineClamp === 'none';
-    el.style.WebkitLineClamp = expanded ? '2' : 'none';
-    el.style.display = expanded ? '-webkit-box' : 'block';
-  });
-}
-
-function loadingRow(cols) {
-  return `
-    <tr>
-      <td colspan="${cols}">
-        <div class="text-center p-3">
-          <div class="spinner-border" role="status"><span class="sr-only"></span></div>
-        </div>
-      </td>
-    </tr>`;
-}
-
-function formatTimeToAmPm(timeString) {
-  const [h, m] = timeString.split(":");
-  let hour = parseInt(h, 10);
-  const ampm = hour >= 12 ? "PM" : "AM";
-  hour = hour % 12 || 12;
-  return `${hour}:${m} ${ampm}`;
 }
 
 document.getElementById("searchSubjBtn").addEventListener("click", function() {
@@ -673,108 +696,3 @@ document.getElementById("reportSearch").addEventListener("click", function(){
   backTadi.disabled = false;
 });
 })
-
-function tadiReportExport(exprtname){
-        const data = window.tadiReportData;
-        if (!data || !data.length) {
-            showAlertModal('No data available to export');
-            return;
-        }
-
-        // Create workbook and worksheet
-        const wb = XLSX.utils.book_new();
-        const allRows = [];
-
-        // Add headers
-        allRows.push([
-            'Professor Name',
-            'Subject Code',
-            'Subject Description',
-            'Section',
-            'Student Name',
-            'Date',
-            'Time In',
-            'Time Out',
-            'Duration',
-            'Mode',
-            'Session Type',
-            'Activity',
-            'Late Submission',
-            'Status'
-        ]);
-
-        // Sort by professor name to group them together
-        data.sort((a, b) => a.prof_name.localeCompare(b.prof_name));
-
-        let currentProf = null;
-
-        // Process data and insert blank rows between professors
-        data.forEach(record => {
-            if (!record.schltadi_id) return;
-
-            // Insert a blank row when the professor changes (skip before first)
-            if (currentProf && record.prof_name !== currentProf) {
-                allRows.push([]); // blank row separator
-            }
-
-            allRows.push([
-                record.prof_name,
-                record.subject_code,
-                record.subject_desc,
-                record.section_name || 'No Section',
-                record.student_name,
-                record.tadi_date,
-                record.time_in,
-                record.time_out,
-                record.duration,
-                record.mode,
-                record.type,
-                record.activity || 'No activity recorded',
-                record.late_status == 1 ? 'Yes' : 'No',
-                record.status == 1 ? 'Verified' : 'Unverified'
-            ]);
-
-            currentProf = record.prof_name;
-        });
-
-        // Create worksheet
-        const ws = XLSX.utils.aoa_to_sheet(allRows);
-
-        // Set column widths
-        ws['!cols'] = [
-            { wch: 30 }, // Professor Name
-            { wch: 15 }, // Subject Code
-            { wch: 40 }, // Subject Description
-            { wch: 15 }, // Section
-            { wch: 30 }, // Student Name
-            { wch: 12 }, // Date
-            { wch: 10 }, // Time In
-            { wch: 10 }, // Time Out
-            { wch: 10 }, // Duration
-            { wch: 15 }, // Mode
-            { wch: 12 }, // Session Type
-            { wch: 50 }, // Activity
-            { wch: 10 },  // Late Status
-            { wch: 10 }  // Status
-        ];
-
-        // Style headers
-        const range = XLSX.utils.decode_range(ws['!ref']);
-        for (let C = range.s.c; C <= range.e.c; ++C) {
-            const address = XLSX.utils.encode_cell({ r: 0, c: C });
-            if (!ws[address]) continue;
-            ws[address].s = {
-                fill: { fgColor: { rgb: "FFFF00" } },
-                font: { bold: true }
-            };
-        }
-
-        // Append worksheet to workbook
-        XLSX.utils.book_append_sheet(wb, ws, "TADI Records");
-
-        // Generate filename
-        const filename = `${exprtname}.xlsx`;
-
-        // Save file
-        XLSX.writeFile(wb, filename);
-};

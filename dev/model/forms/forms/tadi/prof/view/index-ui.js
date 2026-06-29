@@ -1,69 +1,96 @@
-GET_ACADEMICLEVEL();
+function showRateLimitToast(message) {
+  const toastEl = document.getElementById("successToast");
+  const toastHeader = document.getElementById("toastHeader");
+  const toastTitle = document.getElementById("toastTitle");
+  const toastMessage = document.getElementById("toastMessage");
 
-UPDATE_TADI_STATUS();
+  if (!toastEl || !toastHeader || !toastTitle || !toastMessage) {
+    return;
+  }
 
-document.getElementById("searchButton").addEventListener("click", function () {
-    const lvlid = document.getElementById("academiclevel").value;
-    const yrlvlid = document.getElementById("academicYearLevel").value;
-    const prdid = document.getElementById("period").value;
-    const yrid = document.getElementById("acadyear").value;
-    const searchQuery = document.getElementById("subjectSearch").value;
+  toastTitle.textContent = "Notice";
+  toastMessage.textContent = message || "Too many submissions. Please try again later.";
 
-    const dashBoardReturn = document.getElementById('summaryTadiBtn');
-    dashBoardReturn.style.display = 'block';
-    
-    if ((!lvlid || !yrlvlid || !prdid || !yrid) && !searchQuery) {
-        showAlertModal("Please select all the filters or enter a Subject Code before searching.");
-         emptyCriteriaReport();
-        return;
-    }else{
-        resetCriteriaReport();
+  toastHeader.classList.remove(
+    "bg-success",
+    "bg-danger",
+    "bg-info",
+    "bg-primary",
+    "bg-secondary",
+    "bg-warning",
+    "text-white",
+    "text-dark"
+  );
+  toastHeader.classList.add("bg-warning", "text-dark");
+
+  const toast = bootstrap.Toast.getOrCreateInstance(toastEl);
+  toast.show();
+}
+
+function handleRateLimitJson(response) {
+  if (response.status === 429) {
+    return response.json().then(data => {
+      const message = data && data.message ? data.message : "Too many submissions. Please try again later.";
+      showRateLimitToast(message);
+      throw new Error("Rate limit reached");
+    }).catch(() => {
+      showRateLimitToast("Too many submissions. Please try again later.");
+      throw new Error("Rate limit reached");
+    });
+  }
+
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+
+  return response.json();
+}
+
+function disable_acknw_bttn() {
+    document.querySelectorAll('.acknw').forEach(button => {
+      const status = button.getAttribute('name');
+      const approved = button.getAttribute('data-approved');
+      if (status == 1 && approved == 0) {
+        let acknowledgedText = document.createTextNode('Pending Approval');
+            let span = document.createElement('span');
+            span.className = 'tadi-badge tadi-badge-pending';
+            span.style.color = '#eed038';
+            span.style.fontWeight = 'bold';
+            span.style.whiteSpace = 'nowrap';
+            span.appendChild(acknowledgedText);
+            button.replaceWith(span);
+      } else if (status == 1 && approved == 1){
+        let acknowledgedText = document.createTextNode('Approved');
+            let span = document.createElement('span');
+            span.className = 'tadi-badge tadi-badge-approved';
+            span.style.color = '#198754';
+            span.style.fontWeight = 'bold';
+            span.appendChild(acknowledgedText);
+            button.replaceWith(span);
+      }
+    });
+}
+
+function attachSubjectClickHandlers(results) {
+  results.forEach((value, index) => {
+    const button = document.getElementById(`viewTadiRecord${index}`);
+    if (button){
+      button.addEventListener("click", () => {
+        const sub_off_id = button.getAttribute("name");
+        getSectionList(sub_off_id);
+        displayModalHeader(value);
+
+        const modal = new bootstrap.Modal(document.getElementById("sectionList"));
+        modal.show();
+      });
     }
+  });
+}
 
-    const formData = new FormData();
-    formData.append('type', 'GET_SUBJECT_LIST');
-    formData.append('lvl_id', lvlid);
-    formData.append('yrlvl_id', yrlvlid);
-    formData.append('prd_id', prdid);
-    formData.append('yr_id', yrid);
-    formData.append('search', searchQuery);
-
-    const tbodySpinner = document.querySelector('.prof_dashboard_table');
-    tbodySpinner.innerHTML =`<tr class="loading-spinner hide">
-                                    <td colspan="4">
-                                        <div class="text-center">
-                                            <div class="spinner-border " role="status">
-                                                <span class="sr-only"></span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>`;
-
-    const thead = document.getElementById('theadTable');
-    thead.innerHTML = '';
-    thead.innerHTML = `<tr id="searchResultHeader" >
-                        <th scope="col" style="background-color: #181a46; color: white;">Section</th>
-                        <th scope="col" style="background-color: #181a46; color: white;">Subject Code</th>
-                        <th scope="col" style="background-color: #181a46; color: white;">Description</th>
-                        <th scope="col" style="background-color: #181a46; color: white;"></th>
-                    </tr>`;
-
-        const summary = document.querySelector('.summary');
-        const tableWrapper = document.querySelector('.inst_list_tbl_wrapper');
-        tableWrapper.classList.remove('dashboard');
-        summary.classList.add("summary-hide");
-        document.getElementById('summaryId').style.display = 'none';
-
-    fetch('forms/tadi/prof/controller/index-info.php', {
-        method: 'POST',
-        body: formData
+document.getElementById('summaryTadiBtn').addEventListener("click",()=>{
+        displaySummary();
+        document.getElementById('summaryTadiBtn').style.display = 'none';
     })
-    .then(handleRateLimitJson)
-    .then((result) => {
-        DISPLAY_PROFESSOR_SUBJECT(result);
-    })
-    .catch((err) => console.error("Fetch error:", err));
-});
 
 document.getElementById("subjectSearch").addEventListener("keypress", function (e) {
     if (e.key === "Enter") {
