@@ -74,7 +74,7 @@
 
                             <div class="col-md-6 col-lg-4">
                                 <label for="attach" class="form-label">Attachment <span class="text-danger">*</span></label>
-                                <input type="file" class="form-control" name="attach" id="attach" accept=".jpg,.jpeg,.png" required>
+                                <input type="file" class="form-control" name="attach" id="attach" accept=".jpg,.jpeg,.png,.webp" required>
                                 <div class="invalid-feedback">Please upload an image</div>
                             </div>
                             <input type="hidden" name="prof_id" value="0" id="prof_id">

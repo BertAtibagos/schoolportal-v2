@@ -174,6 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
             echo json_encode($fetch);
             exit;
         }
+
         $image_path = null;
         $taken_date = null; // for storing original taken date from EXIF
 
@@ -192,7 +193,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
             $uploadDir = $baseDir . $prof_id . '/' . $date_folder . '/';
 
             if (!is_dir($uploadDir)) {
-                if (!mkdir($uploadDir, 0777, true)) {
+                if (!mkdir($uploadDir, 0755, true)) {
                     $fetch['message'] = "Failed to create upload directory.";
                     logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
                     echo json_encode($fetch);
@@ -205,7 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
             $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
 
             
-            $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
             if (!in_array($extension, $allowedExtensions)) {
                 $fetch['message'] = "Invalid file type. Only JPG, PNG, GIF, and WEBP are allowed.";
                 logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
@@ -217,7 +218,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
             $mimeType = finfo_file($finfo, $_FILES['attach']['tmp_name']);
             finfo_close($finfo);
 
-            $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
             if (!in_array($mimeType, $allowedMimeTypes)) {
                 $fetch['message'] = "Invalid file format.";
                 logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
