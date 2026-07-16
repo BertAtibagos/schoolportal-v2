@@ -10,6 +10,31 @@ ini_set('log_errors', 1);
 session_start();
 include('../../../../../configuration/connection-config.php');
 
+function get_current_academic_period_id($dbConn, $acadLvlId, $acadYrId) {
+        $qry = "SELECT `SchlAcadPrd_ID` AS acad_prd_id
+                        FROM `schoolacademicyearperiod`
+                        WHERE `SchlAcadLvl_ID` = ?
+                            AND `SchlAcadYr_ID` = ?
+                            AND `SchlAcadYrPrd_ISACTIVE` = 1
+                            AND `SchlAcadYrPrd_ISOPEN` = 1
+                        ORDER BY `SchlAcadYrPrdSms_ID` DESC
+                        LIMIT 1";
+
+        $stmt = $dbConn->prepare($qry);
+        $stmt->bind_param('ii', $acadLvlId, $acadYrId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result ? $result->fetch_assoc() : null;
+        $stmt->close();
+
+        if (!$row || !isset($row['acad_prd_id'])) {
+                return null;
+        }
+
+        $periodId = intval($row['acad_prd_id']);
+        return $periodId > 0 ? $periodId : null;
+}
+
 $type = $_POST['type'];
 
 if($type == 'GET_ALL_TOTAL'){
@@ -152,6 +177,8 @@ if($type == 'GET_TADI_DETAILS_BY_CUTOFF'){
 
     $queryFilter = "";
     $binding = "";
+    $values = [];
+    $bind = '';
 
     if($rangeType == 'byDate'){
         if($filterType == 'deptName_all'){
@@ -317,13 +344,19 @@ if($type == 'GET_TADI_DETAILS_BY_CUTOFF'){
                 tadi.schltadi_date,
                 tadi.schltadi_timein";
 
-    $stmt = $dbConn->prepare($qry);
-    $stmt->bind_param($bind, ...$values);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $fetch = $result->fetch_all(MYSQLI_ASSOC);
-    $stmt->close();
-    $dbConn->close();
+    if ($bind === '' || empty($values)) {
+        http_response_code(400);
+        $fetch = ['error' => 'Invalid rangeType/filterType'];
+        $dbConn->close();
+    } else {
+        $stmt = $dbConn->prepare($qry);
+        $stmt->bind_param($bind, ...$values);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $fetch = $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        $dbConn->close();
+    }
 }
 
 if($type == 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY'){
@@ -606,10 +639,94 @@ if ($type == 'GET_ACAD_YEAR') {
     $dbConn->close();
 }
 
+if($type == 'GET_INSTRUCTOR_SCHEDULE'){
+
+    $profId = isset($_POST['SchlProf_ID']) ? intval($_POST['SchlProf_ID']) : 0;
+
+    // Optional: filter schedule by currently-open academic period ("current semester")
+    // Accepted values: "all" (default), "current" / "currentSemester" / "currSemester"
+    $semesterFilter = isset($_POST['semesterFilter']) ? trim(strval($_POST['semesterFilter'])) : 'all';
+    $useCurrentSemester = in_array(strtolower($semesterFilter), ['current', 'currentsemester', 'currsemester'], true);
+
+    // Defaults align with other queries in this controller (college level + acad year 19)
+    $acadLvlId = isset($_POST['lvlid']) ? intval($_POST['lvlid']) : (isset($_POST['lvl_id']) ? intval($_POST['lvl_id']) : 2);
+    $acadYrId = isset($_POST['acadyr']) ? intval($_POST['acadyr']) : (isset($_POST['acadyrid']) ? intval($_POST['acadyrid']) : 19);
+
+    if ($profId <= 0) {
+        http_response_code(400);
+        $fetch = ['error' => 'Missing or invalid SchlProf_ID'];
+    } else {
+        $extraWhere = "";
+        $bind = 'i';
+        $values = [$profId];
+
+        if ($useCurrentSemester) {
+            $currPrdId = get_current_academic_period_id($dbConn, $acadLvlId, $acadYrId);
+            if ($currPrdId === null) {
+                http_response_code(400);
+                $fetch = ['error' => 'No currently-open academic period found for this level/year'];
+                $dbConn->close();
+            } else {
+                $extraWhere = " AND off.`SchlAcadLvl_ID` = ? AND off.`SchlAcadYr_ID` = ? AND off.`SchlAcadPrd_ID` = ?";
+                $bind .= 'iii';
+                $values[] = $acadLvlId;
+                $values[] = $acadYrId;
+                $values[] = $currPrdId;
+            }
+        }
+
+        if (!isset($fetch)) {
+        $qry = "SELECT
+                    t.course_description,
+                    TRIM(SUBSTRING_INDEX(t.sched, ' ', 1)) AS day,
+                    TRIM(SUBSTRING(t.sched, LOCATE(' ', t.sched) + 1)) AS time,
+                    t.section,
+                    t.no_of_hours
+                FROM (
+                    SELECT
+                        subj.`SchlAcadSubj_DESC` AS course_description,
+                        sec.`SchlAcadSec_NAME` AS section,
+                        IFNULL(off.`SchlEnrollSubjOff_UNIT`, 0) AS no_of_hours,
+                        FORMAT_SCHEDULE_STRING(off.`SchlEnrollSubjOff_SCHEDULE_2`) AS sched
+                    FROM `schoolenrollmentsubjectoffered` off
+                    LEFT JOIN `schoolacademicsubject` subj
+                        ON off.`SchlAcadSubj_ID` = subj.`SchlAcadSubjSms_ID`
+                    LEFT JOIN `schoolacademicsection` sec
+                        ON off.`SchlAcadSec_ID` = sec.`SchlAcadSecSms_ID`
+                    WHERE off.`SchlEnrollSubjOff_STATUS` = 1
+                        AND off.`SchlEnrollSubjOff_ISACTIVE` = 1
+                        AND FIND_IN_SET(?, off.`SchlProf_ID`) > 0
+                        $extraWhere
+                ) t
+                ORDER BY t.section, t.course_description";
+
+        $stmt = $dbConn->prepare($qry);
+        $stmt->bind_param($bind, ...$values);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $fetch = $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        $dbConn->close();
+        }
+    }
+}
+
 if($type == "GET_TABULATION"){
     $lvlid = $_POST['lvlid'];
     $acadyrid = $_POST['acadyr'];
-    $prdid = $_POST['prdid'];
+    $prdidRaw = isset($_POST['prdid']) ? trim(strval($_POST['prdid'])) : '';
+    if ($prdidRaw === '' || strtolower($prdidRaw) === 'current' || strtolower($prdidRaw) === 'currentsemester' || strtolower($prdidRaw) === 'currsemester' || intval($prdidRaw) <= 0) {
+        $resolvedPrdId = get_current_academic_period_id($dbConn, intval($lvlid), intval($acadyrid));
+        if ($resolvedPrdId === null) {
+            http_response_code(400);
+            echo json_encode(['error' => 'No currently-open academic period found for this level/year']);
+            $dbConn->close();
+            exit;
+        }
+        $prdid = $resolvedPrdId;
+    } else {
+        $prdid = intval($prdidRaw);
+    }
     $filterType = $_POST['filterType'];
     $fDate = isset($_POST['startDate']) && $_POST['startDate'] !== '' ? $_POST['startDate'] : date('Y-m-01');
     $lDate = isset($_POST['endDate']) && $_POST['endDate'] !== '' ? $_POST['endDate'] : date('Y-m-t');
@@ -640,6 +757,7 @@ if($type == "GET_TABULATION"){
 
     $qry = "WITH tadi_hours AS (
                 SELECT 
+                    t.`schlenrollsubjoff_id`,
                     t.`schlprof_id`,
                     o.`SchlAcadSubj_ID`,
                     o.`SchlAcadCrses_ID`,
@@ -656,14 +774,16 @@ if($type == "GET_TABULATION"){
                     AND o.`SchlAcadYr_ID` = ?
                     AND o.`SchlAcadPrd_ID` = ?
                     AND FIND_IN_SET(t.`schlprof_id`, o.`SchlProf_ID`) > 0
+                    AND t.`schltadi_status` = 1
+                    AND t.`schltadi_isactive` = 1
+                    AND t.`schltadi_isconfirm` = 1
                     AND t.`schltadi_timein` IS NOT NULL
                     AND t.`schltadi_timeout` IS NOT NULL
-                    AND t.`schltadi_isconfirm` = 1
-                    AND t.`schltadi_status` = 1
-                GROUP BY t.`schlprof_id`, o.`SchlAcadSubj_ID`, o.`SchlAcadCrses_ID`
+                GROUP BY t.`schlenrollsubjoff_id`, t.`schlprof_id`, o.`SchlAcadSubj_ID`, o.`SchlAcadCrses_ID`
             ),
             enrolled_counts AS (
                 SELECT 
+                    o.`SchlEnrollSubjOffSms_ID`,
                     o.`SchlAcadSubj_ID`,
                     o.`SchlAcadCrses_ID`,
                     o.`SchlProf_ID`,
@@ -681,9 +801,12 @@ if($type == "GET_TABULATION"){
                     AND IFNULL(asmt.`SchlEnrollWithdrawType_ID`, 0) = 0
                     AND IFNULL(stud.`SchlStud_STATUS`, 0) = 1
                     AND IFNULL(stud.`SchlStud_ISACTIVE`, 0) = 1
-                GROUP BY o.`SchlAcadSubj_ID`, o.`SchlAcadCrses_ID`, o.`SchlProf_ID`
+                GROUP BY o.`SchlEnrollSubjOffSms_ID`, o.`SchlAcadSubj_ID`, o.`SchlAcadCrses_ID`, o.`SchlProf_ID`
             )
-            SELECT  
+            SELECT
+                MIN(off.SchlEnrollSubjOffSms_ID) AS rec_id,
+                off.SchlProf_ID AS profID,
+                emp.`SchlEmpSms_ID` AS prof_id,
                 CONCAT(emp.`SchlEmp_LNAME`, ', ', emp.`SchlEmp_FNAME`) AS prof_name,
                 subj.`SchlAcadSubj_CODE` AS subject_code,
                 subj.`SchlAcadSubj_DESC` AS subject_desc,
@@ -695,7 +818,9 @@ if($type == "GET_TABULATION"){
                 IFNULL(MAX(th.filtered_hours), 0) AS filtered_hours,
                 IFNULL(MAX(th.total_accumulated_hours), 0) AS total_accumulated_hours,
                 subj.`SchlAcadSubj_LEC` AS lec_units,
-                subj.`SchlAcadSubj_LAB` AS lab_units
+                subj.`SchlAcadSubj_LAB` AS lab_units,
+                off.SchlProf_UNIT_HRS AS prof_unit_hrs,
+                off.SchlEnrollSubjOff_UNIT_HRS AS subj_unit_hrs
 
             FROM schoolenrollmentsubjectoffered off
             LEFT JOIN schoolacademicsubject subj ON off.`SchlAcadSubj_ID` = subj.`SchlAcadSubjSms_ID`
@@ -704,11 +829,13 @@ if($type == "GET_TABULATION"){
             LEFT JOIN schooldepartment dept ON crse.`SchlDept_ID` = dept.`SchlDeptSms_ID`
             LEFT JOIN schoolemployee emp ON FIND_IN_SET(emp.`SchlEmpSms_ID`, off.`SchlProf_ID`) > 0
             LEFT JOIN tadi_hours th 
-                ON th.`schlprof_id` = emp.`SchlEmpSms_ID`
+                ON th.`schlenrollsubjoff_id` = off.`SchlEnrollSubjOffSms_ID`
+                AND th.`schlprof_id` = emp.`SchlEmpSms_ID`
                 AND th.`SchlAcadSubj_ID` = subj.`SchlAcadSubjSms_ID`
                 AND th.`SchlAcadCrses_ID` = crse.`SchlAcadCrseSms_ID`
             LEFT JOIN enrolled_counts ec
-                ON ec.`SchlAcadSubj_ID` = subj.`SchlAcadSubjSms_ID`
+                ON ec.`SchlEnrollSubjOffSms_ID` = off.`SchlEnrollSubjOffSms_ID`
+                AND ec.`SchlAcadSubj_ID` = subj.`SchlAcadSubjSms_ID`
                 AND ec.`SchlAcadCrses_ID` = crse.`SchlAcadCrseSms_ID`
                 AND FIND_IN_SET(emp.`SchlEmpSms_ID`, ec.`SchlProf_ID`) > 0
 
@@ -718,12 +845,14 @@ if($type == "GET_TABULATION"){
                 AND off.`SchlEnrollSubjOff_STATUS` = 1
                 AND off.`SchlEnrollSubjOff_ISACTIVE` = 1
                 $filter
+                AND CONCAT(emp.`SchlEmp_LNAME`, ', ', emp.`SchlEmp_FNAME`) IS NOT NULL
 
             GROUP BY 
                 emp.`SchlEmpSms_ID`,
                 subj.`SchlAcadSubjSms_ID`,
                 crse.`SchlAcadCrseSms_ID`,
-                dept.`SchlDeptSms_ID`
+                dept.`SchlDeptSms_ID`,
+                off.SchlEnrollSubjOffSms_ID
 
             ORDER BY emp.`SchlEmp_LNAME`, subj.`SchlAcadSubj_CODE`";
 
