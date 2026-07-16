@@ -9,6 +9,8 @@
     session_start();
     include('../../../../../configuration/connection-config.php');
 
+$fetch = [];
+
 if ($_POST['type'] == 'UPDATE_TADI_STATUS') {
     if (!$dbConn) {
         echo json_encode(['success' => false, 'error' => 'Database connection failed']);
@@ -39,20 +41,32 @@ if ($_POST['type'] == 'UPDATE_TADI_STATUS') {
         $status = 0;
     }
     
-    $query = "UPDATE schooltadi SET schltadi_status = ? WHERE schltadi_id = ?";
+    $query = "UPDATE schooltadi
+              SET schltadi_status = ?
+              WHERE schltadi_id = ?
+              AND schlprof_id = ?
+              AND schltadi_isactive = 1
+              AND schltadi_isconfirm = 0";
     $stmt = $dbConn->prepare($query);
     if (!$stmt) {
         echo json_encode(['success' => false, 'error' => 'Prepare failed: ' . $dbConn->error]);
         exit;
     }
-    $stmt->bind_param("ii", $status, $tadi_id);
+    $stmt->bind_param("iii", $status, $tadi_id, $USERID);
     if (!$stmt->execute()) {
         echo json_encode(['success' => false, 'error' => 'Query failed: ' . $stmt->error]);
         exit;
     }
 
+    $affectedRows = $stmt->affected_rows;
+
     $stmt->close();
     $dbConn->close();
+
+    if ($affectedRows === 0) {
+        echo json_encode(['success' => false, 'error' => 'Unauthorized or invalid record state']);
+        exit;
+    }
     
     echo json_encode(['success' => true, 'status' => $status]);
 }
@@ -67,7 +81,8 @@ if (isset($_POST['type']) && $_POST['type'] == 'GET_UNVERIFIED_COUNT') {
         
         $qry = "SELECT COUNT(`schltadi_id`) AS unverified_count
                 FROM `schooltadi` 
-                WHERE `schltadi_status` = 0 
+                WHERE `schltadi_status` = 0
+                AND schltadi_isactive = 1
                 AND `schlenrollsubjoff_id` = ?";
 
         $stmt = $dbConn->prepare($qry);
