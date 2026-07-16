@@ -595,3 +595,54 @@ async function tabulationReport(dateStart = '', dateEnd = ''){
         console.log("Error fetching: ", error);
     }
 }
+
+function parseProfUnitHours(value) {
+    const parsedHours = {};
+
+    if (value === null || value === undefined || value === '') {
+        return parsedHours;
+    }
+
+    const normalizedValue = Array.isArray(value) ? value.join(',') : String(value);
+
+    normalizedValue.split(',').forEach(entry => {
+        const trimmedEntry = entry.trim();
+        if (!trimmedEntry) {
+            return;
+        }
+
+        const parts = trimmedEntry.split(/[:=]/);
+        if (parts.length < 2) {
+            return;
+        }
+
+        const profId = parseInt(parts[0].trim(), 10);
+        const profHours = parseFloat(parts[1].trim());
+
+        if (Number.isFinite(profId) && Number.isFinite(profHours)) {
+            parsedHours[profId] = profHours;
+        }
+    });
+
+    return parsedHours;
+}
+
+function getAssignedProfHours(data) {
+    const profId = parseInt(String(data.prof_id ?? '').trim(), 10);
+    const profHoursMap = parseProfUnitHours(data.prof_unit_hrs ?? data.SchlProf_UNIT_HRS);
+    const subjectUnitHrs = parseFloat(data.subj_unit_hrs ?? data.SchlEnrollSubjOff_UNIT_HRS);
+    const assignedProfHours = Number.isFinite(profId) && Object.prototype.hasOwnProperty.call(profHoursMap, profId)
+        ? profHoursMap[profId]
+        : 0;
+    const totalAssignedHours = Object.values(profHoursMap).reduce((sum, hours) => sum + (parseFloat(hours) || 0), 0);
+    const unitsMatch = Number.isFinite(subjectUnitHrs) && Math.abs(totalAssignedHours - subjectUnitHrs) < 0.0001;
+
+    return {
+        profId,
+        profHoursMap,
+        assignedProfHours,
+        subjectUnitHrs,
+        totalAssignedHours,
+        isValid: assignedProfHours > 0 && unitsMatch
+    };
+}
