@@ -598,14 +598,16 @@
                 ) AS total_unverified,
                 COUNT(*) AS total_count 
                 FROM
-                schooltadi 
-                WHERE `schlenrollsubjoff_id` = ?) 
+                    schooltadi 
+                WHERE `schlenrollsubjoff_id` = ?
+                AND schltadi_isactive = 1
+                ) 
                 SELECT 
-                verified_count,
-                total_unverified,
-                total_count
+                    verified_count,
+                    total_unverified,
+                    total_count
                 FROM
-                counts ";
+                    counts ";
 
         $stmt = $dbConn->prepare($qry);
         $stmt->bind_param("i",$subj_off);
