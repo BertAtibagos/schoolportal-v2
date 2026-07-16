@@ -248,20 +248,3 @@ function resetStartEndDateInput(){
       endDate.classList.remove("border-danger");
       endDate.classList.remove("is-invalid");
 }
-
-function displaySummary(){
-    const thead = document.getElementById('theadTable');
-    const summaryCard = document.querySelector('.summary');
-
-    summaryCard.classList.remove("summary-hide");
-    document.querySelector('.inst_list_tbl_wrapper').classList.add("dashboard");
-    thead.innerHTML = '';
-    thead.innerHTML = `<tr id="defaultHeader">
-                            <th scope="col" style="background-color: #181a46; color: white;">Section</th>
-                            <th scope="col" style="background-color: #181a46; color: white;">Subject</th>
-                            <th scope="col" style="background-color: #181a46; color: white;">Total Records</th>
-                            <th scope="col" style="background-color: #181a46; color: white;">Unverified Records</th>
-                            <th scope="col" style="background-color: #181a46; color: white;"></th>
-                        </tr>`;
-    tadiSummary();
-}
