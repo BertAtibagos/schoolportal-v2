@@ -11,6 +11,8 @@
     session_start();
     include('../../../../../configuration/connection-config.php');
 
+	$fetch = [];
+
 	function rateLimit(int $window, int $max, string $key){
         $rateLimitWindowSec = $window;
         $rateLimitMax = $max;
@@ -135,61 +137,6 @@
 		$fetch = $rreg->fetch_ALL(MYSQLI_ASSOC);
 		$dbConn->close();
 	}
-
-	// if ($type == 'GET_DEPARTMENTAL_SUBJECT') {
-
-	// 	$user = $_SESSION['USERID'];
-	// 	$lvlid = $_POST['lvl_id'];
-	// 	$prdid = $_POST['prd_id'];
-	// 	$yrid = $_POST['yr_id'];
-	// 	$yrlvlid = $_POST['yrlvl_id'];
-
-	// 	$qry = "SELECT  DISTINCT 				
-	// 				`schl_acad_subj`.`SchlAcadSubj_desc` AS `subj_desc`,
-	// 				`schl_acad_subj`.`SchlAcadSubj_CODE` AS `subj_code`,
-	// 				`schl_acad_subj`.`SchlAcadSubj_ID` AS `subj_id`,
-	// 				`schl_enr_subj_off`.`SchlAcadLvl_ID` AS `lvlid`,
-	// 				`schl_enr_subj_off`.`SchlAcadYr_ID` AS `yrid`,
-	// 				`schl_enr_subj_off`.`SchlAcadPrd_ID` AS `prdid`,
-	// 				`schl_enr_subj_off`.`SchlAcadYrLvl_ID` AS `yrlvlid`
-	// 			FROM `schoolenrollmentsubjectoffered` AS `schl_enr_subj_off`
-
-	// 			LEFT JOIN `schoolacademicsubject` `schl_acad_subj`
-	// 			ON `schl_enr_subj_off`.`SchlAcadSubj_ID` = `schl_acad_subj`.`SchlAcadSubjSms_ID`
-
-	// 			LEFT JOIN `schoolacademiccourses` `schl_acad_crses`
-	// 			ON `schl_enr_subj_off`.`SchlAcadCrses_ID` = `schl_acad_crses`.`SchlAcadCrseSms_ID`
-
-	// 			LEFT JOIN `schooldepartment` `schl_dept`
-	// 			ON `schl_acad_crses`.`SchlDept_ID` = `schl_dept`.`SchlDeptSms_ID`
-
-	// 			LEFT JOIN`schoolacademicsection` AS `schl_acad_sec`
-	// 			ON `schl_enr_subj_off`.`SchlAcadSec_ID` = `schl_acad_sec`.`SchlAcadSecSms_ID`
-
-	// 			LEFT JOIN schoolemployee AS emp
-	// 			ON `schl_enr_subj_off`. `SchlProf_ID`= emp.`SchlEmpSms_ID`
-	// 			WHERE
-
-	// 			`schl_enr_subj_off`.`SchlAcadLvl_ID` = ?  
-	// 			AND `schl_enr_subj_off`.`SchlAcadYr_ID`  = ?
-	// 			AND  `schl_enr_subj_off`.`SchlAcadPrd_ID` = ?  
-	// 			AND `schl_enr_subj_off`.`SchlAcadYrLvl_ID` = ?
-	// 			AND 
-	// 				(	SELECT `SchlDept_ID` 
-	// 					FROM `schoolemployee` 
-	// 					WHERE `SchlEmpSms_ID` = ?
-	// 				) = `schl_dept`.`SchlDeptSms_ID`
-	// 			AND schl_acad_subj.`SchlAcadSubj_DESC` IS NOT NULL
-	// 			AND `schl_enr_subj_off`.`SchlEnrollSubjOff_ISACTIVE` = 1";
-
-	// 	$stmt = $dbConn->prepare($qry);
-	// 	$stmt->bind_param("iiiii", $lvlid, $yrid, $prdid, $yrlvlid, $user);
-	// 	$stmt->execute();
-	// 	$result = $stmt->get_result();
-	// 	$fetch = $result->fetch_all(MYSQLI_ASSOC);
-	// 	$stmt->close();
-	// 	$dbConn->close();
-	// }
 
 	if ($type == 'GET_INSTRUCTOR_LIST') {
 
@@ -659,7 +606,8 @@
 				LEFT JOIN `schoolacademicsection` AS section
 					ON schl_subjoff.`SchlAcadSec_ID` = section.`SchlAcadSecSms_ID`
 				WHERE schl_tadi.`SchlProf_ID` = ?
-				AND schl_tadi.`schlenrollsubjoff_id` = ?";
+				AND schl_tadi.`schlenrollsubjoff_id` = ?
+				AND schl_tadi.`schltadi_isactive` = 1";
 
 		$params = [];
 		$types  = "ii"; 
@@ -798,20 +746,35 @@
 	}
 
 	if($type == 'APPROVE_TADI_REQUEST'){
+		$user = $_SESSION['EMPLOYEE']['ID'] ?? 0;
+		if (empty($user)) {
+			$fetch = ['status' => 'failed', 'error' => 'Session expired'];
+			echo json_encode($fetch);
+			exit;
+		}
+
 		$tadId = $_POST['tadi_id'];
 		$profId = $_POST['prof_id'];
 		$subjId = $_POST['subj_id'];
 
 		$qry =	"UPDATE `schooltadi`
+				INNER JOIN `schoolenrollmentsubjectoffered` AS `off`
+					ON `schooltadi`.`schlenrollsubjoff_id` = `off`.`SchlEnrollSubjOffSms_ID`
+				INNER JOIN `schoolacademiccourses` AS `crse`
+					ON `off`.`SchlAcadCrses_ID` = `crse`.`SchlAcadCrseSms_ID`
+				INNER JOIN `schooldepartment` AS `dept`
+					ON `crse`.`SchlDept_ID` = `dept`.`SchlDeptSms_ID`
 				SET `schltadi_isconfirm` = 1
 				WHERE `schltadi_id` = ?
 				AND `schltadi_status` = 1
 				AND `schltadi_isactive` = 1
-				AND `schlprof_id` = ?
-				AND `schlenrollsubjoff_id` = ?";
+				AND `schltadi_isconfirm` = 0
+				AND schooltadi.`schlprof_id` = ?
+				AND schooltadi.`schlenrollsubjoff_id` = ?
+				AND `dept`.`SchlDeptHead_ID` = ?";
 
 		$stmt = $dbConn->prepare($qry);
-		$stmt->bind_param("iii", $tadId, $profId, $subjId);
+		$stmt->bind_param("iiii", $tadId, $profId, $subjId, $user);
 		$stmt->execute();
 		$affectedRows = $stmt->affected_rows;
 		$stmt->close();
