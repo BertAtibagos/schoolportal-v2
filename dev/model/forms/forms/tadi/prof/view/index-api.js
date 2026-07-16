@@ -1,3 +1,18 @@
+function shouldLoadSummary(load, isSearch = false) {
+    let summaryLoad = true;
+
+    if (isSearch) {
+      summaryLoad = false;
+    }else{
+      if(load){
+        summaryLoad = true;
+      }
+    }
+    return summaryLoad;
+}
+
+  let skipTadiSummaryAutoLoad = false;
+
 function GET_ACADEMICLEVEL() {
     let isFirstLoad = true;
 
@@ -98,7 +113,7 @@ function getAcademicPeriods(lvlid) {
 }
 
 function getAcademicYears(lvlid, prdid) {
-  let shouldLoadSummary = true;
+  let LoadSummary = shouldLoadSummary(true, skipTadiSummaryAutoLoad);
   const searchButton = document.getElementById("searchButton");
   fetch("forms/tadi/prof/controller/index-info.php", {
     method: "POST",
@@ -118,9 +133,9 @@ function getAcademicYears(lvlid, prdid) {
       ? result.map(value => `<option value="${value.Period_id}">${value.YEAR_NAME}</option>`).join("")
       : "<option>No Year Found.</option>";
 
-    if (shouldLoadSummary) {
+    if (LoadSummary) {
       tadiSummary();
-      shouldLoadSummary = false;
+      shouldLoadSummary(false,true)
     }
     searchButton.disabled = false;
   })
@@ -474,7 +489,7 @@ function DISPLAYALL_TADI_RECORDS(subj_off_id,subjDesc = null,subjSec = null, sum
           ${viewUploadCell}
           <input type="hidden" class="pass" id="pass${record.sub_off_id}" value="${record.sub_off_id}">
         </td>
-        <td><button class="btn acknw btn-success" 
+        <td><button class="btn acknw" 
             value="${record.schltadi_ID}" 
             name="${record.tadi_status}" 
             data-subj-off="${record.sub_off_id}" 
@@ -764,66 +779,68 @@ async function UPDATE_TADI_COUNT(subjOff){
 }
 
 document.getElementById("searchButton").addEventListener("click", function () {
-    const lvlid = document.getElementById("academiclevel").value;
-    const yrlvlid = document.getElementById("academicYearLevel").value;
-    const prdid = document.getElementById("period").value;
-    const yrid = document.getElementById("acadyear").value;
-    const searchQuery = document.getElementById("subjectSearch").value;
+  let loadSummary = shouldLoadSummary(false,true);
+  skipTadiSummaryAutoLoad = true;
+  const lvlid = document.getElementById("academiclevel").value;
+  const yrlvlid = document.getElementById("academicYearLevel").value;
+  const prdid = document.getElementById("period").value;
+  const yrid = document.getElementById("acadyear").value;
+  const searchQuery = document.getElementById("subjectSearch").value;
 
-    const dashBoardReturn = document.getElementById('summaryTadiBtn');
-    dashBoardReturn.style.display = 'block';
-    
-    if ((!lvlid || !yrlvlid || !prdid || !yrid) && !searchQuery) {
-        showAlertModal("Please select all the filters or enter a Subject Code before searching.");
-         emptyCriteriaReport();
-        return;
-    }else{
-        resetCriteriaReport();
-    }
+  const dashBoardReturn = document.getElementById('summaryTadiBtn');
+  dashBoardReturn.style.display = 'block';
+  
+  if ((!lvlid || !yrlvlid || !prdid || !yrid) && !searchQuery) {
+      showAlertModal("Please select all the filters or enter a Subject Code before searching.");
+        emptyCriteriaReport();
+      return;
+  }else{
+      resetCriteriaReport();
+  }
 
-    const formData = new FormData();
-    formData.append('type', 'GET_SUBJECT_LIST');
-    formData.append('lvl_id', lvlid);
-    formData.append('yrlvl_id', yrlvlid);
-    formData.append('prd_id', prdid);
-    formData.append('yr_id', yrid);
-    formData.append('search', searchQuery);
+  const formData = new FormData();
+  formData.append('type', 'GET_SUBJECT_LIST');
+  formData.append('lvl_id', lvlid);
+  formData.append('yrlvl_id', yrlvlid);
+  formData.append('prd_id', prdid);
+  formData.append('yr_id', yrid);
+  formData.append('search', searchQuery);
 
-    const tbodySpinner = document.querySelector('.prof_dashboard_table');
-    tbodySpinner.innerHTML =`<tr class="loading-spinner hide">
-                                    <td colspan="4">
-                                        <div class="text-center">
-                                            <div class="spinner-border " role="status">
-                                                <span class="sr-only"></span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>`;
+  const tbodySpinner = document.querySelector('.prof_dashboard_table');
+  tbodySpinner.innerHTML =`<tr class="loading-spinner hide">
+                                  <td colspan="4">
+                                      <div class="text-center">
+                                          <div class="spinner-border " role="status">
+                                              <span class="sr-only"></span>
+                                          </div>
+                                      </div>
+                                  </td>
+                              </tr>`;
 
-    const thead = document.getElementById('theadTable');
-    thead.innerHTML = '';
-    thead.innerHTML = `<tr id="searchResultHeader" >
-                        <th scope="col" style="background-color: #181a46; color: white;">Section</th>
-                        <th scope="col" style="background-color: #181a46; color: white;">Subject Code</th>
-                        <th scope="col" style="background-color: #181a46; color: white;">Description</th>
-                        <th scope="col" style="background-color: #181a46; color: white;"></th>
-                    </tr>`;
+  const thead = document.getElementById('theadTable');
+  thead.innerHTML = '';
+  thead.innerHTML = `<tr id="searchResultHeader" >
+                      <th scope="col" style="background-color: #181a46; color: white;">Section</th>
+                      <th scope="col" style="background-color: #181a46; color: white;">Subject Code</th>
+                      <th scope="col" style="background-color: #181a46; color: white;">Description</th>
+                      <th scope="col" style="background-color: #181a46; color: white;"></th>
+                  </tr>`;
 
-        const summary = document.querySelector('.summary');
-        const tableWrapper = document.querySelector('.inst_list_tbl_wrapper');
-        tableWrapper.classList.remove('dashboard');
-        summary.classList.add("summary-hide");
-        document.getElementById('summaryId').style.display = 'none';
+      const summary = document.querySelector('.summary');
+      const tableWrapper = document.querySelector('.inst_list_tbl_wrapper');
+      tableWrapper.classList.remove('dashboard');
+      summary.classList.add("summary-hide");
+      document.getElementById('summaryId').style.display = 'none';
 
-    fetch('forms/tadi/prof/controller/index-info.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(handleRateLimitJson)
-    .then((result) => {
-        DISPLAY_PROFESSOR_SUBJECT(result);
-    })
-    .catch((err) => console.error("Fetch error:", err));
+  fetch('forms/tadi/prof/controller/index-info.php', {
+      method: 'POST',
+      body: formData
+  })
+  .then(handleRateLimitJson)
+  .then((result) => {
+      DISPLAY_PROFESSOR_SUBJECT(result);
+  })
+  .catch((err) => console.error("Fetch error:", err));
 });
 
 GET_ACADEMICLEVEL();
