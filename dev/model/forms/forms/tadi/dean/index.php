@@ -1,3 +1,6 @@
+<?php  
+    echo '<script>console.log("Session Data:", ' . json_encode($_SESSION) . ');</script>';
+?>
 <link rel="stylesheet" href="forms/tadi/dean/css/css_dean_tadi.css?t=<?php echo time(); ?>">
 <section class="tadi-section">
     <div class="tadi-main-card mx-3 mt-2">
@@ -273,24 +276,72 @@
         </div>
     </div>
 
-    <div id="imageModal" class="modal fade tadi-modal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered" style="max-width:580px;">
-            <div class="modal-content" style="max-height:90vh; overflow:hidden;">
-                <div class="modal-header py-2 px-3">
-                    <h6 class="modal-title m-0">
+    <div id="imageModal" class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered" >
+            <div class="modal-content tadi-img-modal">
+
+                <div class="tadi-img-modal-header">
+                    <span class="img-modal-title">
                         <i class="fas fa-image me-2"></i>Attachment Preview
-                    </h6>
-                    <button type="button" class="btn-close btn-close-white" id="closeModalBtn"></button>
+                    </span>
+
+                    <button type="button" class="tadi-close-btn" id="closeModalBtn">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
-                <div class="modal-body p-3" style="background:#fff;">
-                    <div class="img-container">
-                        <img id="attchPrev" src="" alt="Image Preview" class="img-fluid" />
+                <div class="modal-body p-3">
+                    <div id="imageCarousel" class="carousel slide" data-bs-interval="false">
+                        <div class="carousel-inner">
+                            <!-- Start Image -->
+                            <div class="carousel-item active">
+                                <div class="img-container">
+                                    <span class="image-label start-label">
+                                        Start of class
+                                    </span>
+                                    <img id="start_attchPrev" src="" alt="Start Image" class="img-fluid">
+                                </div>
+                            </div>
+                            <!-- End Image -->
+                            <div class="carousel-item">
+                                <div class="img-container">
+                                    <span class="image-label end-label">
+                                        End of class
+                                    </span>
+                                    <img id="end_attchPrev" src="" alt="End Image" class="img-fluid">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Previous -->
+                        <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon"></span>
+                        </button>
+                        <!-- Next -->
+                        <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon"></span>
+                        </button>
+
+                        <!-- Indicators -->
+                        <div class="carousel-indicators">
+                            <button type="button" data-bs-target="#imageCarousel" data-bs-slide-to="0" class="active"></button>
+                            <button type="button" data-bs-target="#imageCarousel" data-bs-slide-to="1"></button>
+                        </div>
                     </div>
-                    <div class="img-meta mt-2">
-                        <div id="dateTimeTaken" class="mb-1"></div>
-                        <div id="dateTimeUpld"></div>
+                    <div class="img_details mt-2">
+                        <div class="imgDetails img-taken">
+                            <div id="startdateTimeTaken"></div>
+                        </div>
+
+                        <div class="imgDetails img-taken">
+                            <div id="enddateTimeTaken"></div>
+                        </div>
+
+                        <div class="imgDetails img-uploaded">
+                            <div id="dateTimeUpld"></div>
+                        </div>
                     </div>
+
                 </div>
+
             </div>
         </div>
     </div>
@@ -360,5 +411,7 @@
 
 </section>
 <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
-<script src="forms/tadi/dean/view/index-function.js?t=<?php echo time(); ?>"></script>
-<script src="forms/tadi/dean/view/index-script.js?t=<?php echo time(); ?>"></script>
+<!-- <script src="forms/tadi/dean/view/index-function.js?t=<?php echo time(); ?>"></script>
+<script src="forms/tadi/dean/view/index-script.js?t=<?php echo time(); ?>"></script> -->
+<script src="forms/tadi/dean/view/index-ui.js?t=<?php echo time(); ?>"></script>
+<script src="forms/tadi/dean/view/index-api.js?t=<?php echo time(); ?>"></script>

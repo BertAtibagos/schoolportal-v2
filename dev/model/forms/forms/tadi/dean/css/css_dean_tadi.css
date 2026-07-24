@@ -449,6 +449,191 @@ label {
     border: 1px solid #e8ecf4;
 }
 
+/* ===== Modal ===== */
+
+.tadi-img-modal{
+    border: none;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 18px 50px rgba(0,0,0,.18);
+}
+
+.tadi-img-modal-header{
+    background: linear-gradient(135deg, var(--td-primary) 0%, var(--td-primary-grad) 100%);
+    color: #fff;
+    padding: 14px 18px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.img-modal-title{
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.tadi-close-btn{
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255,255,255,.12);
+    color: #fff;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.tadi-close-btn:hover{
+    background: rgba(255,255,255,.22);
+    transform: rotate(90deg);
+}
+
+/* ===== Image ===== */
+
+.img-container{
+    position: relative;
+
+    height: 420px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: #f4f6fa;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.img-container img{
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* ===== Image Labels ===== */
+
+.image-label{
+    position: absolute;
+    top: 14px;
+    left: 14px;
+
+    padding: .45rem .9rem;
+
+    border-radius: 999px;
+
+    font-size: .82rem;
+    font-weight: 600;
+
+    color: #fff;
+
+    z-index: 5;
+
+    backdrop-filter: blur(8px);
+
+    box-shadow: 0 4px 10px rgba(0,0,0,.18);
+}
+
+.start-label{
+    background: rgba(25,135,84,.9);
+}
+
+.end-label{
+    background: rgba(220,53,69,.9);
+}
+
+/* ===== Carousel ===== */
+
+.carousel-control-prev,
+.carousel-control-next{
+    width: 8%;
+    opacity: 0;
+    transition: opacity .2s;
+}
+
+#imageCarousel:hover .carousel-control-prev,
+#imageCarousel:hover .carousel-control-next{
+    opacity: 1;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon{
+    width: 42px;
+    height: 42px;
+
+    background-color: rgba(0,0,0,.55);
+    border-radius: 50%;
+    background-size: 50%;
+}
+
+.carousel-indicators{
+    margin-bottom: .35rem;
+}
+
+.carousel-indicators button{
+    width: 10px;
+    height: 10px;
+
+    border-radius: 50%;
+    border: none;
+
+    opacity: .45;
+}
+
+.carousel-indicators .active{
+    opacity: 1;
+}
+
+/* ===== Metadata ===== */
+
+.img_details{
+    margin-top: 15px;
+
+    background: #f8f9fc;
+    border: 1px solid #e8ecf4;
+    border-radius: 10px;
+
+    padding: 14px 16px;
+}
+
+.imgDetails{
+    display: flex;
+    align-items: center;
+
+    font-size: .85rem;
+    color: #5b6472;
+
+    margin-bottom: 8px;
+}
+
+.imgDetails:last-child{
+    margin-bottom: 0;
+}
+
+.img-taken{
+    color: #0f5132;
+}
+
+.img-uploaded{
+    color: #0c63e4;
+}
+
+/* ===== Responsive ===== */
+
+@media (max-width:768px){
+
+    .img-container{
+        height: 300px;
+    }
+
+    .image-label{
+        font-size: .75rem;
+        padding: .4rem .8rem;
+    }
+
+}
 /* --- Alert modal --- */
 .tadi-alert-modal .modal-header {
     background: linear-gradient(135deg, var(--td-primary) 0%, #2563eb 100%);

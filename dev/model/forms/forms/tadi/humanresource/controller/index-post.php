@@ -642,13 +642,9 @@ if ($type == 'GET_ACAD_YEAR') {
 if($type == 'GET_INSTRUCTOR_SCHEDULE'){
 
     $profId = isset($_POST['SchlProf_ID']) ? intval($_POST['SchlProf_ID']) : 0;
-
-    // Optional: filter schedule by currently-open academic period ("current semester")
-    // Accepted values: "all" (default), "current" / "currentSemester" / "currSemester"
     $semesterFilter = isset($_POST['semesterFilter']) ? trim(strval($_POST['semesterFilter'])) : 'all';
     $useCurrentSemester = in_array(strtolower($semesterFilter), ['current', 'currentsemester', 'currsemester'], true);
 
-    // Defaults align with other queries in this controller (college level + acad year 19)
     $acadLvlId = isset($_POST['lvlid']) ? intval($_POST['lvlid']) : (isset($_POST['lvl_id']) ? intval($_POST['lvl_id']) : 2);
     $acadYrId = isset($_POST['acadyr']) ? intval($_POST['acadyr']) : (isset($_POST['acadyrid']) ? intval($_POST['acadyrid']) : 19);
 
@@ -863,6 +859,51 @@ if($type == "GET_TABULATION"){
         $fetch = $result->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
         $dbConn->close();
+}
+
+if($type == "RECORD_TABULATION"){
+    if(!isset($_SESSION['EMPLOYEE']['ID'],$_POST['prof_id'],$_POST['subj_code'],$_POST['prof_hrs'],$_POST['subj_hrs'])){
+        http_response_code(401);
+        echo json_encode(["error" => "Missing session data"]);
+        exit;
+    }
+
+    $profId = $_POST['prof_id'];
+    $subjCode = $_POST['subj_code'];
+    $profHrs = $_POST['prof_hrs'];
+    $subjHrs = $_POST['subj_hrs'];
+
+    if(!ctype_digit((string)$profId) || !ctype_digit((string)$subjCode) || !ctype_digit((string)$profHrs) || !ctype_digit((string)$subjHrs)){
+        http_response_code(400);
+        echo json_encode(["error" => "Invalid input data"]);
+        exit;
+    }
+
+    $qry = "INSERT INTO schooltadi_confirmed_tabulation_history (subj_offid, unit_hrs, prof_hrs, prof_id)
+            VALUES (?,?,?,?)";
+
+    $stmt = $dbConn->prepare($qry);
+
+    if (!$stmt) {
+        http_response_code(500);
+        echo json_encode(["error" => $dbConn->error]);
+        exit;
+    }
+
+    $stmt->bind_param("iiii", $subjCode, $subjHrs, $profHrs, $profId);
+
+    if (!$stmt->execute()) {
+        http_response_code(500);
+        echo json_encode(["error" => $stmt->error]);
+        $stmt->close();
+        exit;
+    }
+
+    echo json_encode([
+        "success" => true,
+    ]);
+
+    $stmt->close();
 }
 
 if (!isset($fetch)) {

@@ -292,3 +292,15 @@ function displaySummary(){
                         </tr>`;
     tadiSummary();
 }
+
+function isSafeAttachmentPath(value) {
+    if (typeof value !== "string") {
+        return false;
+    }
+
+    if (value.includes("..") || value.includes("\\") || value.includes(":")) {
+        return false;
+    }
+
+    return /^attachment\/[A-Za-z0-9._-]+\/\d{4}-\d{2}-\d{2}\/[A-Za-z0-9._-]+$/.test(value);
+}

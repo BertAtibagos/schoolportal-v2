@@ -646,3 +646,49 @@ function getAssignedProfHours(data) {
         isValid: assignedProfHours > 0 && unitsMatch
     };
 }
+
+async function confirmProfDetails(profId, subjCode, profHrs, subjHrs) {
+    if ([profId, subjCode, profHrs, subjHrs].some(v => v === undefined || v === null || v === "")) {
+        console.error("Missing required parameters for confirming professor details.");
+        return null;
+    }
+
+    const params = new URLSearchParams({
+        type: "RECORD_TABULATION",
+        prof_id: profId,
+        subj_code: subjCode,
+        prof_hrs: profHrs,
+        subj_hrs: subjHrs
+    });
+
+    let res = null;
+
+    try {
+        const req = await fetch(`forms/tadi/humanresource/controller/index-post.php`, {
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: params
+        });
+
+        res = await req.json();
+
+        if (!req.ok) {
+            console.error("Tabulation request failed:", res.error || req.status);
+        }
+
+    } catch(error) {
+        console.error("Error confirming professor details: ", error);
+    }
+
+    return res;
+}
+
+document.querySelector('.conf-record').addEventListener('click',(e)=>{
+    const btn = e.currentTarget;
+    const profId   = btn.dataset.profId;
+    const subjCode = btn.dataset.subjCode;
+    const profHrs  = btn.dataset.profHrs;
+    const subjHrs  = btn.dataset.subjHrs;
+
+    
+})

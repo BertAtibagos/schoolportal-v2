@@ -1,3 +1,6 @@
+<?php  
+    echo '<script>console.log("Session Data:", ' . json_encode($_SESSION) . ');</script>';
+?>
 <link rel="stylesheet" href="forms/tadi/student/css/css_tadi_stud.css?t=<?php echo time(); ?>">
 <section id="student_tadi_section">
     <div class="container-fluid mt-4 px-3 px-md-4">
@@ -59,25 +62,33 @@
                         </div>
 
                         <div class="row g-3 mb-3">
-                            <div class="col-md-6 col-lg-4">
+                            <div class="col-md-6 col-lg-6">
                                 <label for="classStartDateTime" class="form-label">Class Start Time <span class="text-danger">*</span></label>
                                 <input type="time" class="form-control" name="classStartDateTime"
                                     id="classStartDateTime" required>
                                 <div class="invalid-feedback">Please enter a start time</div>
                             </div>
 
-                            <div class="col-md-6 col-lg-4">
+                            <div class="col-md-6 col-lg-6">
                                 <label for="classEndDateTime" class="form-label">Class End Time <span class="text-danger">*</span></label>
                                 <input type="time" class="form-control" name="classEndDateTime" id="classEndDateTime" required>
                                 <div class="invalid-feedback">Please enter an end time</div>
                             </div>
+                            <input type="hidden" name="prof_id" value="0" id="prof_id">
+                        </div>
 
-                            <div class="col-md-6 col-lg-4">
-                                <label for="attach" class="form-label">Attachment <span class="text-danger">*</span></label>
-                                <input type="file" class="form-control" name="attach" id="attach" accept=".jpg,.jpeg,.png,.webp" required>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6 col-lg-6">
+                                <label for="start_attach" class="form-label">Start of Class Attachment<span class="text-danger">*</span></label>
+                                <input type="file" class="form-control" name="start_attach" id="start_attach" accept=".jpg,.jpeg,.png,.webp" required>
                                 <div class="invalid-feedback">Please upload an image</div>
                             </div>
-                            <input type="hidden" name="prof_id" value="0" id="prof_id">
+                            
+                            <div class="col-md-6 col-lg-6">
+                                <label for="end_attach" class="form-label">End of Class Attachment<span class="text-danger">*</span></label>
+                                <input type="file" class="form-control" name="end_attach" id="end_attach" accept=".jpg,.jpeg,.png,.webp" required>
+                                <div class="invalid-feedback">Please upload an image</div>
+                            </div>
                         </div>
 
                         <div id="chckbox_late_submss_div" class="d-none mb-3">
@@ -135,24 +146,64 @@
 
     <!-- Image Preview Modal -->
     <div id="imageModal" class="modal fade" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content fixed-modal" style="margin:auto">
                 <div class="modalHead">
                     <button type="button" class="btn-close" id="closeModalBtn"></button>
                 </div>
                 <div class="modal-body p-0">
-                    <div class="img-container">
-                        <img id="attchPrev" src="" alt="Image Preview" />
+                    <div id="imageCarousel" class="carousel slide">
+                        <div class="carousel-inner">
+
+                            <div class="carousel-item active">
+                                <div class="img-container">
+                                    <span class="image-label start-label">Start of class</span>
+                                    <img id="start_attchPrev" class="d-block w-100" src="" alt="Start Image">
+                                </div>
+                            </div>
+
+                            <div class="carousel-item">
+                                <div class="img-container">
+                                    <span class="image-label end-label">End of class</span>
+                                    <img id="end_attchPrev" class="d-block w-100" src="" alt="End Image">
+                                </div>
+                            </div>
+
+                        </div>
+                        <!-- Previous -->
+                        <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon"></span>
+                        </button>
+                        <!-- Next -->
+                        <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon"></span>
+                        </button>
+
+                        <!-- Dots -->
+                        <div class="carousel-indicators">
+                            <button type="button" data-bs-target="#imageCarousel" data-bs-slide-to="0" class="active"></button>
+                            <button type="button" data-bs-target="#imageCarousel" data-bs-slide-to="1"></button>
+                        </div>
+
                     </div>
+
+                    <!-- Leave your details here -->
                     <div class="img_details">
                         <div class="imgDetails img-taken">
-                            <div id="dateTimeTaken"></div>
+                            <div id="startdateTimeTaken"></div>
                         </div>
+
+                        <div class="imgDetails img-taken">
+                            <div id="enddateTimeTaken"></div>
+                        </div>
+
                         <div class="imgDetails img-uploaded">
                             <div id="dateTimeUpld"></div>
                         </div>
                     </div>
+
                 </div>
+
             </div>
         </div>
     </div>
@@ -169,6 +220,8 @@
             </div>
         </div>
     </div>
+    
 </section>
-<script src="forms/tadi/student/view/index-function.js?t=<?php echo time(); ?>"></script>
-<script src="forms/tadi/student/view/index-script.js?t=<?php echo time(); ?>"></script>
+<script src="forms/tadi/student/view/index-ui.js?t=<?php echo time(); ?>"></script>
+<script src="forms/tadi/student/view/index-api.js?t=<?php echo time(); ?>"></script>
+<script src="forms/tadi/student/view/index-post.js?t=<?php echo time(); ?>"></script>

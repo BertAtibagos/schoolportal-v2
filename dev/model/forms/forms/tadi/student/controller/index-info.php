@@ -211,7 +211,7 @@ if($type === 'GET_SUBMITTED_REC'){
 				schl_tadi.`schltadi_timeout` AS tadi_timeOut,
 				schl_tadi.`schltadi_activity` AS tadi_act,
 				schl_tadi.`schltadi_status` AS tadi_status,
-				schl_tadi.`schltadi_filepath` AS tadi_filepath,
+				schl_tadi.`startschltadi_filepath` AS tadi_filepath,
 				schl_tadi.schlenrollsubjoff_id AS sub_off_id,
 				schl_tadi.SchlProf_ID,
                 schl_tadi.schlstud_id
@@ -257,9 +257,12 @@ if($type == 'GET_IMAGE'){
 	$REC_ID = $_POST['tadi_id'];
 
 	$qry = "SELECT 
-				`schltadi_filepath` AS `tadi_filepath`,
-				`tadi_exifDate` AS exif_date,
-				`tadi_exifTime` AS exif_time,
+				`startschltadi_filepath` AS `starttadi_filepath`,
+				`starttadi_exifDate` AS startexif_date,
+				`starttadi_exifTime` AS startexif_time,
+				`endschltadi_filepath` AS endtadi_filepath,
+				`endtadi_exifDate` AS endexif_date,
+				`starttadi_exifTime` AS endexif_time,
 				`schltadi_date` AS upld_date,
 				`schltadi_timein` AS upld_time
 			FROM `schooltadi`
@@ -273,14 +276,14 @@ if($type == 'GET_IMAGE'){
 	$fetch = $result->fetch_assoc();
 	$stmt->close();
 
-    if (!$fetch || empty($fetch['tadi_filepath'])) {
+    if (!$fetch || empty($fetch['starttadi_filepath'])) {
         $fetch = ['message' => 'Image not found.'];
         logStudentTadiInfo($dbConn, 'student.GET_IMAGE', $fetch['message']);
-    } elseif (!isSafeAttachmentPath($fetch['tadi_filepath'])) {
+    } elseif (!isSafeAttachmentPath($fetch['starttadi_filepath'])) {
         $fetch = ['message' => 'Invalid image path.'];
         logStudentTadiInfo($dbConn, 'student.GET_IMAGE', $fetch['message']);
     } else {
-        $publicPath = __DIR__ . '/../../../../../../public/' . $fetch['tadi_filepath'];
+        $publicPath = __DIR__ . '/../../../../../../public/' . $fetch['starttadi_filepath'];
         if (!is_file($publicPath)) {
             $fetch['message'] = 'Image file missing on server.';
             logStudentTadiInfo($dbConn, 'student.GET_IMAGE', $fetch['message']);

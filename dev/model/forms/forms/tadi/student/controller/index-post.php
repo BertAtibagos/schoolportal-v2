@@ -175,11 +175,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
             exit;
         }
 
-        $image_path = null;
-        $taken_date = null; // for storing original taken date from EXIF
+        $start_image_path = null;
+        $end_image_path = null;
+        $start_taken_date = null;
+        $end_taken_date = null;
+        $start_date_only = null;
+        $start_time_only = null;
+        $end_date_only = null;
+        $end_time_only = null;
 
-        if (isset($_FILES['attach']) && $_FILES['attach']['error'] === UPLOAD_ERR_OK) {
-            if (empty($_FILES['attach']['tmp_name']) || (int)$_FILES['attach']['size'] <= 0) {
+        if (isset($_FILES['start_attach'], $_FILES['end_attach'])
+            && $_FILES['start_attach']['error'] === UPLOAD_ERR_OK
+            && $_FILES['end_attach']['error'] === UPLOAD_ERR_OK) {
+
+            if (empty($_FILES['start_attach']['tmp_name']) || empty($_FILES['end_attach']['tmp_name'])
+                || (int)$_FILES['start_attach']['size'] <= 0 || (int)$_FILES['end_attach']['size'] <= 0) {
                 $fetch['message'] = "Uploaded file is empty.";
                 logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
                 echo json_encode($fetch);
@@ -187,6 +197,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
             }
 
             $prof_id = $_POST['instructor'] ?? 'unknown_prof';
+            
+            $prof_id = preg_replace('/[^A-Za-z0-9_-]/', '', $prof_id);
+            if ($prof_id === '') {
+                $prof_id = 'unknown_prof';
+            }
+
             $date_folder = date('Y-m-d');
 
             $baseDir = __DIR__ . '/../../../../../../public/attachment/';
@@ -202,63 +218,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
             }
 
             date_default_timezone_set("Asia/Manila");
-            $originalName = basename($_FILES['attach']['name']);
-            $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
 
-            
             $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
-            if (!in_array($extension, $allowedExtensions)) {
-                $fetch['message'] = "Invalid file type. Only JPG, PNG, GIF, and WEBP are allowed.";
-                logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
-                echo json_encode($fetch);
-                exit;
-            }
+            $allowedMimeTypes  = ['image/jpeg', 'image/png', 'image/webp'];
 
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            $mimeType = finfo_file($finfo, $_FILES['attach']['tmp_name']);
-            finfo_close($finfo);
+            // Reusable helper to validate + move + read EXIF for one file
+            $processAttachment = function (array $file, string $prefix) use (
+                $allowedExtensions, $allowedMimeTypes, $uploadDir, $prof_id, $date_folder
+            ) {
+                $originalName = basename($file['name']);
+                $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
 
-            $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
-            if (!in_array($mimeType, $allowedMimeTypes)) {
-                $fetch['message'] = "Invalid file format.";
-                logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
-                echo json_encode($fetch);
-                exit;
-            }
+                if (!in_array($extension, $allowedExtensions, true)) {
+                    return [null, null, "Invalid file type for {$prefix} attachment. Only JPG, PNG, and WEBP are allowed."];
+                }
 
-            
-            $uniqueName = $prof_id . "_" . $date_folder . "_" . time() . "." . $extension;
-            $targetPath = $uploadDir . $uniqueName;
+                $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                $mimeType = finfo_file($finfo, $file['tmp_name']);
+                finfo_close($finfo);
 
-            if (move_uploaded_file($_FILES['attach']['tmp_name'], $targetPath)) {
-                $image_path = 'attachment/' . $prof_id . '/' . $date_folder . '/' . $uniqueName;
+                if (!in_array($mimeType, $allowedMimeTypes, true)) {
+                    return [null, null, "Invalid file format for {$prefix} attachment."];
+                }
 
-                
+                // e.g. S-38_2025-10-01_1759290535.jpg / E-38_2025-10-01_1759290535.jpg
+                $uniqueName = $prefix . "-" . $prof_id . "_" . $date_folder . "_" . time() . "." . $extension;
+                $targetPath = $uploadDir . $uniqueName;
+
+                if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
+                    return [null, null, "Failed to upload {$prefix} image."];
+                }
+
+                $imagePath = 'attachment/' . $prof_id . '/' . $date_folder . '/' . $uniqueName;
+                $takenDate = null;
+
                 if (function_exists('exif_read_data')) {
                     $exif = @exif_read_data($targetPath);
                     if ($exif !== false && isset($exif['DateTimeOriginal'])) {
-                        $taken_date = date("Y-m-d H:i:s", strtotime($exif['DateTimeOriginal']));
-                        if ($taken_date) {
-                            $exif_date_only = date("Y-m-d", strtotime($taken_date));
-                            $exif_time_only = date("H:i:s", strtotime($taken_date));
-                        } else {
-                            $exif_date_only = null;
-                            $exif_time_only = null;
+                        $ts = strtotime($exif['DateTimeOriginal']);
+                        if ($ts) {
+                            $takenDate = date("Y-m-d H:i:s", $ts);
                         }
-                    } else {
-                        $taken_date = null;
                     }
                 }
-            } else {
-                $fetch['message'] = "Failed to upload image.";
+
+                return [$imagePath, $takenDate, null];
+            };
+
+            [$start_image_path, $start_taken_date, $startErr] = $processAttachment($_FILES['start_attach'], 'S');
+            if ($startErr) {
+                $fetch['message'] = $startErr;
                 logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
                 echo json_encode($fetch);
                 exit;
             }
+
+            [$end_image_path, $end_taken_date, $endErr] = $processAttachment($_FILES['end_attach'], 'E');
+            if ($endErr) {
+                $fetch['message'] = $endErr;
+                logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
+                echo json_encode($fetch);
+                exit;
+            }
+            
+            $start_date_only = $start_taken_date ? date("Y-m-d", strtotime($start_taken_date)) : null;
+            $start_time_only = $start_taken_date ? date("H:i:s", strtotime($start_taken_date)) : null;
+
+            $end_date_only = $end_taken_date ? date("Y-m-d", strtotime($end_taken_date)) : null;
+            $end_time_only = $end_taken_date ? date("H:i:s", strtotime($end_taken_date)) : null;
         }
 
-        if (empty($image_path)) {
-            $fetch['message'] = "Image is required to submit TADI.";
+        if (empty($start_image_path) || empty($end_image_path)) {
+            $fetch['message'] = "Both start and end images are required to submit TADI.";
             logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
             echo json_encode($fetch);
             exit;
@@ -279,21 +310,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
                 schlprof_id, 
                 schlenrollsubjoff_id, 
                 schlacadprd_id, 
-                schltadi_filepath, 
-                tadi_exifDate,
-                tadi_exifTime,
+                startschltadi_filepath, 
+                starttadi_exifDate,
+                starttadi_exifTime,
+                endschltadi_filepath, 
+                endtadi_exifDate,
+                endtadi_exifTime,
                 schltadi_late_status,
                 schltadi_late_date,
                 schltadi_late_reason,
                 schltadi_mkup_date)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
         $isactive = 1;
         $status = 0;
         $isupdated = 0;
 
         $stmt->bind_param(
-            "ssssssiiiiiiiisssisss",
+            "ssssssiiiiiiiissssssisss",
             $schltadi_mode,
             $schltadi_type,
             $schltadi_date,
@@ -308,9 +342,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
             $prof_id,
             $subj_id,
             $PRDID,
-            $image_path,
-            $exif_date_only,
-            $exif_time_only,
+            $start_image_path,
+            $start_date_only,
+            $start_time_only,
+            $end_image_path,
+            $end_date_only,
+            $end_time_only,
             $schltadi_late_status,
             $schltadi_late_date,
             $schltadi_late_reason,

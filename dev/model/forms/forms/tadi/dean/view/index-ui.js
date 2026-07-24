@@ -180,6 +180,42 @@ function showRateLimitToast(message) {
   toast.show();
 }
 
+function showToastMessage(message, variant = "success", title = "Success") {
+    const toastEl = document.getElementById("successToast");
+    if (!toastEl) {
+        alert(message);
+        return;
+    }
+
+    const headerEl = document.getElementById("toastHeader");
+    const titleEl = document.getElementById("toastTitle");
+    const closeBtn = document.getElementById("toastCloseBtn");
+
+    if (headerEl) {
+        headerEl.classList.remove("bg-success", "bg-warning", "text-white", "text-dark");
+        if (variant === "warning") {
+            headerEl.classList.add("bg-warning", "text-dark");
+        } else {
+            headerEl.classList.add("bg-success", "text-white");
+        }
+    }
+
+    if (titleEl) {
+        titleEl.textContent = title;
+    }
+
+    if (closeBtn) {
+        closeBtn.classList.remove("btn-close-white");
+        if (variant !== "warning") {
+            closeBtn.classList.add("btn-close-white");
+        }
+    }
+
+    document.getElementById("toastMessage").textContent = message;
+    const toast = new bootstrap.Toast(toastEl);
+    toast.show();
+}
+
 function handleRateLimitJson(response) {
   if (response.status === 429) {
     return response.json().then(data => {
@@ -239,21 +275,58 @@ function displaySubjList(data) {
 }
 
 function showImageModal(data) {
-  const imgModal = new bootstrap.Modal(document.getElementById('imageModal'), { backdrop: true });
-  const format = (d, t) => new Date(`${d}T${t}`).toLocaleString('en-US', {
-    year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: true
-  });
 
-  document.getElementById('dateTimeTaken').innerText = data.exif_date ? `Taken: ${format(data.exif_date, data.exif_time)}` : 'Taken: Not Available';
-  document.getElementById('dateTimeUpld').innerText = `Uploaded: ${format(data.upld_date, data.upld_time)}`;
+      const imgModal = new bootstrap.Modal(
+          document.getElementById("imageModal"),
+          { backdrop: true }
+      );
 
-  document.getElementById('closeModalBtn').onclick = () => {
-    imgModal.hide();
-    document.getElementById('attchPrev').src = '';
-  };
+      const carousel = bootstrap.Carousel.getOrCreateInstance(
+          document.getElementById("imageCarousel"),
+          {
+              interval: false,
+              wrap: true
+          }
+      );
 
-  imgModal.show();
-}
+      // Always start from first image
+      carousel.to(0);
+
+      const format = (d, t) =>
+          new Date(`${d}T${t}`).toLocaleString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true
+          });
+
+      document.getElementById("startdateTimeTaken").innerText =
+          data.startexif_date
+              ? `Start of class taken: ${format(data.startexif_date, data.startexif_time)}`
+              : "Start of class taken: Not Available";
+
+      document.getElementById("enddateTimeTaken").innerText =
+          data.endtexif_date
+              ? `End of class taken: ${format(data.endexif_date, data.endexif_time)}`
+              : "End of class taken: Not Available";
+
+      document.getElementById("dateTimeUpld").innerText =
+          `Uploaded: ${format(data.upld_date, data.upld_time)}`;
+
+      document.getElementById("closeModalBtn").onclick = () => {
+
+          imgModal.hide();
+
+          document.getElementById("start_attchPrev").src = "";
+          document.getElementById("end_attchPrev").src = "";
+
+          carousel.to(0);
+      };
+
+      imgModal.show();
+  }
 
 function setupActivityText(el) {
   Object.assign(el.style, {

@@ -869,7 +869,9 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
                 section_count: 0,
                 total_enrolled_students: 0,
                 filtered_hours: 0,
-                total_accumulated_hours: 0
+                total_accumulated_hours: 0,
+                prof_id: data.prof_id,
+                subj_id: data.rec_id
             };
         }
         profGroups[data.prof_name][subjKey].section_count += parseInt(data.section_count) || 0;
@@ -903,6 +905,7 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
                             <th class="text-center">No. of Units</th>
                             <th class="text-center">Total Hours for Sem</th>
                             <th class="text-center">Remaining Hours for Sem</th>
+                            <th class="text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -930,6 +933,11 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
                                     <td class="text-center align-middle">${num_units}</td>
                                     <td class="text-center align-middle tab-total-sem tab-total-sem-cell ${hoursTextClass}">${totalForSem}</td>
                                     <td class="text-center align-middle tab-remaining tab-remaining-cell ${hoursTextClass}">${remaining}</td>
+                                    <td class="text-center align-middle tab-remaining tab-remaining-cell">
+                                        <button class="btn btn-sm btn-primary conf-record" data-prof-id="${subj.prof_id}" data-subj-code="${subj.subj_id}" data-prof-hrs="${prof_Hrs}" data-subj-hrs="${parseFloat(subj.subj_unit_hrs)}">
+                                            Confirm
+                                        </button>
+                                    </td>
                                 </tr>
                             `;
                             }).join('');

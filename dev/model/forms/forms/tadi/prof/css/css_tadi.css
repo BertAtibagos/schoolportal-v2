@@ -1,5 +1,6 @@
 :root {
     --tp-primary:       #071976;
+    --tp-primary-deep:   #12143a;
     --tp-primary-hover: #141651;
     --tp-primary-light: rgba(26, 28, 94, 0.07);
     --tp-accent:        #4f52b8;
@@ -296,9 +297,8 @@ label { font-weight: bold; }
 
 
 .acknw {
-    background-color: #dcfce7 !important;
-    color: #15803d !important;
-    border: 1px solid #4ade80 !important;
+    background: var(--tp-primary) !important;
+    color: #fff !important;
     border-radius: 5px !important;
     font-size: .74rem !important;
     font-weight: 600 !important;
@@ -306,7 +306,7 @@ label { font-weight: bold; }
     transition: all .2s ease !important;
     white-space: nowrap;
 }
-.acknw:hover:not(:disabled) { background-color: #22c55e !important; color: white !important; }
+.acknw:hover:not(:disabled) { background: var(--tp-primary-deep) !important; transform: translateY(-1px); }
 
 .tadi-table tbody .table-warning,
 .tadi-records-table tbody .table-warning { background-color: #fffbeb !important; }
@@ -493,6 +493,84 @@ label { font-weight: bold; }
     display: flex;
     align-items: center;
     margin-top: 4px;
+}
+
+.img-container{
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f8f9fa;
+    border-radius: 8px;
+    overflow: hidden;
+    min-height: 450px;
+}
+
+.img-container img{
+    max-width: 100%;
+    max-height: 450px;
+    object-fit: contain;
+}
+
+/* Overlay Label */
+.image-label{
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 5;
+
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+
+    padding: .45rem .9rem;
+    border-radius: 999px;
+
+    color: #fff;
+    font-size: .85rem;
+    font-weight: 600;
+
+    backdrop-filter: blur(6px);
+    box-shadow: 0 2px 10px rgba(0,0,0,.2);
+}
+
+.start-label{
+    background: rgba(25,135,84,.9);
+}
+
+.end-label{
+    background: rgba(220,53,69,.9);
+}
+
+/* Carousel Controls */
+.carousel-control-prev,
+.carousel-control-next{
+    width: 8%;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon{
+    background-color: rgba(0,0,0,.55);
+    border-radius: 50%;
+    padding: 18px;
+}
+
+/* Indicators */
+.carousel-indicators{
+    margin-bottom: .5rem;
+}
+
+.carousel-indicators button{
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+/* Optional: Hide arrows when only one image is available */
+.carousel-control-prev.hidden,
+.carousel-control-next.hidden,
+.carousel-indicators.hidden{
+    display: none !important;
 }
 
 .upload-area {

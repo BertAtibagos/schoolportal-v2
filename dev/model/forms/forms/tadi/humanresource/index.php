@@ -1,3 +1,6 @@
+<?php  
+    echo '<script>console.log("Session Data:", ' . json_encode($_SESSION) . ');</script>';
+?>
 <link rel="stylesheet" href="forms/tadi/humanresource/css/hr.css?t=<?php echo time(); ?>">
 
 <section class="hr-module">

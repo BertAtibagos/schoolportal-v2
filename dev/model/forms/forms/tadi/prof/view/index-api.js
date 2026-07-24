@@ -210,6 +210,42 @@ function DISPLAY_PROFESSOR_SUBJECT(result) {
   });
 }
 
+function showToastMessage(message, variant = "success", title = "Success") {
+    const toastEl = document.getElementById("successToast");
+    if (!toastEl) {
+        alert(message);
+        return;
+    }
+
+    const headerEl = document.getElementById("toastHeader");
+    const titleEl = document.getElementById("toastTitle");
+    const closeBtn = document.getElementById("toastCloseBtn");
+
+    if (headerEl) {
+        headerEl.classList.remove("bg-success", "bg-warning", "text-white", "text-dark");
+        if (variant === "warning") {
+            headerEl.classList.add("bg-warning", "text-dark");
+        } else {
+            headerEl.classList.add("bg-success", "text-white");
+        }
+    }
+
+    if (titleEl) {
+        titleEl.textContent = title;
+    }
+
+    if (closeBtn) {
+        closeBtn.classList.remove("btn-close-white");
+        if (variant !== "warning") {
+            closeBtn.classList.add("btn-close-white");
+        }
+    }
+
+    document.getElementById("toastMessage").textContent = message;
+    const toast = new bootstrap.Toast(toastEl);
+    toast.show();
+}
+
 function GET_IMAGE(event) {
   const button = event.target;
   const tadi_id = button.value;
@@ -224,31 +260,58 @@ function GET_IMAGE(event) {
   })
     .then(handleRateLimitJson)
     .then(data => {
-      if (data && data.tadi_filepath) {
-        const imgPrev = document.getElementById('attchPrev');
-        imgPrev.src = `/schoolportal-v2/dev/public/${data.tadi_filepath}`;
+      if (!data) {
+            return;
+        }
+      if (data && data.starttadi_filepath && data.endtadi_filepath) {
+        if (!isSafeAttachmentPath(data.starttadi_filepath) || !isSafeAttachmentPath(data.endtadi_filepath)) {
+                showToastMessage("Invalid image path.", "warning", "Notice");
+                return;
+            }
+        const startimgPrev = document.getElementById('start_attchPrev');
+        const endimgPrev = document.getElementById('end_attchPrev');
+        startimgPrev.src = `/schoolportal-v2/dev/public/${data.starttadi_filepath}`;
+        endimgPrev.src = `/schoolportal-v2/dev/public/${data.endtadi_filepath}`;
+
+        const carousel = bootstrap.Carousel.getOrCreateInstance(
+            document.getElementById("imageCarousel"),
+            {
+                interval: false,
+                ride: false,
+                wrap: true
+            }
+        );
+        carousel.to(0);
 
         const dateTimeUpldStr = `${data.upld_date}T${data.upld_time}`;
         const upldObj = new Date(dateTimeUpldStr);
 
         const optionsFullDate = { year: "numeric", month: "long", day: "numeric" };
 
-        let takenText = "Not Available";
-        if (data.exif_date && data.exif_time) {
-          const dateTimeTakenStr = `${data.exif_date}T${data.exif_time}`;
-          const takenObj = new Date(dateTimeTakenStr);
-          const formatTakenDate = takenObj.toLocaleDateString("en-US", optionsFullDate);
-          const formatTakenTime = takenObj.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
-          takenText = formatTakenDate + " " + formatTakenTime;
+        let starttakenText = "Not Available";
+        let endtakenText = "Not Available";
+        if (data.startexif_date && data.startexif_time) {
+          const startdateTimeTakenStr = `${data.startexif_date}T${data.startexif_time}`;
+          const enddateTimeTakenStr = `${data.endexif_date}T${data.endexif_time}`;
+          const starttakenObj = new Date(startdateTimeTakenStr);
+          const endtakenObj = new Date(enddateTimeTakenStr);
+          const startformatTakenDate = starttakenObj.toLocaleDateString("en-US", optionsFullDate);
+          const startformatTakenTime = starttakenObj.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
+          const endformatTakenDate = endtakenObj.toLocaleDateString("en-US", optionsFullDate);
+          const endformatTakenTime = endtakenObj.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
+          starttakenText = startformatTakenDate + " " + startformatTakenTime;
+          endtakenText = endformatTakenDate + " " + endformatTakenTime;
         }
 
         const formatUpldDate = upldObj.toLocaleDateString("en-US", optionsFullDate);
         const formatUpldTime = upldObj.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
 
-        const imgexDateTimeTaken = document.getElementById('dateTimeTaken');
+        const imgexStartDateTimeTaken = document.getElementById('startdateTimeTaken');
+        const imgexEndDateTimeTaken = document.getElementById('enddateTimeTaken');
         const imgDateTimeUpld = document.getElementById('dateTimeUpld');
 
-        imgexDateTimeTaken.innerText = "Taken: " + takenText;
+        imgexStartDateTimeTaken.innerText = "Start of class taken: " + starttakenText;
+        imgexEndDateTimeTaken.innerText = "End of class taken: " +  endtakenText;
         imgDateTimeUpld.innerText = "Uploaded: " + formatUpldDate + " " + formatUpldTime;
         
         const imgModalEl = document.getElementById('imageModal');
@@ -261,7 +324,9 @@ function GET_IMAGE(event) {
         const closeBtn = document.getElementById('closeModalBtn');
         closeBtn.onclick = function () {
           imgModal.hide();
-          imgPrev.src = '';
+          startimgPrev.src = '';
+          endimgPrev.src = '';
+          carousel.to(0);
         };
       } else {
         console.error("No image found for the given TADI ID.");
@@ -270,72 +335,83 @@ function GET_IMAGE(event) {
     .catch(err => console.error("Error fetching image:", err));
 }
 
-function UPLOAD_IMAGE_PROF(){
-  const tadiId = document.querySelector('.profUploadBtn').value;
-  const fileInput = document.getElementById('attach');
-  const file = fileInput.files[0];
+function isSafeAttachmentPath(value) {
+    if (typeof value !== "string") {
+        return false;
+    }
 
-   if (!file) {
-    alert("Please select a file to upload.");
-    return;
-  }
-  
-  const formData =new FormData();
-    formData.append("type", "UPLOAD_IMAGE_PROF");
-    formData.append("tadi_id", tadiId); 
-    formData.append("attach", file);
-  
-  fetch(`forms/tadi/prof/controller/index-post.php`, {
-          method: "POST",
-          body: formData
-        })
-    .then(response => response.text())
-    .then(text => {
-      try {
-        const data = JSON.parse(text);
+    if (value.includes("..") || value.includes("\\") || value.includes(":")) {
+        return false;
+    }
 
-        if (data.success) {
-          alert("Uploading Successful");
-
-        const uploadModalEl = document.getElementById('uploadModal');
-        const uploadModal = bootstrap.Modal.getInstance(uploadModalEl);
-        if (uploadModal) uploadModal.hide();
-
-        const sectionListModalEl = document.getElementById('sectionList');
-        const sectionListModal = bootstrap.Modal.getOrCreateInstance(sectionListModalEl);
-        sectionListModal.show();
-
-        const viewTadi = document.querySelector('.pass').value;
-        DISPLAYALL_TADI_RECORDS(viewTadi);
-
-        } else {
-          alert("Upload failed: " + (data.message || "Unknown error"));
-        }
-
-      } catch (err) {
-        console.error("Failed to parse JSON:");
-      }
-    })
-    .catch(error =>{
-       console.error("Error");
-    })
+    return /^attachment\/[A-Za-z0-9._-]+\/\d{4}-\d{2}-\d{2}\/[A-Za-z0-9._-]+$/.test(value);
 }
+// function UPLOAD_IMAGE_PROF(){
+//   const tadiId = document.querySelector('.profUploadBtn').value;
+//   const fileInput = document.getElementById('attach');
+//   const file = fileInput.files[0];
 
-function UPLOAD_IMAGE_PROF_MODAL() {
-   const modalEl = document.getElementById('uploadModal');
-    const imageModal = new bootstrap.Modal(modalEl);
-    imageModal.show();
-    const upldbtnmain = document.querySelector('.upldprof').value;
-    document.querySelector('.profUploadBtn').value = upldbtnmain;
+//    if (!file) {
+//     alert("Please select a file to upload.");
+//     return;
+//   }
+  
+//   const formData =new FormData();
+//     formData.append("type", "UPLOAD_IMAGE_PROF");
+//     formData.append("tadi_id", tadiId); 
+//     formData.append("attach", file);
+  
+//   fetch(`forms/tadi/prof/controller/index-post.php`, {
+//           method: "POST",
+//           body: formData
+//         })
+//     .then(response => response.text())
+//     .then(text => {
+//       try {
+//         const data = JSON.parse(text);
 
-    document.querySelectorAll('.profUploadBtn').forEach(button => {
-      button.addEventListener('click', UPLOAD_IMAGE_PROF);
-      })
+//         if (data.success) {
+//           alert("Uploading Successful");
 
-  document.getElementById('uploadcloseModalBtn').onclick = function () {
-    imageModal.hide();
-  };
-}
+//         const uploadModalEl = document.getElementById('uploadModal');
+//         const uploadModal = bootstrap.Modal.getInstance(uploadModalEl);
+//         if (uploadModal) uploadModal.hide();
+
+//         const sectionListModalEl = document.getElementById('sectionList');
+//         const sectionListModal = bootstrap.Modal.getOrCreateInstance(sectionListModalEl);
+//         sectionListModal.show();
+
+//         const viewTadi = document.querySelector('.pass').value;
+//         DISPLAYALL_TADI_RECORDS(viewTadi);
+
+//         } else {
+//           alert("Upload failed: " + (data.message || "Unknown error"));
+//         }
+
+//       } catch (err) {
+//         console.error("Failed to parse JSON:");
+//       }
+//     })
+//     .catch(error =>{
+//        console.error("Error");
+//     })
+// }
+
+// function UPLOAD_IMAGE_PROF_MODAL() {
+//    const modalEl = document.getElementById('uploadModal');
+//     const imageModal = new bootstrap.Modal(modalEl);
+//     imageModal.show();
+//     const upldbtnmain = document.querySelector('.upldprof').value;
+//     document.querySelector('.profUploadBtn').value = upldbtnmain;
+
+//     document.querySelectorAll('.profUploadBtn').forEach(button => {
+//       button.addEventListener('click', UPLOAD_IMAGE_PROF);
+//       })
+
+//   document.getElementById('uploadcloseModalBtn').onclick = function () {
+//     imageModal.hide();
+//   };
+// }
 
 function DISPLAY_TADI_LOG(subj_off_id, summary = false) {
   const strtDateSearch = document.getElementById('strtDateSearch').value;

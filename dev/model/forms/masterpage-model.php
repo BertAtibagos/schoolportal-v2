@@ -16,7 +16,7 @@
         'dashboard' => 'dashboard/dashboard-model.php',
 
         // academics
-        'attendance' => 'academic/attendance/attendance-model.php',
+        'attendance' => 'academic/attendance/index.php',
         'grades' => 'academic/subjectschedulegrades/subjectschedulegrades-model.php',
         'prospectus' => 'academic/prospectus/prospectus-model.php',
         'schedule' => 'academic/schedule/schedule-model.php',

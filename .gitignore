@@ -1,9 +1,6 @@
-# Tadi attachments (uploaded files)
-dev/model/forms/forms/tadi/attachment/
-
 # Database / environment configuration
-dev/model/configuration/
+dev/model/configuration/configuration-config.php
 
 pass.php
 
-dev/public/attachments
+dev/public/attachment

@@ -293,7 +293,7 @@
 					schl_tadi.`schltadi_timeout` AS tadi_timeOut,
 					schl_tadi.`schltadi_activity` AS tadi_act,
 					schl_tadi.`schltadi_status` AS tadi_status,
-					schl_tadi.`schltadi_filepath` AS tadi_filepath,
+					schl_tadi.`startschltadi_filepath` AS tadi_filepath,
 					schl_tadi.schlenrollsubjoff_id AS sub_off_id,
 					schl_tadi.schltadi_late_status AS late_status,
 					schl_tadi.SchlProf_ID,
@@ -554,9 +554,12 @@
 		$REC_ID = $_POST['tadi_id'];
 
 		$qry = "SELECT 
-					`schltadi_filepath` AS `tadi_filepath`,
-					`tadi_exifDate` AS exif_date,
-					`tadi_exifTime` AS exif_time,
+					`startschltadi_filepath` AS `starttadi_filepath`,
+					`starttadi_exifDate` AS startexif_date,
+					`starttadi_exifTime` AS startexif_time,
+					`endschltadi_filepath` AS endtadi_filepath,
+					`endtadi_exifDate` AS endexif_date,
+					`starttadi_exifTime` AS endexif_time,
 					`schltadi_date` AS upld_date,
 					`schltadi_timein` AS upld_time
 				FROM `schooltadi`
@@ -589,7 +592,7 @@
 					schl_tadi.`schltadi_timeout` AS tadi_timeOut,
 					schl_tadi.`schltadi_activity` AS tadi_act,
 					schl_tadi.`schltadi_status` AS tadi_status,
-					schl_tadi.`schltadi_filepath` AS tadi_filepath,
+					schl_tadi.`startschltadi_filepath` AS tadi_filepath,
 					schl_tadi.schlenrollsubjoff_id AS sub_off_id,
 					schl_tadi.SchlProf_ID,
 					section.`SchlAcadSec_NAME`

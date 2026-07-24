@@ -281,6 +281,18 @@ function GETALL_TADI_RECORDS(prof_id, subj_id) {
     .catch(err => console.error("Error loading TADI records:", err));
 }
 
+function isSafeAttachmentPath(value) {
+    if (typeof value !== "string") {
+        return false;
+    }
+
+    if (value.includes("..") || value.includes("\\") || value.includes(":")) {
+        return false;
+    }
+
+    return /^attachment\/[A-Za-z0-9._-]+\/\d{4}-\d{2}-\d{2}\/[A-Za-z0-9._-]+$/.test(value);
+}
+
 function GET_IMAGE(tadi_id, prof_id) {
   const formData = new FormData();
   formData.append('type', 'GET_IMAGE');
@@ -290,13 +302,16 @@ function GET_IMAGE(tadi_id, prof_id) {
   fetch("forms/tadi/dean/controller/index-info.php", { method: "POST", body: formData })
     .then(handleRateLimitJson)
     .then(data => {
-      if (!data || !data.tadi_filepath) {
-        console.error("No image found for TADI ID", tadi_id);
-        return;
-      }
-      const imgPrev = document.getElementById('attchPrev');
-      imgPrev.src = `/schoolportal-v2/dev/public/${data.tadi_filepath}`;
-      showImageModal(data);
+        if (!data) {
+            return;
+        }
+        if (!data || !isSafeAttachmentPath(data.starttadi_filepath) || !isSafeAttachmentPath(data.endtadi_filepath)) {
+                showToastMessage("Invalid image path.", "warning", "Notice");
+                return;
+        }
+        document.getElementById("start_attchPrev").src =`/schoolportal-v2/dev/public/${data.starttadi_filepath}`;
+        document.getElementById("end_attchPrev").src =`/schoolportal-v2/dev/public/${data.endtadi_filepath}`;
+        showImageModal(data);
     })
     .catch(err => console.error("Error fetching image:", err));
 }

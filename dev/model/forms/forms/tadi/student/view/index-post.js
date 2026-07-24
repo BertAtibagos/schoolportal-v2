@@ -18,16 +18,16 @@ button.addEventListener("click", function (e) {
 
     if(lateSubmissionCheckbox){
         if(lateSubmissionCheckbox.checked || makeupDate === "makeup"){
-            requiredFields = ["instructor", "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "attach", "comments", "late_class_date", "late_reason", "makeup_class_date"];
+            requiredFields = ["instructor", "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "start_attach", "end_attach", "comments", "late_class_date", "late_reason", "makeup_class_date"];
         }else if(lateSubmissionCheckbox.checked){
-            requiredFields = ["instructor", "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "attach", "comments", "late_class_date", "late_reason"];
+            requiredFields = ["instructor", "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "start_attach", "end_attach", "comments", "late_class_date", "late_reason"];
         }
     }
     
     if(makeupDate === "makeup"){
-        requiredFields = ["instructor", "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "attach", "comments", "makeup_class_date"];
+        requiredFields = ["instructor", "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "start_attach", "end_attach", "comments", "makeup_class_date"];
     }else{
-        requiredFields = ["instructor", "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "attach", "comments"];
+        requiredFields = ["instructor", "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "start_attach", "end_attach", "comments"];
     }
     
     requiredFields.forEach(field => {
