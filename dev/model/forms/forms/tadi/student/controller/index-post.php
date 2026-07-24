@@ -91,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
 
         $schltadi_mode = $dbConn->real_escape_string($schltadi_mode_raw);
         $schltadi_type = $dbConn->real_escape_string($_POST['session_type']);
-        $schltadi_date = date('Y-m-d');
+        $schltadi_date = $dbConn->real_escape_string($_POST['classDate']);
         $schltadi_timein = $normalizedTimeIn;
         $schltadi_timeout = $normalizedTimeOut;
         $schltadi_activity = $dbConn->real_escape_string($_POST['comments']);

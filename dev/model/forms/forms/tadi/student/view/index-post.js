@@ -18,16 +18,16 @@ button.addEventListener("click", function (e) {
 
     if(lateSubmissionCheckbox){
         if(lateSubmissionCheckbox.checked || makeupDate === "makeup"){
-            requiredFields = ["instructor", "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "start_attach", "end_attach", "comments", "late_class_date", "late_reason", "makeup_class_date"];
+            requiredFields = ["instructor", "classDate", "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "start_attach", "end_attach", "comments", "late_class_date", "late_reason", "makeup_class_date"];
         }else if(lateSubmissionCheckbox.checked){
-            requiredFields = ["instructor", "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "start_attach", "end_attach", "comments", "late_class_date", "late_reason"];
+            requiredFields = ["instructor", "classDate", "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "start_attach", "end_attach", "comments", "late_class_date", "late_reason"];
         }
     }
     
     if(makeupDate === "makeup"){
-        requiredFields = ["instructor", "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "start_attach", "end_attach", "comments", "makeup_class_date"];
+        requiredFields = ["instructor", "classDate",  "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "start_attach", "end_attach", "comments", "makeup_class_date"];
     }else{
-        requiredFields = ["instructor", "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "start_attach", "end_attach", "comments"];
+        requiredFields = ["instructor", "classDate", "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "start_attach", "end_attach", "comments"];
     }
     
     requiredFields.forEach(field => {
@@ -75,6 +75,29 @@ button.addEventListener("click", function (e) {
     if (comments.value.length < 1) {
         comments.classList.add("is-invalid");
         comments.nextElementSibling.textContent = "Comments must be at least 1 character long";
+        isValid = false;
+    }
+
+    const dateInput = document.getElementById("classDate");
+    const inputDate = new Date(dateInput.value);
+    const today = new Date();
+
+    today.setHours(0, 0, 0, 0);
+    inputDate.setHours(0, 0, 0, 0);
+
+    const maxPastDays = 2;
+
+    const pastLimit = new Date(today);
+    pastLimit.setDate(today.getDate() - maxPastDays);
+
+
+    if (inputDate < pastLimit) {
+        dateInput.classList.add("is-invalid");
+        dateInput.nextElementSibling.textContent = `Date cannot be more than ${maxPastDays} days in the past`;
+        isValid = false;
+    } else if (inputDate > today) {
+        dateInput.classList.add("is-invalid");
+        dateInput.nextElementSibling.textContent = `Date cannot be in the future`;
         isValid = false;
     }
 

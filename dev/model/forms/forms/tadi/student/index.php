@@ -30,7 +30,7 @@
                         <div class="row g-3 mb-3">
                             <input type="hidden" id="subjoff_id" name="subjoff_id">
 
-                            <div class="col-md-6 col-lg-4">
+                            <div class="col-md-6 col-lg-6">
                                 <label for="instructor" class="form-label">Faculty <span class="text-danger">*</span></label>
                                 <select class="form-select" name="instructor" id="instructor" required>
                                     <option>Select Faculty</option>
@@ -38,7 +38,16 @@
                                 <div class="invalid-feedback">Please select a faculty</div>
                             </div>
 
-                            <div class="col-md-6 col-lg-4">
+                            <div class="col-md-6 col-lg-6">
+                                <label for="instructor" class="form-label">Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" name="classDate" id="classDate" value="<?php echo date('Y-m-d'); ?>" required>
+                                <div class="invalid-feedback">Please select a date</div>
+                            </div>
+
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6 col-lg-6">
                                 <label for="learning_delivery_modalities" class="form-label">Learning Delivery Modalities <span class="text-danger">*</span></label>
                                 <select class="form-select" name="learning_delivery_modalities"
                                     id="learning_delivery_modalities" required>
@@ -49,7 +58,7 @@
                                 <div class="invalid-feedback">Please select a learning delivery mode</div>
                             </div>
 
-                            <div class="col-md-6 col-lg-4">
+                            <div class="col-md-6 col-lg-6">
                                 <label for="session_type" class="form-label">Session Type <span class="text-danger">*</span></label>
                                 <select class="form-select" name="session_type" id="session_type" required>
                                     <option value="" selected disabled>Select Type</option>
