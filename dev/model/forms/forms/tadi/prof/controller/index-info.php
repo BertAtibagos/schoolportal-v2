@@ -9,6 +9,8 @@
     session_start();
     include('../../../../../configuration/connection-config.php');
 
+    $fetch = [];
+
     function rateLimit(int $window, int $max, string $key){
         $rateLimitWindowSec = $window;
         $rateLimitMax = $max;
