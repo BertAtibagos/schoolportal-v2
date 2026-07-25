@@ -30,7 +30,7 @@ function normalizeTimeInput(string $input): ?string {
     return null;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['type'] === 'SUBMIT_TADI') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['type'] === 'SUBMIT_TADI' && isset($_SESSION['STUDENT'])) {
     $STUDID = $_SESSION['STUDENT']['ID'] ?? 0;
     $LVLID = $_SESSION['STUDENT']['LVLID'] ?? 0;
     $YRID = $_SESSION['STUDENT']['YRID'] ?? 0;
