@@ -411,7 +411,5 @@
 
 </section>
 <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
-<!-- <script src="forms/tadi/dean/view/index-function.js?t=<?php echo time(); ?>"></script>
-<script src="forms/tadi/dean/view/index-script.js?t=<?php echo time(); ?>"></script> -->
 <script src="forms/tadi/dean/view/index-ui.js?t=<?php echo time(); ?>"></script>
 <script src="forms/tadi/dean/view/index-api.js?t=<?php echo time(); ?>"></script>

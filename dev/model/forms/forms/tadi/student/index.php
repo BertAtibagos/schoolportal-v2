@@ -122,6 +122,7 @@
                     </form>
                 </div>
                 <div class="modal-footer">
+                    <div class="me-auto text-start text-muted small">Note: The date must not set to future date and exceed 3 days in the past </div>
                     <button type="submit" class="btn btn-submit-tadi submitTadi" id="confirmBtn">
                         <span class="submit-label">Submit</span>
                     </button>

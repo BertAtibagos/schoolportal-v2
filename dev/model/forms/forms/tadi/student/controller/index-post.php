@@ -370,6 +370,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
     } finally {
         $dbConn->close();
     }
+}else {
+    $fetch['message'] = "Invalid request method or missing session.";
+    logStudentTadiSubmit($dbConn, 0, $fetch['message']);
 }
 
 

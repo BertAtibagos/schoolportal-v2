@@ -85,7 +85,7 @@ button.addEventListener("click", function (e) {
     today.setHours(0, 0, 0, 0);
     inputDate.setHours(0, 0, 0, 0);
 
-    const maxPastDays = 2;
+    const maxPastDays = 3;
 
     const pastLimit = new Date(today);
     pastLimit.setDate(today.getDate() - maxPastDays);

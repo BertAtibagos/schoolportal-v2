@@ -319,7 +319,5 @@
     </div>
 
 </section>
-<!-- <script src="forms/tadi/prof/view/index-function.js?t=<?php echo time(); ?>"></script>
-<script src="forms/tadi/prof/view/index-script.js?t=<?php echo time(); ?>"></script> -->
 <script src="forms/tadi/prof/view/index-ui.js?t=<?php echo time(); ?>"></script>
 <script src="forms/tadi/prof/view/index-api.js?t=<?php echo time(); ?>"></script>
