@@ -156,8 +156,8 @@ if($type == 'GET_ALL_PROG_TOTAL'){
             LEFT JOIN schoolemployee emp  
                 ON tadi.`schlprof_id` = emp.`SchlEmpSms_ID` 
             WHERE off.`SchlAcadLvl_ID` = 2 
-                AND off.`SchlAcadYr_ID` = 19 
-                AND off.`SchlAcadPrd_ID` = 5  
+                AND off.`SchlAcadYr_ID` = 22
+                AND off.`SchlAcadPrd_ID` = 5
             GROUP BY dept.`SchlDept_NAME` 
             ORDER BY unverified_count DESC ";
 
@@ -447,8 +447,8 @@ if($type == 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY'){
             WHERE st.SchlProf_ID = `schl_enr_subj_off`.`SchlProf_ID` 
                 AND st.schltadi_status = 1
                 AND seso.SchlAcadLvl_ID = 2 
-                AND seso.SchlAcadYr_ID = 19 
-                AND seso.SchlAcadPrd_ID = 6
+                AND seso.SchlAcadYr_ID = 22
+                AND seso.SchlAcadPrd_ID = 5
                 $queryFilter ) AS verified_count,
             (SELECT 
                 COUNT(*) 
@@ -463,8 +463,8 @@ if($type == 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY'){
             WHERE st.SchlProf_ID = `schl_enr_subj_off`.`SchlProf_ID` 
                 AND st.schltadi_status = 0 
                 AND seso.SchlAcadLvl_ID = 2 
-                AND seso.SchlAcadYr_ID = 19 
-                AND seso.SchlAcadPrd_ID = 6
+                AND seso.SchlAcadYr_ID = 22
+                AND seso.SchlAcadPrd_ID = 5
                 $queryFilter ) AS unverified_count,
             (SELECT 
                 COUNT(*) 
@@ -478,8 +478,8 @@ if($type == 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY'){
                 ON `schl_acad_crses`.`SchlDept_ID` = `schl_dept`.`SchlDeptSms_ID` 
             WHERE st.SchlProf_ID = `schl_enr_subj_off`.`SchlProf_ID` 
                 AND seso.SchlAcadLvl_ID = 2 
-                AND seso.SchlAcadYr_ID = 19 
-                AND seso.SchlAcadPrd_ID = 6
+                AND seso.SchlAcadYr_ID = 22
+                AND seso.SchlAcadPrd_ID = 5
                 $queryFilter ) AS total_count,
             (SELECT
                 COUNT(*)
@@ -495,8 +495,8 @@ if($type == 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY'){
                 AND st.schltadi_status = 1
                 AND st.schltadi_isconfirm = 0
                 AND seso.SchlAcadLvl_ID = 2
-                AND seso.SchlAcadYr_ID = 19
-                AND seso.SchlAcadPrd_ID = 6
+                AND seso.SchlAcadYr_ID = 22
+                AND seso.SchlAcadPrd_ID = 5
                 $queryFilter ) AS to_approved,
             (SELECT
                 COUNT(*)
@@ -512,8 +512,8 @@ if($type == 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY'){
                 AND st.schltadi_status = 1
                 AND st.schltadi_isconfirm = 1
                 AND seso.SchlAcadLvl_ID = 2
-                AND seso.SchlAcadYr_ID = 19
-                AND seso.SchlAcadPrd_ID = 6
+                AND seso.SchlAcadYr_ID = 22
+                AND seso.SchlAcadPrd_ID = 5
                 $queryFilter ) AS approved
             FROM
             `schoolenrollmentsubjectoffered` `schl_enr_subj_off` 
@@ -524,8 +524,8 @@ if($type == 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY'){
             LEFT JOIN schoolemployee AS emp 
                 ON `schl_enr_subj_off`.`SchlProf_ID` = emp.`SchlEmpSms_ID` 
             WHERE `schl_enr_subj_off`.`SchlAcadLvl_ID` = 2 
-            AND `schl_enr_subj_off`.`SchlAcadYr_ID` = 19 
-            AND `schl_enr_subj_off`.`SchlAcadPrd_ID` = 6
+            AND `schl_enr_subj_off`.`SchlAcadYr_ID` = 22
+            AND `schl_enr_subj_off`.`SchlAcadPrd_ID` = 5
             AND `schl_dept`.`SchlDept_CODE` = ?
             AND `schl_enr_subj_off`.`SchlEnrollSubjOff_ISACTIVE` = 1 
             AND emp.`SchlEmp_ID` IS NOT NULL 
@@ -601,7 +601,7 @@ if ($type == 'GET_ACADEMIC_PERIOD') {
                 LEFT JOIN `schoolacademicperiod` AS `schl_acad_prd`
                     ON `schl_acad_yr_prd`.`SchlAcadPrd_ID` =  `schl_acad_prd`.`SchlAcadPrdSms_ID`
                 WHERE `schl_acad_yr_prd`.`SchlAcadLvl_ID` = ?
-                AND `schl_acad_yr_prd`.SchlAcadYr_ID = 19
+                AND `schl_acad_yr_prd`.SchlAcadYr_ID = 22
                 AND `schl_acad_yr_prd`.`SchlAcadYrPrd_ISACTIVE` = 1 ";
 
     $stmt = $dbConn->prepare($qry);
@@ -646,7 +646,7 @@ if($type == 'GET_INSTRUCTOR_SCHEDULE'){
     $useCurrentSemester = in_array(strtolower($semesterFilter), ['current', 'currentsemester', 'currsemester'], true);
 
     $acadLvlId = isset($_POST['lvlid']) ? intval($_POST['lvlid']) : (isset($_POST['lvl_id']) ? intval($_POST['lvl_id']) : 2);
-    $acadYrId = isset($_POST['acadyr']) ? intval($_POST['acadyr']) : (isset($_POST['acadyrid']) ? intval($_POST['acadyrid']) : 19);
+    $acadYrId = isset($_POST['acadyr']) ? intval($_POST['acadyr']) : (isset($_POST['acadyrid']) ? intval($_POST['acadyrid']) : 22);
 
     if ($profId <= 0) {
         http_response_code(400);

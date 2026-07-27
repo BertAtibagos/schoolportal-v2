@@ -1,3 +1,6 @@
+<?php  
+    echo '<script>console.log("Session Data:", ' . json_encode($_SESSION) . ');</script>';
+?>
 <link rel="stylesheet" href="forms/tadi/prof/css/css_tadi.css?t=<?php echo time(); ?>">
 
 <section class="tadi-prof-section">
