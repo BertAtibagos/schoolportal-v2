@@ -510,6 +510,20 @@ function DISPLAY_TADI_LOG(subj_off_id, summary = false) {
     .catch(error => console.error('Error fetching data:', error));
 }
 
+function disable_due_verify_button(date) {
+    const inputDate = new Date(date);
+    const today = new Date();
+
+    today.setHours(0, 0, 0, 0);
+    inputDate.setHours(0, 0, 0, 0);
+
+    const maxPastDays = 3;
+    const pastLimit = new Date(today);
+    pastLimit.setDate(today.getDate() - maxPastDays);
+
+    return inputDate < pastLimit; // true = should be disabled
+}
+
 function DISPLAYALL_TADI_RECORDS(subj_off_id,subjDesc = null,subjSec = null, summary = false) {
   const formData = new FormData();
   formData.append('type', 'GETALL_TADI_RECORD');
@@ -565,12 +579,13 @@ function DISPLAYALL_TADI_RECORDS(subj_off_id,subjDesc = null,subjSec = null, sum
           ${viewUploadCell}
           <input type="hidden" class="pass" id="pass${record.sub_off_id}" value="${record.sub_off_id}">
         </td>
-        <td><button class="btn acknw" 
+        <td><button class="btn acknw ${disable_due_verify_button(record.date_field_here) ? 'btn-disabled' : ''}" 
             value="${record.schltadi_ID}" 
             name="${record.tadi_status}" 
             data-subj-off="${record.sub_off_id}" 
             data-from-summary="${summary ? 'true' : 'false'}"
-            data-approved="${record.approve}">
+            data-approved="${record.approve}"
+            ${disable_due_verify_button(record.date_field_here) ? 'disabled' : ''}>
               Verify
             </button>
         </td>

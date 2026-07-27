@@ -46,7 +46,8 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
             }
             
             $query = "UPDATE schooltadi
-                    SET schltadi_status = ?
+                    SET schltadi_status = ?,
+                        tadi_verified_date = NOW()
                     WHERE schltadi_id = ?
                     AND schlprof_id = ?
                     AND schltadi_isactive = 1
