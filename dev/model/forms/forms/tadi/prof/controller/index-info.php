@@ -386,7 +386,8 @@
                             schl_tadi.schlenrollsubjoff_id AS sub_off_id,
                             schl_tadi.schltadi_late_status AS late_status,
                             schl_tadi.schltadi_mkup_date AS mkup_date,
-                            schl_tadi.schltadi_isconfirm AS approve
+                            schl_tadi.schltadi_isconfirm AS approve,
+                            schl_tadi.schlacadprd_id AS acad_prd_id
 
                             FROM `schooltadi` AS schl_tadi
                                 LEFT JOIN `schoolstudent` AS schl_stud 
@@ -468,7 +469,17 @@
                             AND t.schltadi_isactive = 1
                             AND t.`schlprof_id` = ?
                             AND FIND_IN_SET(?, schl_enr_subj_off.`SchlProf_ID`) > 0
-                            AND t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`) AS unverified_count 
+                            AND t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`) AS unverified_count,
+                        (SELECT
+                            COUNT(*)
+                        FROM
+                            `schooltadi` AS t
+                        WHERE t.`schltadi_status` = 0
+                            AND t.schltadi_isactive = 1
+                            AND t.`schlprof_id` = ?
+                            AND FIND_IN_SET(?, schl_enr_subj_off.`SchlProf_ID`) > 0
+                            AND t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`
+                            AND t.`schltadi_date` < CURDATE() - INTERVAL 3 DAY) AS overdue_count
                         FROM
                         `schoolenrollmentsubjectoffered` AS `schl_enr_subj_off` 
                             LEFT JOIN `schoolacademicsubject` AS `schl_acad_subj` 
@@ -492,7 +503,7 @@
 
 
                 $stmt = $dbConn->prepare($qry);
-                $stmt->bind_param("iiiiiiii", $USERID,$USERID,$USERID,$USERID,$lvlid, $yrid, $prdid, $USERID);
+                $stmt->bind_param("iiiiiiiiii", $USERID,$USERID,$USERID,$USERID,$USERID,$USERID,$lvlid, $yrid, $prdid, $USERID);
                 $stmt->execute();
                 $result = $stmt->get_result();
                 $fetch = $result->fetch_all(MYSQLI_ASSOC);
@@ -502,28 +513,32 @@
 
             case 'GET_TOTAL_COUNT_SUMMARY':
                     $user = $_SESSION['EMPLOYEE']['ID'];
+                    $period = $_POST['prd_id'];
 
                 $qry = "WITH counts AS (
                             SELECT 
                                 SUM(CASE WHEN schltadi_status = 1 AND schltadi_isactive = 1 THEN 1 ELSE 0 END) AS verified_count,
                                 SUM(CASE WHEN schltadi_status = 0 AND schltadi_isactive = 1 THEN 1 ELSE 0 END) AS total_unverified,
+                                SUM(CASE WHEN schltadi_status = 0 AND schltadi_isactive = 1 AND schltadi_date < CURDATE() - INTERVAL 3 DAY THEN 1 ELSE 0 END) AS total_overdue,
                                 COUNT(*) AS total_count
                             FROM schooltadi t
                             LEFT JOIN `schoolenrollmentsubjectoffered` AS `schl_enr_subj_off`
                                 ON t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`
                             WHERE t.schlprof_id = ?
                                 AND t.schltadi_isactive = 1
+                                AND t.schlacadprd_id = ?
                                 AND FIND_IN_SET(?, schl_enr_subj_off.`SchlProf_ID`) > 0
                         )
                         SELECT 
                             verified_count,
                             total_unverified,
                             total_count,
+                            total_overdue,
                             ROUND((verified_count / total_count) * 100) AS verification_rate
                         FROM counts";
 
                 $stmt = $dbConn->prepare($qry);
-                $stmt->bind_param("ii",$user,$user);
+                $stmt->bind_param("iii",$user,$period,$user);
                 $stmt->execute();
                 $result = $stmt->get_result();
                 $fetch = $result->fetch_assoc();

@@ -166,12 +166,14 @@ label { font-weight: bold; }
 
 .stat-total     { background: linear-gradient(135deg,#e8eaf6,#c5cae9); border: 1px solid #9fa8da; }
 .stat-verified  { background: linear-gradient(135deg,#e8f5e9,#c8e6c9); border: 1px solid #a5d6a7; }
-.stat-unverified{ background: linear-gradient(135deg,#fce4ec,#f8bbd0); border: 1px solid #f48fb1; }
+.stat-unverified { background: linear-gradient(135deg,#fce4ec,#f8bbd0); border: 1px solid #f48fb1; }
+.stat-overdue    { background: linear-gradient(135deg,#fff3e0,#ffe0b2); border: 1px solid #ffb74d; }
 
 .stat-icon      { font-size: 1.75rem; opacity: .6; flex-shrink: 0; }
 .stat-total     .stat-icon  { color: #3949ab; }
 .stat-verified  .stat-icon  { color: #2e7d32; }
 .stat-unverified.stat-icon  { color: #c62828; }
+.stat-overdue    .stat-icon  { color: #f57c00; }
 
 .stat-value {
     font-size: 1.75rem;
@@ -182,6 +184,7 @@ label { font-weight: bold; }
 .stat-total     .stat-value  { color: #283593; }
 .stat-verified  .stat-value  { color: #1b5e20; }
 .stat-unverified .stat-value { color: #b71c1c; }
+.stat-overdue    .stat-value { color: #e65100; }
 
 .stat-label {
     font-size: .72rem;
@@ -193,6 +196,7 @@ label { font-weight: bold; }
 .stat-total     .stat-label  { color: #283593; }
 .stat-verified  .stat-label  { color: #1b5e20; }
 .stat-unverified .stat-label { color: #b71c1c; }
+.stat-overdue    .stat-label { color: #e65100; }
 
 .summary-hide { display: none !important; }
 
@@ -307,6 +311,14 @@ label { font-weight: bold; }
     white-space: nowrap;
 }
 .acknw:hover:not(:disabled) { background: var(--tp-primary-deep) !important; transform: translateY(-1px); }
+
+.tadi-badge-duedate, .tadi-badge-duedate {
+    background-color: #d3d3d3;
+    color: #888;
+    cursor: not-allowed;
+    opacity: 0.7;
+    font-size: .74rem;
+}
 
 .tadi-table tbody .table-warning,
 .tadi-records-table tbody .table-warning { background-color: #fffbeb !important; }
@@ -661,9 +673,9 @@ label { font-weight: bold; }
 }
 .tadi-badge-approved{
     background: #d1fae5;
-    color: #065f46;
+    color: rgb(25, 135, 84);
     font-size: .8rem;
-    font-weight: 600;
+    font-weight: bold;
 }
 
 @media (max-width: 768px) {

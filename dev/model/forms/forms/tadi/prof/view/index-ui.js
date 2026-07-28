@@ -50,8 +50,22 @@ function disable_acknw_bttn() {
     document.querySelectorAll('.acknw').forEach(button => {
       const status = button.getAttribute('name');
       const approved = button.getAttribute('data-approved');
-      if (status == 1 && approved == 0) {
-        let acknowledgedText = document.createTextNode('Pending Approval');
+      const dueDate = button.getAttribute('data-due-verify') === 'true';
+      let acknowledgedText;
+      if(status == 0 && approved == 0 && dueDate){
+            acknowledgedText = document.createTextNode('Overdue');
+            let span = document.createElement('span');
+            span.className = 'tadi-badge tadi-badge-duedate';
+            span.appendChild(acknowledgedText);
+            button.replaceWith(span);
+      } else if(status == 0 && approved == 1){
+            acknowledgedText = document.createTextNode('Unavailable');
+            let span = document.createElement('span');
+            span.className = 'tadi-badge tadi-badge-duedate';
+            span.appendChild(acknowledgedText);
+            button.replaceWith(span);
+      } else if (status == 1 && approved == 0) {
+            acknowledgedText = document.createTextNode('Pending Approval');
             let span = document.createElement('span');
             span.className = 'tadi-badge tadi-badge-pending';
             span.style.color = '#eed038';
@@ -60,11 +74,9 @@ function disable_acknw_bttn() {
             span.appendChild(acknowledgedText);
             button.replaceWith(span);
       } else if (status == 1 && approved == 1){
-        let acknowledgedText = document.createTextNode('Approved');
+            acknowledgedText = document.createTextNode('Approved');
             let span = document.createElement('span');
             span.className = 'tadi-badge tadi-badge-approved';
-            span.style.color = '#198754';
-            span.style.fontWeight = 'bold';
             span.appendChild(acknowledgedText);
             button.replaceWith(span);
       }
@@ -276,7 +288,7 @@ function resetStartEndDateInput(){
       endDate.classList.remove("is-invalid");
 }
 
-function displaySummary(){
+function displaySummary() {
     const thead = document.getElementById('theadTable');
     const summaryCard = document.querySelector('.summary');
 
@@ -290,7 +302,13 @@ function displaySummary(){
                             <th scope="col" style="background-color: #181a46; color: white;">Unverified Records</th>
                             <th scope="col" style="background-color: #181a46; color: white;"></th>
                         </tr>`;
-    tadiSummary();
+
+    if (!skipTadiSummaryAutoLoad) {
+        tadiSummary();
+        TOTAL_COUNT_SUMMARY(document.getElementById("period").value);
+    } else {
+        skipTadiSummaryAutoLoad = false; // reset so it auto-loads next time
+    }
 }
 
 function isSafeAttachmentPath(value) {

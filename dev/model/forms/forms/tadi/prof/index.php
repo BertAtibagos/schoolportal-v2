@@ -89,6 +89,13 @@
                                 <div class="stat-label">Unverified</div>
                             </div>
                         </div>
+                        <div class="stat-card stat-overdue">
+                            <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="totalDue">0</div>
+                                <div class="stat-label">Past Due</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -100,6 +107,7 @@
                                 <th scope="col">Subject</th>
                                 <th scope="col" class="text-center">Total Records</th>
                                 <th scope="col" class="text-center">Unverified</th>
+                                <th scope="col" class="text-center">Over Due</th>
                                 <th scope="col"></th>
                             </tr>
                         </thead>

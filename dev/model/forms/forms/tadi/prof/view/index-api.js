@@ -135,7 +135,8 @@ function getAcademicYears(lvlid, prdid) {
 
     if (LoadSummary) {
       tadiSummary();
-      shouldLoadSummary(false,true)
+      TOTAL_COUNT_SUMMARY(prdid);
+      skipTadiSummaryAutoLoad = false;
     }
     searchButton.disabled = false;
   })
@@ -413,6 +414,20 @@ function isSafeAttachmentPath(value) {
 //   };
 // }
 
+function disable_due_verify_button(date) {
+    const inputDate = new Date(date);
+    const today = new Date();
+
+    today.setHours(0, 0, 0, 0);
+    inputDate.setHours(0, 0, 0, 0);
+
+    const maxPastDays = 3;
+    const pastLimit = new Date(today);
+    pastLimit.setDate(today.getDate() - maxPastDays);
+
+    return inputDate < pastLimit; // true = should be disabled
+}
+
 function DISPLAY_TADI_LOG(subj_off_id, summary = false) {
   const strtDateSearch = document.getElementById('strtDateSearch').value;
   const endDateSearch = document.getElementById('endDateSearch').value;
@@ -510,20 +525,6 @@ function DISPLAY_TADI_LOG(subj_off_id, summary = false) {
     .catch(error => console.error('Error fetching data:', error));
 }
 
-function disable_due_verify_button(date) {
-    const inputDate = new Date(date);
-    const today = new Date();
-
-    today.setHours(0, 0, 0, 0);
-    inputDate.setHours(0, 0, 0, 0);
-
-    const maxPastDays = 3;
-    const pastLimit = new Date(today);
-    pastLimit.setDate(today.getDate() - maxPastDays);
-
-    return inputDate < pastLimit; // true = should be disabled
-}
-
 function DISPLAYALL_TADI_RECORDS(subj_off_id,subjDesc = null,subjSec = null, summary = false) {
   const formData = new FormData();
   formData.append('type', 'GETALL_TADI_RECORD');
@@ -579,13 +580,14 @@ function DISPLAYALL_TADI_RECORDS(subj_off_id,subjDesc = null,subjSec = null, sum
           ${viewUploadCell}
           <input type="hidden" class="pass" id="pass${record.sub_off_id}" value="${record.sub_off_id}">
         </td>
-        <td><button class="btn acknw ${disable_due_verify_button(record.date_field_here) ? 'btn-disabled' : ''}" 
+        <td><button class="btn acknw" 
             value="${record.schltadi_ID}" 
             name="${record.tadi_status}" 
             data-subj-off="${record.sub_off_id}" 
             data-from-summary="${summary ? 'true' : 'false'}"
             data-approved="${record.approve}"
-            ${disable_due_verify_button(record.date_field_here) ? 'disabled' : ''}>
+            data-period="${record.acad_prd_id}"
+            data-due-verify="${disable_due_verify_button(record.tadi_date) ? 'true' : 'false'}">
               Verify
             </button>
         </td>
@@ -627,6 +629,7 @@ function UPDATE_TADI_STATUS() {
       const subOffId = hiddenInput ? hiddenInput.value : null;
       const summary = button.getAttribute('data-from-summary');
       const approve = button.getAttribute('data-approved');
+      const period = button.getAttribute('data-period');
 
       const response = await fetch('forms/tadi/prof/controller/index-post.php', {
         method: "POST",
@@ -707,7 +710,7 @@ function UPDATE_TADI_STATUS() {
       }
 
       if (summary === "true") {
-        TOTAL_COUNT_SUMMARY();
+        TOTAL_COUNT_SUMMARY(period);
         UPDATE_TADI_COUNT(subOffId);
       }
 
@@ -755,7 +758,7 @@ async function tadiSummary(){
                                   </td>
                               </tr>`;
   
-  TOTAL_COUNT_SUMMARY();
+  TOTAL_COUNT_SUMMARY(prdid);
   
   try{
     const response = await fetch('forms/tadi/prof/controller/index-info.php',{
@@ -784,6 +787,11 @@ async function tadiSummary(){
                       <td class="text-center">
                         <span id="unverified-${value.sub_off_id}" class="text-${value.schl_sec == null ? 'secondary' : 'danger'}" style="font-size: 1.4rem; font-weight: bold;">
                           ${value.unverified_count}
+                        </span>
+                      </td>
+                      <td class="text-center">
+                        <span id="overdue-${value.sub_off_id}" class="text-${value.schl_sec == null ? 'secondary' : 'secondary-emphasis'}" style="font-size: 1.4rem; font-weight: bold;">
+                          ${value.overdue_count}
                         </span>
                       </td>
                       <td class="text-center">
@@ -819,14 +827,14 @@ async function tadiSummary(){
   };
 }
 
-async function TOTAL_COUNT_SUMMARY(){
-
+async function TOTAL_COUNT_SUMMARY(prd){
   try{
     const total_summary = await fetch('forms/tadi/prof/controller/index-info.php',{
       method: "POST",
       headers: {"Content-Type": "application/x-www-form-urlencoded"},
       body: new URLSearchParams({
-        type: 'GET_TOTAL_COUNT_SUMMARY'
+        type: 'GET_TOTAL_COUNT_SUMMARY',
+        prd_id: prd
       })
     });
 
@@ -835,10 +843,12 @@ async function TOTAL_COUNT_SUMMARY(){
     const totalCount = document.getElementById('totalCount');
     const totalUnverified = document.getElementById('totalUnverified');
     const totalVerified = document.getElementById('totalVerified');
+    const totalOverDue = document.getElementById('totalDue');
 
     totalCount.textContent = totalResult.total_count;
     totalUnverified.textContent = totalResult.total_unverified;
     totalVerified.textContent = totalResult.verified_count;
+    totalOverDue.textContent = totalResult.total_overdue;
   }catch(error){
     console.error("Error:", error);
   }
@@ -870,7 +880,6 @@ async function UPDATE_TADI_COUNT(subjOff){
 }
 
 document.getElementById("searchButton").addEventListener("click", function () {
-  let loadSummary = shouldLoadSummary(false,true);
   skipTadiSummaryAutoLoad = true;
   const lvlid = document.getElementById("academiclevel").value;
   const yrlvlid = document.getElementById("academicYearLevel").value;
