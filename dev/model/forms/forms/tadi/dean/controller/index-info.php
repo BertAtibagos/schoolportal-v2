@@ -107,7 +107,7 @@
 							LEFT JOIN `schoolacademicperiod` AS `schl_acad_prd`
 								ON `schl_acad_yr_prd`.`SchlAcadPrd_ID` =  `schl_acad_prd`.`SchlAcadPrdSms_ID`
 							WHERE `schl_acad_yr_prd`.`SchlAcadLvl_ID` = ?
-							AND `schl_acad_yr_prd`.SchlAcadYr_ID = 22
+							AND `schl_acad_yr_prd`.SchlAcadYr_ID = 19
 							AND `schl_acad_yr_prd`.`SchlAcadYrPrd_ISACTIVE` = 1";
 
 				$stmt = $dbConn->prepare($qry);
@@ -293,7 +293,8 @@
 							schl_tadi.schltadi_late_status AS late_status,
 							schl_tadi.SchlProf_ID,
 							schl_tadi.schltadi_mkup_date AS mkup_date,
-							schl_tadi.schltadi_isconfirm AS approved
+							schl_tadi.schltadi_isconfirm AS approved,
+							schl_tadi.tadi_verified_date AS date_approved
 						FROM `schooltadi` AS schl_tadi 
 						
 						LEFT JOIN `schoolstudent` AS schl_stud 
@@ -741,6 +742,7 @@
 					exit;
 				}
 
+				$user = $_SESSION['EMPLOYEE']['ID'];
 				$tadId = $_POST['tadi_id'];
 				$profId = $_POST['prof_id'];
 				$subjId = $_POST['subj_id'];
@@ -752,7 +754,9 @@
 							ON `off`.`SchlAcadCrses_ID` = `crse`.`SchlAcadCrseSms_ID`
 						INNER JOIN `schooldepartment` AS `dept`
 							ON `crse`.`SchlDept_ID` = `dept`.`SchlDeptSms_ID`
-						SET `schltadi_isconfirm` = 1
+						SET `schltadi_isconfirm` = 1,
+							tadi_who_approved = ?,
+							tadi_approved_date = NOW()
 						WHERE `schltadi_id` = ?
 						AND `schltadi_status` = 1
 						AND `schltadi_isactive` = 1
@@ -762,7 +766,7 @@
 						AND `dept`.`SchlDeptHead_ID` = ?";
 
 				$stmt = $dbConn->prepare($qry);
-				$stmt->bind_param("iiii", $tadId, $profId, $subjId, $user);
+				$stmt->bind_param("iiiii",$user, $tadId, $profId, $subjId, $user);
 				$stmt->execute();
 				$affectedRows = $stmt->affected_rows;
 				$stmt->close();

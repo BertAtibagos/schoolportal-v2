@@ -205,6 +205,38 @@ function GET_SUBJECT_BY_INSTRUCTOR({ single_prof_id }) {
     .catch(err => console.error("Error fetching instructor subjects:", err));
 }
 
+function disable_due_verify_button(date) {
+    const inputDate = new Date(date);
+    const today = new Date();
+
+    today.setHours(0, 0, 0, 0);
+    inputDate.setHours(0, 0, 0, 0);
+
+    const maxPastDays = 3;
+    const pastLimit = new Date(today);
+    pastLimit.setDate(today.getDate() - maxPastDays);
+
+    return inputDate < pastLimit;
+}
+
+function dynamic_button(tadiId, profId, subjId, approve, date) {
+
+    const isPastDue = disable_due_verify_button(date);
+    
+    if(isPastDue && approve === 0){
+        return `<span class="tadi-badge tadi-badge-pastDue"><i class="fas fa-exclamation-triangle"></i> Overdue</span>`
+    }else if(approve === 0){
+       return `<button class="tadi-btn tadi-btn-approve approve"
+            value="${tadiId}"
+            data-prof="${profId}"
+            data-subj-id="${subjId}">
+            <i class="fas fa-check"></i> Approve
+        </button>`
+    }else if(approve === 1){
+        return `<span class="tadi-badge tadi-badge-approved"><i class="fas fa-check-circle"></i> Approved</span>`
+    }
+}
+
 function GETALL_TADI_RECORDS(prof_id, subj_id) {
   const tbody = document.getElementById('prof_tadi_list_table');
   tbody.innerHTML = loadingRow(8);
@@ -251,14 +283,7 @@ function GETALL_TADI_RECORDS(prof_id, subj_id) {
             <td>${status}</td>
             <td>${viewBtn}</td>
             <td>
-            ${record.approved === 0
-              ? `<button class="tadi-btn tadi-btn-approve approve"
-                  value="${record.schltadi_ID}"
-                  data-prof="${record.SchlProf_ID}"
-                  data-subj-id="${record.sub_off_id}">
-                    <i class="fas fa-check"></i> Approve
-                </button>`
-              : `<span class="tadi-badge tadi-badge-approved"><i class="fas fa-check-circle"></i> Approved</span>`}
+            ${dynamic_button(record.schltadi_ID, record.SchlProf_ID, record.sub_off_id, record.approved, record.date_approved)}
             </td>
           </tr>`;
       }).join('');
