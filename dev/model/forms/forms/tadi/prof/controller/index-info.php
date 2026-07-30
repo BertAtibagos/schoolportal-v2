@@ -530,11 +530,14 @@
                                 AND FIND_IN_SET(?, schl_enr_subj_off.`SchlProf_ID`) > 0
                         )
                         SELECT 
-                            verified_count,
-                            total_unverified,
-                            total_count,
-                            total_overdue,
-                            ROUND((verified_count / total_count) * 100) AS verification_rate
+                            COALESCE(verified_count, 0)   AS verified_count,
+                            COALESCE(total_unverified, 0) AS total_unverified,
+                            COALESCE(total_count, 0)      AS total_count,
+                            COALESCE(total_overdue, 0)    AS total_overdue,
+                            CASE 
+                                WHEN total_count > 0 THEN ROUND((verified_count / total_count) * 100)
+                                ELSE 0
+                            END AS verification_rate
                         FROM counts";
 
                 $stmt = $dbConn->prepare($qry);

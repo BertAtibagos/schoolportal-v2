@@ -741,11 +741,55 @@
 					echo json_encode($fetch);
 					exit;
 				}
+				
+				if (!isset($_POST['tadi_id'], $_POST['prof_id'], $_POST['subj_id'])) {
+					echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+					exit;
+				}
 
 				$user = $_SESSION['EMPLOYEE']['ID'];
 				$tadId = $_POST['tadi_id'];
 				$profId = $_POST['prof_id'];
 				$subjId = $_POST['subj_id'];
+
+				$dueDateQuery = "SELECT t.tadi_verified_date
+								FROM schooltadi t
+								WHERE t.schlprof_id = ?
+								AND t.schltadi_id = ?
+								AND t.schlenrollsubjoff_id = ?
+								AND t.schltadi_isconfirm = 0
+								AND t.schltadi_status = 1
+								AND t.schltadi_isactive = 1";
+
+				$dueStmt = $dbConn->prepare($dueDateQuery);
+
+				if (!$dueStmt) {
+					echo json_encode(['success' => false, 'error' => 'Prepare failed: ' . $dbConn->error]);
+					exit;
+				}
+				$dueStmt->bind_param("iii", $profId, $tadId, $subjId);
+				$dueStmt->execute();
+				$dueResult = $dueStmt->get_result();
+				$dueRow = $dueResult->fetch_assoc();
+				$dueStmt->close();
+
+				if (!$dueRow) {
+					echo json_encode(['success' => false, 'error' => 'Record not found or already processed']);
+					exit;
+				}
+				
+				$recordDate = new DateTime($dueRow['tadi_verified_date']);
+				$today = new DateTime();
+				$today->setTime(0, 0, 0);
+				$recordDate->setTime(0, 0, 0);
+
+				$pastLimit = clone $today;
+				$pastLimit->modify('-3 days');
+
+				if ($recordDate < $pastLimit) {
+					echo json_encode(['success' => false, 'error' => 'This record is past the 3-day verification window and can no longer be updated']);
+					exit;
+				}
 
 				$qry =	"UPDATE `schooltadi`
 						INNER JOIN `schoolenrollmentsubjectoffered` AS `off`

@@ -630,6 +630,7 @@ function UPDATE_TADI_STATUS() {
       const summary = button.getAttribute('data-from-summary');
       const approve = button.getAttribute('data-approved');
       const period = button.getAttribute('data-period');
+      const subjId = button.getAttribute('data-subj-off');
 
       const response = await fetch('forms/tadi/prof/controller/index-post.php', {
         method: "POST",
@@ -637,7 +638,8 @@ function UPDATE_TADI_STATUS() {
         body: new URLSearchParams({
           type: "UPDATE_TADI_STATUS",
           tadi_status: status,
-          tadi_ID: tadiId
+          tadi_ID: tadiId,
+          sub_off_id: subOffId,
         })
       });
 

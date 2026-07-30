@@ -307,7 +307,7 @@ function displaySummary() {
         tadiSummary();
         TOTAL_COUNT_SUMMARY(document.getElementById("period").value);
     } else {
-        skipTadiSummaryAutoLoad = false; // reset so it auto-loads next time
+        skipTadiSummaryAutoLoad = false;
     }
 }
 
