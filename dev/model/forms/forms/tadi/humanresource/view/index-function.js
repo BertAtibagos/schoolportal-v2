@@ -683,12 +683,12 @@ async function confirmProfDetails(profId, subjCode, profHrs, subjHrs) {
     return res;
 }
 
-document.querySelector('.conf-record').addEventListener('click',(e)=>{
-    const btn = e.currentTarget;
-    const profId   = btn.dataset.profId;
-    const subjCode = btn.dataset.subjCode;
-    const profHrs  = btn.dataset.profHrs;
-    const subjHrs  = btn.dataset.subjHrs;
+// document.querySelector('.conf-record').addEventListener('click',(e)=>{
+//     const btn = e.currentTarget;
+//     const profId   = btn.dataset.profId;
+//     const subjCode = btn.dataset.subjCode;
+//     const profHrs  = btn.dataset.profHrs;
+//     const subjHrs  = btn.dataset.subjHrs;
 
     
-})
+// })
