@@ -196,6 +196,13 @@ if($_SESSION['STUDENT'] && in_array($type, $queryType, true)) {
         break;
 
         case 'GET_SUBMITTED_REC':
+
+            if (!isset($_POST['subj_Id'], $_POST['prof_Id'])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+                exit;
+            }
+
             $subj_Id = $_POST['subj_Id'];
             $prof_Id = $_POST['prof_Id'];
             // $USERID = $_SESSION['STUDENT']['USERID'];
@@ -248,6 +255,12 @@ if($_SESSION['STUDENT'] && in_array($type, $queryType, true)) {
 
         case 'GET_IMAGE':
             rateLimit(60, 5, 'get_image_rate_limit', $dbConn, 'student.GET_IMAGE');
+
+            if (!isset($_POST['prof_id'], $_POST['tadi_id'])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+                exit;
+            }
 
             $prof_id = $_POST['prof_id'];
             $REC_ID = $_POST['tadi_id'];

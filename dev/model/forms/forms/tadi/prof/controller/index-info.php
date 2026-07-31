@@ -37,9 +37,16 @@
     $type = $_POST['type'];
     $queryType = ['GET_SUBJECT_LIST', 'CHECK_MATCHED_SUBJ_ID', 'GET_TADI_RECORD', 'GETALL_TADI_RECORD', 'GET_IMAGE', 'GET_ACADEMIC_LEVEL', 'GET_ACADEMIC_YEAR_LEVEL', 'GET_ACADEMIC_PERIOD', 'GET_ACAD_YEAR', 'GET_INSTRUCTOR_DETAILS', 'GET_ALL_TADI_SUMMARY', 'GET_TOTAL_COUNT_SUMMARY', 'UPDATE_SUBJECT_COUNT'];
     if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
+        $yearId = 19;
         switch($type){
             case 'GET_SUBJECT_LIST':
                 rateLimit(60, 10, 'get_subject_list_rate_limit');
+
+                if (!isset($_POST['lvl_id'], $_POST['prd_id'], $_POST['yr_id'], $_POST['yrlvl_id'], $_POST['search'])) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+                    exit;
+                }
 
                 $lvlid = $_POST['lvl_id'];
                 $prdid = $_POST['prd_id'];
@@ -120,6 +127,13 @@
                 break;
 
             case 'CHECK_MATCHED_SUBJ_ID':
+
+                if (!isset($_POST['sub_off_id'])) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+                    exit;
+                }
+
                 $sub_off_id = $_POST['sub_off_id'];
 
                 $qry = "SELECT 
@@ -208,6 +222,13 @@
                 break;
 
             case 'GET_ACADEMIC_YEAR_LEVEL':
+
+                if (!isset($_POST['lvl_id'])) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+                    exit;
+                }
+
                 $lvlid = $_POST['lvl_id'];
 
                 $qry = "SELECT 
@@ -228,7 +249,14 @@
                 break;
 
             case 'GET_ACADEMIC_PERIOD':
-                    $lvlid = $_POST['lvl_id'];
+
+                if (!isset($_POST['lvl_id'])) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+                    exit;
+                }
+
+                $lvlid = $_POST['lvl_id'];
 
                 $qry = "SELECT DISTINCT
                             `schl_acad_prd`.`SchlAcadPrdSms_ID` AS `acad_prd_id`,
@@ -238,11 +266,11 @@
                         LEFT JOIN `schoolacademicperiod` AS `schl_acad_prd`
                             ON `schl_acad_yr_prd`.`SchlAcadPrd_ID` =  `schl_acad_prd`.`SchlAcadPrdSms_ID`
                         WHERE `schl_acad_yr_prd`.`SchlAcadLvl_ID` = ?
-                        AND `schl_acad_yr_prd`.SchlAcadYr_ID = 19
+                        AND `schl_acad_yr_prd`.SchlAcadYr_ID = ?
                         AND `schl_acad_yr_prd`.`SchlAcadYrPrd_ISACTIVE` = 1";
 
                 $stmt = $dbConn->prepare($qry);
-                $stmt->bind_param("i", $lvlid);
+                $stmt->bind_param("ii", $lvlid, $yearId);
                 $stmt->execute();
                 $result = $stmt->get_result();
                 $fetch = $result->fetch_all(MYSQLI_ASSOC);
@@ -251,6 +279,13 @@
                 break;
 
             case 'GET_ACAD_YEAR':
+
+                if (!isset($_POST['lvl_id'], $_POST['prd_id'])) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+                    exit;
+                }
+
                 $lvlid = $_POST['lvl_id'];
                 $prdid = $_POST['prd_id'];
 
@@ -310,6 +345,12 @@
             case 'GET_TADI_RECORD':
                 rateLimit(60, 5, 'get_tadi_record_rate_limit'); // 60-second window, max 10 requests
 
+                if (!isset($_POST['strtDateSearch'], $_POST['endDateSearch'], $_POST['subj_off_id'])) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+                    exit;
+                }
+
                 $USERID = $_SESSION['EMPLOYEE']['ID'];
                 $strtDateSearch = $_POST['strtDateSearch'];
                 $endDateSearch = $_POST['endDateSearch'];
@@ -364,6 +405,12 @@
             case 'GETALL_TADI_RECORD':
                 rateLimit(60, 20, 'get_all_tadi_record_rate_limit');
 
+                if (!isset($_POST['subj_off_id'])) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+                    exit;
+                }
+
                 $USERID = $_SESSION['EMPLOYEE']['ID'];
                 $subj_off_id = $_POST['subj_off_id'];
                 $qry = "SELECT 
@@ -413,6 +460,12 @@
             case 'GET_IMAGE':
                 rateLimit(60, 5, 'get_image_rate_limit');
 
+                if (!isset($_POST['tadi_id'])) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+                    exit;
+                }
+
                 $USERID = $_SESSION['EMPLOYEE']['ID'];
                 $REC_ID = $_POST['tadi_id'];
                 $qry = "SELECT 
@@ -441,6 +494,13 @@
                 break;
 
             case 'GET_ALL_TADI_SUMMARY':
+
+                if (!isset($_POST['lvl_id'], $_POST['prd_id'], $_POST['yr_id'])) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+                    exit;
+                }
+
                 $lvlid = $_POST['lvl_id'];
                 $prdid = $_POST['prd_id'];
                 $yrid = $_POST['yr_id'];
@@ -512,8 +572,14 @@
                 break;
 
             case 'GET_TOTAL_COUNT_SUMMARY':
-                    $user = $_SESSION['EMPLOYEE']['ID'];
-                    $period = $_POST['prd_id'];
+                if (!isset($_POST['prd_id'])) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+                    exit;
+                }
+
+                $user = $_SESSION['EMPLOYEE']['ID'];
+                $period = $_POST['prd_id'];
 
                 $qry = "WITH counts AS (
                             SELECT 
@@ -550,6 +616,13 @@
                 break;
 
             case 'UPDATE_SUBJECT_COUNT':
+
+                if (!isset($_POST['sub_off_id'])) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+                    exit;
+                }
+                
                 $subj_off = $_POST['sub_off_id'];
 
                 $qry = "WITH counts AS 

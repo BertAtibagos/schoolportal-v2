@@ -40,6 +40,7 @@
 	$type = $_POST['type'];
 	$queryType = ['GET_ACADEMIC_LEVEL', 'GET_ACADEMIC_YEAR_LEVEL', 'GET_ACADEMIC_PERIOD', 'GET_ACAD_YEAR', 'GET_INSTRUCTOR_LIST', 'GET_SECTION_LIST', 'GETALL_TADI_RECORDS', 'GET_INSTRUCTOR_BY_SUBJECT', 'GET_SUBJECT_BY_INSTRUCTOR', 'SEARCH_SUBJECT_BY_INSTRUCTOR', 'GET_IMAGE', 'APPROVE_TADI_REQUEST'];
 	if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
+		$yearId = 19;
 		switch($type){
 			case 'GET_ACADEMIC_LEVEL':
 				$user = $_SESSION['EMPLOYEE']['ID'];
@@ -75,6 +76,12 @@
 				break;
 
 			case 'GET_ACADEMIC_YEAR_LEVEL':
+				if (!isset($_POST['lvl_id'])) {
+					http_response_code(400);
+					echo json_encode(['success' => false, 'error' => 'Missing required parameter: lvl_id']);
+					exit;
+				}
+
 				$lvlid = $_POST['lvl_id'];
 
 				$qry = "SELECT 
@@ -97,6 +104,11 @@
 				break;
 
 			case 'GET_ACADEMIC_PERIOD':
+				if (!isset($_POST['lvl_id'])) {
+					http_response_code(400);
+					echo json_encode(['success' => false, 'error' => 'Missing required parameter: lvl_id']);
+					exit;
+				}
 				$lvlid = $_POST['lvl_id'];
 
 				$qry = " SELECT DISTINCT
@@ -107,11 +119,11 @@
 							LEFT JOIN `schoolacademicperiod` AS `schl_acad_prd`
 								ON `schl_acad_yr_prd`.`SchlAcadPrd_ID` =  `schl_acad_prd`.`SchlAcadPrdSms_ID`
 							WHERE `schl_acad_yr_prd`.`SchlAcadLvl_ID` = ?
-							AND `schl_acad_yr_prd`.SchlAcadYr_ID = 19
+							AND `schl_acad_yr_prd`.SchlAcadYr_ID = ?
 							AND `schl_acad_yr_prd`.`SchlAcadYrPrd_ISACTIVE` = 1";
 
 				$stmt = $dbConn->prepare($qry);
-				$stmt->bind_param("i",$lvlid);
+				$stmt->bind_param("ii",$lvlid,$yearId);
 				$stmt->execute();
 				$result = $stmt->get_result();
 				$fetch = $result->fetch_all(MYSQLI_ASSOC);
@@ -139,6 +151,12 @@
 
 			case 'GET_INSTRUCTOR_LIST':
 				rateLimit(60, 10, 'get_instructor_list_rate_limit');
+
+				if (!isset($_POST['lvl_id'], $_POST['prd_id'], $_POST['yr_id'], $_POST['yrlvl_id'])) {
+					http_response_code(400);
+					echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+					exit;
+				}
 
 				$user = $_SESSION['EMPLOYEE']['ID'];
 				$lvlid = $_POST['lvl_id'];
@@ -219,6 +237,13 @@
 				break;
 
 			case 'GET_SECTION_LIST':
+
+				if (!isset($_POST['prof_id'], $_POST['lvlid'], $_POST['prdid'], $_POST['yrid'], $_POST['yrlvlid'])) {
+					http_response_code(400);
+					echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+					exit;
+				}
+
 				$profId = $_POST['prof_id'];
 				$lvlid = $_POST['lvlid'];
 				$prdid = $_POST['prdid'];
@@ -276,6 +301,13 @@
 				$dbConn->close();
 				break;
 			case 'GETALL_TADI_RECORDS':
+
+				if (!isset($_POST['prof_id'], $_POST['subj_off_id'])) {
+					http_response_code(400);
+					echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+					exit;
+				}
+
 				$profId = $_POST['prof_id'];
 				$subj_off_id = $_POST['subj_off_id'];
 
@@ -322,6 +354,13 @@
 				break;
 
 			case 'GET_INSTRUCTOR_BY_SUBJECT':
+
+				if (!isset($_POST['subj_id'], $_POST['lvlid'], $_POST['prdid'], $_POST['yrid'], $_POST['yrlvlid'])) {
+					http_response_code(400);
+					echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+					exit;
+				}
+
 				$subj_id = $_POST['subj_id'];
 				$lvlid = $_POST['lvlid'];
 				$prdid = $_POST['prdid'];
@@ -366,6 +405,13 @@
 				$dbConn->close();	
 				break;
 			case 'GET_SUBJECT_BY_INSTRUCTOR':
+
+				if (!isset($_POST['prof_id'], $_POST['lvl_id'], $_POST['prd_id'], $_POST['yr_id'], $_POST['yrlvl_id'])) {
+					http_response_code(400);
+					echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+					exit;
+				}
+
 				$profId = $_POST['prof_id'];
 				$lvlid = $_POST['lvl_id'];
 				$prdid = $_POST['prd_id'];
@@ -442,6 +488,12 @@
 				break;
 			case 'SEARCH_SUBJECT_BY_INSTRUCTOR':
 				rateLimit(60, 10, 'search_subject_by_instructor_rate_limit');
+
+				if (!isset($_POST['lvlid'], $_POST['prdid'], $_POST['yrid'], $_POST['yrlvlid'], $_POST['prof_id'], $_POST['subjDesc'], $_POST['subjCode'], $_POST['section'])) {
+					http_response_code(400);
+					echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+					exit;
+				}
 
 				$lvlid = $_POST['lvlid'];
 				$prdid = $_POST['prdid'];
@@ -540,6 +592,12 @@
 			case 'GET_IMAGE':
 				rateLimit(60, 10, 'get_image_rate_limit');
 
+				if (!isset($_POST['prof_id'], $_POST['tadi_id'])) {
+					http_response_code(400);
+					echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+					exit;
+				}
+
 				$prof_id = $_POST['prof_id'];
 				$REC_ID = $_POST['tadi_id'];
 
@@ -565,6 +623,13 @@
 				$dbConn->close();
 				break;
 			case 'GET_TADI_RECORDS':
+
+				if (!isset($_POST['prof_id'], $_POST['subj_off_id'], $_POST['strtDateSearch'], $_POST['endDateSearch'], $_POST['tadiStatus'])) {
+					http_response_code(400);
+					echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+					exit;
+				}
+
 				$profId = $_POST['prof_id'];
 				$strtDateSearch = $_POST['strtDateSearch'] ?? null;
 				$endDateSearch = $_POST['endDateSearch'] ?? null;
@@ -637,6 +702,13 @@
 				break;
 			case 'GET_TEACHER_TADI_REPORT':
 				rateLimit(60, 5, 'get_teacher_tadi_report_rate_limit');
+
+				if (!isset($_POST['lvl_id'], $_POST['prd_id'], $_POST['yr_id'], $_POST['yrlvl_id'], $_POST['startDate'], $_POST['endDate'])) {
+					http_response_code(400);
+					echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+					exit;
+				}
+
 				$user = $_SESSION['EMPLOYEE']['ID'];
 				$lvlid = $_POST['lvl_id'];
 				$prdid = $_POST['prd_id'];
