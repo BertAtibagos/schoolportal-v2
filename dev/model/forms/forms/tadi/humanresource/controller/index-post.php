@@ -38,6 +38,8 @@ function get_current_academic_period_id($dbConn, $acadLvlId, $acadYrId) {
 $type = $_POST['type'];
 $queryType = ['GET_ALL_TOTAL', 'GET_TOTAL_PER_MONTH', 'GET_TOTAL_PER_CUTOFF', 'GET_ALL_PROG_TOTAL', 'GET_TADI_DETAILS_BY_CUTOFF', 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY', 'GET_ACADEMIC_LEVEL', 'GET_ACADEMIC_YEAR_LEVEL', 'GET_ACADEMIC_PERIOD','GET_ACAD_YEAR','GET_INSTRUCTOR_SCHEDULE','GET_TABULATION','RECORD_TABULATION'];
 if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
+    $staticPeriod = 6;
+    $staticYear = 19;
     switch($type){
         case 'GET_ALL_TOTAL':
             $qry="SELECT COUNT(*) total_rec,
@@ -151,12 +153,13 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                     LEFT JOIN schoolemployee emp  
                         ON tadi.`schlprof_id` = emp.`SchlEmpSms_ID` 
                     WHERE off.`SchlAcadLvl_ID` = 2 
-                        AND off.`SchlAcadYr_ID` = 19
-                        AND off.`SchlAcadPrd_ID` = 6
+                        AND off.`SchlAcadYr_ID` = ?
+                        AND off.`SchlAcadPrd_ID` = ?
                     GROUP BY dept.`SchlDept_NAME` 
                     ORDER BY unverified_count DESC ";
 
             $stmt = $dbConn->prepare($qry);
+            $stmt->bind_param("ii", $staticYear, $staticPeriod);
             $stmt->execute();
             $result = $stmt->get_result();
             $fetch = $result->fetch_all(MYSQLI_ASSOC);
@@ -164,6 +167,13 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
             $dbConn->close();
             break;
         case 'GET_TADI_DETAILS_BY_CUTOFF':
+
+            if (!isset($_POST['rangeType'], $_POST['filterType'])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+                exit;
+			}
+
             $rangeType = $_POST['rangeType'];
             $filterType = $_POST['filterType'];
 
@@ -351,6 +361,13 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
             }
             break;
         case 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY':
+
+            if (!isset($_POST['rangeType'], $_POST['dept'])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+                exit;
+			}
+
             $rangeType = $_POST['rangeType'];
             $dept = $_POST['dept'];
 
@@ -389,8 +406,13 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                 $queryFilter = "AND st.schltadi_date BETWEEN ? AND ?
                 AND `schl_dept`.`SchlDept_CODE` = ?";
                 
-                $values = [$startDate, $endDate, $dept, $startDate, $endDate, $dept, $startDate, $endDate, $dept, $startDate, $endDate, $dept, $startDate, $endDate, $dept, $dept];
-                $bind = "ssssssssssssssss";
+                $values = [ $staticYear, $staticPeriod, $startDate, $endDate, $dept, 
+                            $staticYear, $staticPeriod, $startDate, $endDate, $dept, 
+                            $staticYear, $staticPeriod, $startDate, $endDate, $dept, 
+                            $staticYear, $staticPeriod, $startDate, $endDate, $dept, 
+                            $staticYear, $staticPeriod, $startDate, $endDate, $dept, 
+                            $staticYear, $staticPeriod, $dept ];
+                $bind = "iisssiisssiisssiisssiisssiis";
             }
 
             if($rangeType == 'currCutOff'){
@@ -400,8 +422,13 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                 $queryFilter = "AND st.schltadi_date BETWEEN ? AND ?
                 AND `schl_dept`.`SchlDept_CODE` = ?";
                 
-                $values = [$date_start, $date_end, $dept, $date_start, $date_end, $dept, $date_start, $date_end, $dept, $date_start, $date_end, $dept, $date_start, $date_end, $dept, $dept];
-                $bind = "ssssssssssssssss";
+                $values = [ $staticYear, $staticPeriod, $date_start, $date_end, $dept, 
+                            $staticYear, $staticPeriod, $date_start, $date_end, $dept, 
+                            $staticYear, $staticPeriod, $date_start, $date_end, $dept, 
+                            $staticYear, $staticPeriod, $date_start, $date_end, $dept, 
+                            $staticYear, $staticPeriod, $date_start, $date_end, $dept, 
+                            $staticYear, $staticPeriod, $dept ];
+                $bind = "iisssiisssiisssiisssiisssiis";
             }
 
             if($rangeType == 'prevCutOff'){
@@ -411,8 +438,13 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                 $queryFilter = "AND st.schltadi_date BETWEEN ? AND ?
                 AND `schl_dept`.`SchlDept_CODE` = ?";
 
-                $values = [$date_start, $date_end, $dept, $date_start, $date_end, $dept, $date_start, $date_end, $dept, $date_start, $date_end, $dept, $date_start, $date_end, $dept, $dept];
-                $bind = "ssssssssssssssss";
+                $values = [ $staticYear, $staticPeriod, $date_start, $date_end, $dept, 
+                            $staticYear, $staticPeriod, $date_start, $date_end, $dept, 
+                            $staticYear, $staticPeriod, $date_start, $date_end, $dept, 
+                            $staticYear, $staticPeriod, $date_start, $date_end, $dept, 
+                            $staticYear, $staticPeriod, $date_start, $date_end, $dept, 
+                            $staticYear, $staticPeriod, $dept ];
+                $bind = "iisssiisssiisssiisssiisssiis";
             }
 
             $qry = "SELECT DISTINCT 
@@ -437,8 +469,8 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                     WHERE st.SchlProf_ID = `schl_enr_subj_off`.`SchlProf_ID` 
                         AND st.schltadi_status = 1
                         AND seso.SchlAcadLvl_ID = 2 
-                        AND seso.SchlAcadYr_ID = 22
-                        AND seso.SchlAcadPrd_ID = 5
+                        AND seso.SchlAcadYr_ID = ?
+                        AND seso.SchlAcadPrd_ID = ?
                         $queryFilter ) AS verified_count,
                     (SELECT 
                         COUNT(*) 
@@ -453,8 +485,8 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                     WHERE st.SchlProf_ID = `schl_enr_subj_off`.`SchlProf_ID` 
                         AND st.schltadi_status = 0 
                         AND seso.SchlAcadLvl_ID = 2 
-                        AND seso.SchlAcadYr_ID = 22
-                        AND seso.SchlAcadPrd_ID = 5
+                        AND seso.SchlAcadYr_ID = ?
+                        AND seso.SchlAcadPrd_ID = ?
                         $queryFilter ) AS unverified_count,
                     (SELECT 
                         COUNT(*) 
@@ -468,8 +500,8 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                         ON `schl_acad_crses`.`SchlDept_ID` = `schl_dept`.`SchlDeptSms_ID` 
                     WHERE st.SchlProf_ID = `schl_enr_subj_off`.`SchlProf_ID` 
                         AND seso.SchlAcadLvl_ID = 2 
-                        AND seso.SchlAcadYr_ID = 22
-                        AND seso.SchlAcadPrd_ID = 5
+                        AND seso.SchlAcadYr_ID = ?
+                        AND seso.SchlAcadPrd_ID = ?
                         $queryFilter ) AS total_count,
                     (SELECT
                         COUNT(*)
@@ -485,8 +517,8 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                         AND st.schltadi_status = 1
                         AND st.schltadi_isconfirm = 0
                         AND seso.SchlAcadLvl_ID = 2
-                        AND seso.SchlAcadYr_ID = 22
-                        AND seso.SchlAcadPrd_ID = 5
+                        AND seso.SchlAcadYr_ID = ?
+                        AND seso.SchlAcadPrd_ID = ?
                         $queryFilter ) AS to_approved,
                     (SELECT
                         COUNT(*)
@@ -502,8 +534,8 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                         AND st.schltadi_status = 1
                         AND st.schltadi_isconfirm = 1
                         AND seso.SchlAcadLvl_ID = 2
-                        AND seso.SchlAcadYr_ID = 22
-                        AND seso.SchlAcadPrd_ID = 5
+                        AND seso.SchlAcadYr_ID = ?
+                        AND seso.SchlAcadPrd_ID = ?
                         $queryFilter ) AS approved
                     FROM
                     `schoolenrollmentsubjectoffered` `schl_enr_subj_off` 
@@ -514,8 +546,8 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                     LEFT JOIN schoolemployee AS emp 
                         ON `schl_enr_subj_off`.`SchlProf_ID` = emp.`SchlEmpSms_ID` 
                     WHERE `schl_enr_subj_off`.`SchlAcadLvl_ID` = 2 
-                    AND `schl_enr_subj_off`.`SchlAcadYr_ID` = 22
-                    AND `schl_enr_subj_off`.`SchlAcadPrd_ID` = 5
+                    AND `schl_enr_subj_off`.`SchlAcadYr_ID` = ?
+                    AND `schl_enr_subj_off`.`SchlAcadPrd_ID` = ?
                     AND `schl_dept`.`SchlDept_CODE` = ?
                     AND `schl_enr_subj_off`.`SchlEnrollSubjOff_ISACTIVE` = 1 
                     AND emp.`SchlEmp_ID` IS NOT NULL 
@@ -556,6 +588,13 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
             $dbConn->close();
             break;
         case 'GET_ACADEMIC_YEAR_LEVEL':
+
+            if (!isset($_POST['lvl_id'])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+                exit;
+			}
+
             $lvlid = $_POST['lvl_id'];
 
             $qry = "SELECT 
@@ -575,6 +614,13 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
             $dbConn->close();
             break;
         case 'GET_ACADEMIC_PERIOD':
+
+            if (!isset($_POST['lvl_id'])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+                exit;
+			}
+
             $lvlid = $_POST['lvl_id'];
 
             $qry = "SELECT DISTINCT
@@ -585,11 +631,11 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                         LEFT JOIN `schoolacademicperiod` AS `schl_acad_prd`
                             ON `schl_acad_yr_prd`.`SchlAcadPrd_ID` =  `schl_acad_prd`.`SchlAcadPrdSms_ID`
                         WHERE `schl_acad_yr_prd`.`SchlAcadLvl_ID` = ?
-                        AND `schl_acad_yr_prd`.SchlAcadYr_ID = 22
+                        AND `schl_acad_yr_prd`.SchlAcadYr_ID = ?
                         AND `schl_acad_yr_prd`.`SchlAcadYrPrd_ISACTIVE` = 1 ";
 
             $stmt = $dbConn->prepare($qry);
-            $stmt->bind_param("i", $lvlid);
+            $stmt->bind_param("ii", $lvlid, $staticYear);
             $stmt->execute();
             $result = $stmt->get_result();
             $fetch = $result->fetch_all(MYSQLI_ASSOC);
@@ -597,6 +643,13 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
             $dbConn->close();
             break;
         case 'GET_ACAD_YEAR':
+
+            if (!isset($_POST['lvl_id'],$_POST['prd_id'])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+                exit;
+			}
+
             $lvlid = $_POST['lvl_id'];
             $prdid = $_POST['prd_id'];
 
@@ -621,6 +674,13 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
             $dbConn->close();
             break;
         case 'GET_INSTRUCTOR_SCHEDULE':
+
+            if (!isset($_POST['SchlProf_ID'],$_POST['semesterFilter'],$_POST['lvlid'],$_POST['acadyr'])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+                exit;
+			}
+
             $profId = isset($_POST['SchlProf_ID']) ? intval($_POST['SchlProf_ID']) : 0;
             $semesterFilter = isset($_POST['semesterFilter']) ? trim(strval($_POST['semesterFilter'])) : 'all';
             $useCurrentSemester = in_array(strtolower($semesterFilter), ['current', 'currentsemester', 'currsemester'], true);
@@ -687,6 +747,13 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
             }
             break;
         case 'GET_TABULATION':
+
+            if (!isset($_POST['lvlid'], $_POST['prdid'], $_POST['acadyr'])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+                exit;
+            }
+
             $lvlid = $_POST['lvlid'];
             $acadyrid = $_POST['acadyr'];
             $prdidRaw = isset($_POST['prdid']) ? trim(strval($_POST['prdid'])) : '';
