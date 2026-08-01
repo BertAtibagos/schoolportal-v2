@@ -175,7 +175,7 @@ if($_SESSION['STUDENT'] && in_array($type, $queryType, true)) {
                         ON schl_enr_subj_off.SchlAcadSubj_ID = schl_acad_subj.SchlAcadSubjSms_ID
                     LEFT JOIN schooltadi studrec
                         ON schl_enr_subj_off.SchlEnrollSubjOffSms_ID = studrec.schlenrollsubjoff_id
-                        AND DATE(studrec.schltadi_date) = CURDATE()
+                        AND DATE(studrec.schltadi_actual_date) = CURDATE()
                         AND studrec.schltadi_isactive = 1
                     WHERE 
                         schl_enr_subj_off.SchlEnrollSubjOffSms_ID IN ($subj_list)
@@ -234,11 +234,11 @@ if($_SESSION['STUDENT'] && in_array($type, $queryType, true)) {
                     AND `schlenrollsubjoff_id` =  ?
                     AND schltadi_isactive = 1
                     -- AND `schl_tadi`.`schlstud_id` = ?
-                    AND `schltadi_date` = CURDATE()
+                    AND `schltadi_actual_date` = CURDATE()
                     ORDER BY schl_tadi.`schltadi_date`, schl_tadi.`schltadi_timein`";
             
             $stmt = $dbConn->prepare($qry);
-            $stmt->bind_param("si",$prof_Id,$subj_Id);
+            $stmt->bind_param("ii",$prof_Id,$subj_Id);
             $stmt->execute();
             $result = $stmt->get_result();
             $fetch = $result->fetch_all(MYSQLI_ASSOC);

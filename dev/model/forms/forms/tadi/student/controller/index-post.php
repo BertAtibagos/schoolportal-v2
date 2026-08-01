@@ -91,7 +91,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
 
         $schltadi_mode = $dbConn->real_escape_string($schltadi_mode_raw);
         $schltadi_type = $dbConn->real_escape_string($_POST['session_type']);
-        $schltadi_date = $dbConn->real_escape_string($_POST['classDate']);
+
+        $schltadi_date_raw = trim($_POST['classDate'] ?? '');
+        $manilaTz = new DateTimeZone('Asia/Manila');
+        $schltadi_date_obj = DateTimeImmutable::createFromFormat('Y-m-d', $schltadi_date_raw, $manilaTz);
+
+        if (!($schltadi_date_obj instanceof DateTimeImmutable) || $schltadi_date_obj->format('Y-m-d') !== $schltadi_date_raw) {
+            $fetch['message'] = "Invalid class date format.";
+            logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
+            echo json_encode($fetch);
+            exit;
+        }
+
+        $today = new DateTimeImmutable('today', $manilaTz);
+        $oldestAllowedDate = $today->sub(new DateInterval('P3D'));
+        if ($schltadi_date_obj < $oldestAllowedDate) {
+            $fetch['message'] = "Class date is past due. You can only submit within 3 days from today.";
+            logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
+            echo json_encode($fetch);
+            exit;
+        }
+
+        $schltadi_date = $dbConn->real_escape_string($schltadi_date_raw);
         $schltadi_timein = $normalizedTimeIn;
         $schltadi_timeout = $normalizedTimeOut;
         $schltadi_activity = $dbConn->real_escape_string($_POST['comments']);
@@ -175,6 +196,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
             exit;
         }
 
+        $currDate = date("Y-m-d H:i:s");
         $start_image_path = null;
         $end_image_path = null;
         $start_taken_date = null;
@@ -296,7 +318,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
         }
 
         $stmt = $dbConn->prepare("INSERT INTO schooltadi 
-                (schltadi_mode, 
+                (schltadi_actual_date,
+                schltadi_mode, 
                 schltadi_type, 
                 schltadi_date, 
                 schltadi_timein, 
@@ -320,14 +343,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
                 schltadi_late_date,
                 schltadi_late_reason,
                 schltadi_mkup_date)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
         $isactive = 1;
         $status = 0;
         $isupdated = 0;
 
         $stmt->bind_param(
-            "ssssssiiiiiiiissssssisss",
+            "sssssssiiiiiiiissssssisss",
+            $currDate,
             $schltadi_mode,
             $schltadi_type,
             $schltadi_date,
