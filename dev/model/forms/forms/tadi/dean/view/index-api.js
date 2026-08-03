@@ -205,18 +205,35 @@ function GET_SUBJECT_BY_INSTRUCTOR({ single_prof_id }) {
     .catch(err => console.error("Error fetching instructor subjects:", err));
 }
 
+function parseDateOnly(s) {
+  if (!s) return null;
+  // Parse strings like YYYY-MM-DD (ignore any time part) as local date
+  const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) {
+    return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  }
+  // If it's a numeric epoch string, use it
+  if (/^\d+$/.test(String(s))) {
+    return new Date(Number(s));
+  }
+  // Fallback to Date constructor
+  return new Date(s);
+}
+
 function disable_due_verify_button(date) {
-    const inputDate = new Date(date);
-    const today = new Date();
+  const inputDate = parseDateOnly(date);
+  if (!inputDate || isNaN(inputDate.getTime())) return false; // invalid date -> don't disable
 
-    today.setHours(0, 0, 0, 0);
-    inputDate.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-    const maxPastDays = 3;
-    const pastLimit = new Date(today);
-    pastLimit.setDate(today.getDate() - maxPastDays);
+  const maxPastDays = 3;
+  const pastLimit = new Date(today);
+  pastLimit.setDate(today.getDate() - maxPastDays);
 
-    return inputDate < pastLimit;
+  inputDate.setHours(0, 0, 0, 0);
+
+  return inputDate < pastLimit; // true = should be disabled
 }
 
 function dynamic_button(tadiId, profId, subjId, approve, date) {

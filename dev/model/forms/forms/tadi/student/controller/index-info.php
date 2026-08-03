@@ -60,6 +60,23 @@ function isSafeAttachmentPath(string $path): bool {
     return (bool)preg_match('/^attachment\/[A-Za-z0-9._-]+\/\d{4}-\d{2}-\d{2}\/[A-Za-z0-9._-]+$/', $path);
 }
 
+function cleanCommaList($str) {
+    if ($str === null || $str === '') {
+        return '';
+    }
+
+    // Split on comma, trim each piece, drop empty entries
+    $parts = array_filter(
+        array_map('trim', explode(',', $str)),
+        function ($val) {
+            return $val !== '';
+        }
+    );
+
+    // Re-index and join back into a clean comma-separated string
+    return implode(',', array_values($parts));
+}
+
 $fetch = "";
 
 $type = $_POST['type'] ?? '';
@@ -151,6 +168,7 @@ if($_SESSION['STUDENT'] && in_array($type, $queryType, true)) {
             $stmt_subj_list->close();
 
             $subj_list = $stud_subj_list['schl_acad_subj_id'];
+            $subj_list = cleanCommaList($subj_list);
 
             $qry = "SELECT `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID` AS `subj_id`,
                         `schl_acad_subj`.`SchlAcadSubj_CODE` AS `subj_code`,

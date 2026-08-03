@@ -83,6 +83,11 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                 echo json_encode(['success' => false, 'error' => 'This record is past the 3-day verification window and can no longer be updated']);
                 exit;
             }
+
+            if($recordDate > $today){
+                echo json_encode(['success' => false, 'error' => 'This record is dated in the future and cannot be updated']);
+                exit;
+            }
             
             $query = "UPDATE schooltadi
                     SET schltadi_status = ?,

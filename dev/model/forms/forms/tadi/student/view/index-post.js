@@ -5,6 +5,14 @@ document.getElementById("close_modal").addEventListener("click", function () {
     document.getElementById("error_alert").classList.add("d-none");
 });
 
+function parseDateOnly(s) {
+    if (!s) return null;
+    const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+    if (/^\d+$/.test(String(s))) return new Date(Number(s));
+    return new Date(s);
+}
+
 const button = document.getElementById("confirmBtn");
 button.addEventListener("click", function (e) {
     const form = document.getElementById("tadiForm");
@@ -79,26 +87,31 @@ button.addEventListener("click", function (e) {
     }
 
     const dateInput = document.getElementById("classDate");
-    const inputDate = new Date(dateInput.value);
+    const inputDate = parseDateOnly(dateInput.value);
     const today = new Date();
 
     today.setHours(0, 0, 0, 0);
-    inputDate.setHours(0, 0, 0, 0);
 
     const maxPastDays = 3;
 
     const pastLimit = new Date(today);
     pastLimit.setDate(today.getDate() - maxPastDays);
 
-
-    if (inputDate < pastLimit) {
+    if (!inputDate || isNaN(inputDate.getTime())) {
         dateInput.classList.add("is-invalid");
-        dateInput.nextElementSibling.textContent = `Date cannot be more than ${maxPastDays} days in the past`;
+        dateInput.nextElementSibling.textContent = `Invalid date`;
         isValid = false;
-    } else if (inputDate > today) {
-        dateInput.classList.add("is-invalid");
-        dateInput.nextElementSibling.textContent = `Date cannot be in the future`;
-        isValid = false;
+    } else {
+        inputDate.setHours(0, 0, 0, 0);
+        if (inputDate < pastLimit) {
+            dateInput.classList.add("is-invalid");
+            dateInput.nextElementSibling.textContent = `Date cannot be more than ${maxPastDays} days in the past`;
+            isValid = false;
+        } else if (inputDate > today) {
+            dateInput.classList.add("is-invalid");
+            dateInput.nextElementSibling.textContent = `Date cannot be in the future`;
+            isValid = false;
+        }
     }
 
     if (isValid) {

@@ -863,6 +863,11 @@
 					exit;
 				}
 
+				if ($recordDate > $today) {
+					echo json_encode(['success' => false, 'error' => 'This record is dated in the future and cannot be approved']);
+					exit;
+				}
+
 				$qry =	"UPDATE `schooltadi`
 						INNER JOIN `schoolenrollmentsubjectoffered` AS `off`
 							ON `schooltadi`.`schlenrollsubjoff_id` = `off`.`SchlEnrollSubjOffSms_ID`

@@ -111,6 +111,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
             echo json_encode($fetch);
             exit;
         }
+        // Reject future dates
+        if ($schltadi_date_obj > $today) {
+            $fetch['message'] = "Class date cannot be in the future.";
+            logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
+            echo json_encode($fetch);
+            exit;
+        }
 
         $schltadi_date = $dbConn->real_escape_string($schltadi_date_raw);
         $schltadi_timein = $normalizedTimeIn;
@@ -137,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
                       WHERE schlenrollsubjoff_id = ?
                       AND schlprof_id = ? 
                       AND schltadi_isactive = 1
-                      AND DATE(schltadi_date) = ?";
+                      AND DATE(schltadi_actual_date) = ?";
 
         $check_stmt = $dbConn->prepare($check_sql);
         if ($check_stmt === false) {
@@ -163,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
                                 FROM schooltadi as tadi
                                 WHERE tadi.schlprof_id = ?
                                 AND tadi.schltadi_isactive = 1
-                                AND DATE(tadi.schltadi_date) = ?
+                                AND DATE(tadi.schltadi_actual_date) = ?
                                 AND (
                                     (tadi.schltadi_timein <= ? AND tadi.schltadi_timeout >= ?) OR
                                     (tadi.schltadi_timein <= ? AND tadi.schltadi_timeout >= ?)
