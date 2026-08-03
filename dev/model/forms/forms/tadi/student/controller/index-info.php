@@ -57,7 +57,8 @@ function isSafeAttachmentPath(string $path): bool {
         return false;
     }
 
-    return (bool)preg_match('/^attachment\/[A-Za-z0-9._-]+\/\d{4}-\d{2}-\d{2}\/[A-Za-z0-9._-]+$/', $path);
+    // Allow optional subject folder between the date and filename (some uploads include subj_id)
+    return (bool)preg_match('/^attachment\/[A-Za-z0-9._-]+\/\d{4}-\d{2}-\d{2}(?:\/[A-Za-z0-9._-]+)?\/[A-Za-z0-9._-]+$/', $path);
 }
 
 function cleanCommaList($str) {

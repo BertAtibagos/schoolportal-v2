@@ -194,17 +194,17 @@ function viewSubmitted(subj_Id, prof_Id){
                 tabPane.role = "tabpanel";
                 tabPane.setAttribute("aria-labelledby", `nav-tab-${record.schltadi_ID}`);
 
-                document.getElementById('tadi-date').textContent = `${new Date(record.tadi_date).toLocaleDateString("en-PH", {
+                const date = new Date(record.tadi_date).toLocaleDateString("en-PH", {
                     month: "long",
                     day: "numeric",
                     year: "numeric",
-                })}`;
+                });
 
                 tabPane.innerHTML = `
                     <div class="record-panel" id="preview-${record.schltadi_ID}">
                         <div class="record-field" id="timeLabel${record.schltadi_ID}">
-                            <span class="field-label">Time</span>
-                            <span class="field-value">${formatTimeToAmPm(record.tadi_timeIn)} &ndash; ${formatTimeToAmPm(record.tadi_timeOut)}</span>
+                            <span class="field-label">Date and Time</span>
+                            <span class="field-value">${date} ${formatTimeToAmPm(record.tadi_timeIn)} &ndash; ${formatTimeToAmPm(record.tadi_timeOut)}</span>
                         </div>
                         <div class="record-field" id="classTypeLabel${record.schltadi_ID}">
                             <span class="field-label">Class Type</span>

@@ -103,7 +103,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
             exit;
         }
 
-        $today = new DateTimeImmutable('today', $manilaTz);
+        $today = DateTimeImmutable::createFromFormat(
+            'Y-m-d',
+            (new DateTimeImmutable('now', $manilaTz))->format('Y-m-d'),
+            $manilaTz
+        );
         $oldestAllowedDate = $today->sub(new DateInterval('P3D'));
         if ($schltadi_date_obj < $oldestAllowedDate) {
             $fetch['message'] = "Class date is past due. You can only submit within 3 days from today.";
@@ -232,10 +236,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
                 $prof_id = 'unknown_prof';
             }
 
-            $date_folder = date('Y-m-d');
+            $date_folder = $schltadi_date;
 
             $baseDir = __DIR__ . '/../../../../../../public/attachment/';
-            $uploadDir = $baseDir . $prof_id . '/' . $date_folder . '/';
+            $uploadDir = $baseDir . $prof_id . '/' .  $date_folder . '/' . $subj_id . '/';
 
             if (!is_dir($uploadDir)) {
                 if (!mkdir($uploadDir, 0755, true)) {
@@ -253,7 +257,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
 
             // Reusable helper to validate + move + read EXIF for one file
             $processAttachment = function (array $file, string $prefix) use (
-                $allowedExtensions, $allowedMimeTypes, $uploadDir, $prof_id, $date_folder
+                $allowedExtensions, $allowedMimeTypes, $uploadDir, $prof_id, $date_folder, $subj_id
             ) {
                 $originalName = basename($file['name']);
                 $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
@@ -278,7 +282,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
                     return [null, null, "Failed to upload {$prefix} image."];
                 }
 
-                $imagePath = 'attachment/' . $prof_id . '/' . $date_folder . '/' . $uniqueName;
+                $imagePath = 'attachment/' . $prof_id . '/' . $date_folder . '/' . $subj_id . '/' . $uniqueName;
                 $takenDate = null;
 
                 if (function_exists('exif_read_data')) {

@@ -136,7 +136,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg rcrd-preview-mdl">
             <div class="modal-content">
                 <div class="modal-header d-flex justify-content-between align-items-center">
-                    <div id="tadi-date"></div>
+                    <div>Tadi Preview</div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" id="closeTadiModal1"></button>
                 </div>
                 <div class="modal-body">

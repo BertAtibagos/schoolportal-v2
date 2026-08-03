@@ -332,7 +332,7 @@ function isSafeAttachmentPath(value) {
         return false;
     }
 
-    return /^attachment\/[A-Za-z0-9._-]+\/\d{4}-\d{2}-\d{2}\/[A-Za-z0-9._-]+$/.test(value);
+    return /^attachment\/[A-Za-z0-9._-]+\/\d{4}-\d{2}-\d{2}(?:\/[A-Za-z0-9._-]+)?\/[A-Za-z0-9._-]+$/.test(value);
 }
 
 function GET_IMAGE(tadi_id, prof_id) {
