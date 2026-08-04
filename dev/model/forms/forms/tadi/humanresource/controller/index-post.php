@@ -62,13 +62,13 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
             break;
         case 'GET_TOTAL_PER_MONTH':
             $qry = "SELECT 
-                        MONTHNAME(`schltadi_date`) AS month_name,
+                        MONTHNAME(`tadi_approved_date`) AS month_name,
                         SUM(schltadi_status = 1) AS verified,
                         SUM(schltadi_status = 0) AS unverified,
                         COUNT(*) AS total
                     FROM schooltadi
-                    GROUP BY MONTH(`schltadi_date`)
-                    ORDER BY MIN(`schltadi_date`)";
+                    GROUP BY MONTH(`tadi_approved_date`)
+                    ORDER BY MIN(`tadi_approved_date`)";
             
             $stmt = $dbConn->prepare($qry);
             $stmt->execute();
@@ -79,23 +79,23 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
             break;
         case 'GET_TOTAL_PER_CUTOFF':
             $qry = "SELECT 
-                        CONCAT(MONTHNAME(`schltadi_date`), ' ', 
+                        CONCAT(MONTHNAME(`tadi_approved_date`), ' ', 
                             CASE 
-                                WHEN DAY(`schltadi_date`) <= 15 THEN '1-15'
-                                ELSE CONCAT('16-', DAY(LAST_DAY(`schltadi_date`)))
+                                WHEN DAY(`tadi_approved_date`) <= 15 THEN '1-15'
+                                ELSE CONCAT('16-', DAY(LAST_DAY(`tadi_approved_date`)))
                             END) AS cutoff_period,
                         SUM(schltadi_status = 1) AS verified,
                         SUM(schltadi_status = 0) AS unverified,
                         COUNT(*) AS total
                     FROM schooltadi
-                    GROUP BY YEAR(`schltadi_date`), MONTH(`schltadi_date`),
+                    GROUP BY YEAR(`tadi_approved_date`), MONTH(`tadi_approved_date`),
                             CASE 
-                                WHEN DAY(`schltadi_date`) <= 15 THEN 1
+                                WHEN DAY(`tadi_approved_date`) <= 15 THEN 1
                                 ELSE 2
                             END
-                    ORDER BY YEAR(`schltadi_date`), MONTH(`schltadi_date`),
+                    ORDER BY YEAR(`tadi_approved_date`), MONTH(`tadi_approved_date`),
                             CASE 
-                                WHEN DAY(`schltadi_date`) <= 15 THEN 1
+                                WHEN DAY(`tadi_approved_date`) <= 15 THEN 1
                                 ELSE 2
                             END";
             
@@ -187,7 +187,7 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                     $startDate = $_POST['startDate'];
                     $endDate = $_POST['endDate'];
 
-                    $queryFilter = "WHERE tadi.schltadi_date BETWEEN ? AND ?";
+                    $queryFilter = "WHERE tadi.tadi_approved_date BETWEEN ? AND ?";
 
                     $values = [$startDate, $endDate];
                     $bind = "ss";
@@ -197,7 +197,7 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                     $name = $_POST['name'];
                     $bindName = "%". $name . "%";
 
-                    $queryFilter = "WHERE tadi.schltadi_date BETWEEN ? AND ?
+                    $queryFilter = "WHERE tadi.tadi_approved_date BETWEEN ? AND ?
                     AND CONCAT(emp.`SchlEmp_LNAME`, ', ', emp.`SchlEmp_FNAME`) LIKE ?";
 
                     $values = [$startDate, $endDate, $bindName];
@@ -208,7 +208,7 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                     $endDate = $_POST['endDate'];
                     $dept = $_POST['dept'];
 
-                    $queryFilter = "WHERE tadi.schltadi_date BETWEEN ? AND ?
+                    $queryFilter = "WHERE tadi.tadi_approved_date BETWEEN ? AND ?
                     AND `dept`.`SchlDept_CODE` = ?";
                     
                     $values = [$startDate, $endDate, $dept];
@@ -247,7 +247,7 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                 $date_end = $current_cutoff_end;
                 
                 if($filterType == 'deptName_all'){
-                    $queryFilter = "WHERE tadi.schltadi_date BETWEEN ? AND ?";
+                    $queryFilter = "WHERE tadi.tadi_approved_date BETWEEN ? AND ?";
 
                     $values = [$date_start, $date_end];
                     $bind = "ss";
@@ -255,7 +255,7 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                     $name = $_POST['name'];
                     $bindName = "%". $name . "%";
 
-                    $queryFilter = "WHERE tadi.schltadi_date BETWEEN ? AND ?
+                    $queryFilter = "WHERE tadi.tadi_approved_date BETWEEN ? AND ?
                     AND CONCAT(emp.`SchlEmp_LNAME`, ', ', emp.`SchlEmp_FNAME`) LIKE ?";
 
                     $values = [$date_start, $date_end, $bindName];
@@ -264,7 +264,7 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                 else if($filterType == 'dept_Search'){
                     $dept = $_POST['dept'];
 
-                    $queryFilter = "WHERE tadi.schltadi_date BETWEEN ? AND ?
+                    $queryFilter = "WHERE tadi.tadi_approved_date BETWEEN ? AND ?
                     AND `dept`.`SchlDept_CODE` = ?";
                     
                     $values = [$date_start, $date_end, $dept];
@@ -277,7 +277,7 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                 $date_end = $prev_cutoff_end;
 
                 if($filterType == 'deptName_all'){
-                    $queryFilter = "WHERE tadi.schltadi_date BETWEEN ? AND ?";
+                    $queryFilter = "WHERE tadi.tadi_approved_date BETWEEN ? AND ?";
 
                     $values = [$date_start, $date_end];
                     $bind = "ss";
@@ -285,7 +285,7 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                     $name = $_POST['name'];
                     $bindName = "%". $name . "%";
 
-                    $queryFilter = "WHERE tadi.schltadi_date BETWEEN ? AND ?
+                    $queryFilter = "WHERE tadi.tadi_approved_date BETWEEN ? AND ?
                     AND CONCAT(emp.`SchlEmp_LNAME`, ', ', emp.`SchlEmp_FNAME`) LIKE ?";
 
                     $values = [$date_start, $date_end, $bindName];
@@ -294,7 +294,7 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                 else if($filterType == 'dept_Search'){
                     $dept = $_POST['dept'];
 
-                    $queryFilter = "WHERE tadi.schltadi_date BETWEEN ? AND ?
+                    $queryFilter = "WHERE tadi.tadi_approved_date BETWEEN ? AND ?
                     AND `dept`.`SchlDept_CODE` = ?";
 
                     $values = [$date_start, $date_end, $dept];
@@ -308,7 +308,7 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                         subj.`SchlAcadSubj_DESC` AS subject_desc,
                         sec.`SchlAcadSec_NAME` AS section_name,
                         tadi.`schltadi_id`,
-                        tadi.`schltadi_date` AS tadi_date,
+                        tadi.`tadi_approved_date` AS tadi_date,
                         tadi.`schltadi_timein` AS time_in,
                         tadi.`schltadi_timeout` AS time_out,
                         TIMEDIFF(tadi.schltadi_timeout, tadi.schltadi_timein) AS duration,
@@ -343,7 +343,7 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                     ORDER BY 
                         emp.SchlEmp_LNAME, 
                         subj.SchlAcadSubj_CODE,
-                        tadi.schltadi_date,
+                        tadi.tadi_approved_date,
                         tadi.schltadi_timein";
 
             if ($bind === '' || empty($values)) {
@@ -403,7 +403,7 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                 $startDate = $_POST['startDate'];
                 $endDate = $_POST['endDate'];
                 
-                $queryFilter = "AND st.schltadi_date BETWEEN ? AND ?
+                $queryFilter = "AND st.tadi_approved_date BETWEEN ? AND ?
                 AND `schl_dept`.`SchlDept_CODE` = ?";
                 
                 $values = [ $staticYear, $staticPeriod, $startDate, $endDate, $dept, 
@@ -419,7 +419,7 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                 $date_start = $current_cutoff_start;
                 $date_end = $current_cutoff_end;
                 
-                $queryFilter = "AND st.schltadi_date BETWEEN ? AND ?
+                $queryFilter = "AND st.tadi_approved_date BETWEEN ? AND ?
                 AND `schl_dept`.`SchlDept_CODE` = ?";
                 
                 $values = [ $staticYear, $staticPeriod, $date_start, $date_end, $dept, 
@@ -435,7 +435,7 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                 $date_start = $prev_cutoff_start;
                 $date_end = $prev_cutoff_end;
 
-                $queryFilter = "AND st.schltadi_date BETWEEN ? AND ?
+                $queryFilter = "AND st.tadi_approved_date BETWEEN ? AND ?
                 AND `schl_dept`.`SchlDept_CODE` = ?";
 
                 $values = [ $staticYear, $staticPeriod, $date_start, $date_end, $dept, 
@@ -804,7 +804,7 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                             o.`SchlAcadSubj_ID`,
                             o.`SchlAcadCrses_ID`,
                             ROUND(SUM(
-                                CASE WHEN t.`schltadi_date` BETWEEN ? AND ?
+                                CASE WHEN t.`tadi_approved_date` BETWEEN ? AND ?
                                 THEN TIMESTAMPDIFF(MINUTE, t.`schltadi_timein`, t.`schltadi_timeout`)
                                 ELSE 0 END
                             ) / 60, 2) AS filtered_hours,
