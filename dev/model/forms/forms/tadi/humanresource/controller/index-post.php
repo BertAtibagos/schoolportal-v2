@@ -51,7 +51,8 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                 FROM schooltadi
                 WHERE `schltadi_status` = 0
                     AND schltadi_isactive = 1) unverified
-                FROM schooltadi";
+                FROM schooltadi
+                WHERE schltadi_isactive = 1";
 
             $stmt = $dbConn->prepare($qry);
             $stmt->execute();

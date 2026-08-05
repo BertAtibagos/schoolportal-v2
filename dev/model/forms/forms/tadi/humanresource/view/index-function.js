@@ -357,9 +357,11 @@ function exportTableToCSV(tableId, filename){
     link.click();
 }
 
+let loadingModalInstance = null;
+
 function showLoadingModal() {
-  // Remove existing modal if any
-  hideLoadingModal();
+    // Remove existing modal if any
+    hideLoadingModal();
 
   const modalHTML = `
     <div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -373,22 +375,42 @@ function showLoadingModal() {
       </div>
     </div>`;
 
-  document.body.insertAdjacentHTML('beforeend', modalHTML);
-  const modal = new bootstrap.Modal(document.getElementById('loadingModal'));
-  modal.show();
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    const modalEl = document.getElementById('loadingModal');
+    loadingModalInstance = new bootstrap.Modal(modalEl);
+    loadingModalInstance.show();
 }
 
 function hideLoadingModal() {
-  const modalEl = document.getElementById('loadingModal');
-  if (modalEl) {
-    const modal = bootstrap.Modal.getInstance(modalEl);
-    if (modal) {
-      modal.hide();
+    const modalEl = document.getElementById('loadingModal');
+    const modal = loadingModalInstance || (modalEl ? bootstrap.Modal.getInstance(modalEl) : null);
+
+    if (!modalEl) {
+        document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('padding-right');
+        loadingModalInstance = null;
+        return;
     }
-    modalEl.addEventListener('hidden.bs.modal', () => modalEl.remove(), { once: true });
-    // Fallback removal in case event doesn't fire
-    setTimeout(() => { if (document.getElementById('loadingModal')) modalEl.remove(); }, 500);
-  }
+
+    if (modal) {
+        modalEl.addEventListener('hidden.bs.modal', () => {
+            modal.dispose();
+            modalEl.remove();
+            document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('padding-right');
+            loadingModalInstance = null;
+        }, { once: true });
+        modal.hide();
+        return;
+    }
+
+    modalEl.remove();
+    document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('padding-right');
+    loadingModalInstance = null;
 }
 
 function getCutoffDates() {
