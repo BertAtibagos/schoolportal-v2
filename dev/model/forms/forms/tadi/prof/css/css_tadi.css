@@ -206,7 +206,7 @@ label { font-weight: bold; }
     border-radius: var(--tp-radius-sm);
     border: 1px solid var(--tp-border);
 }
-.inst_list_tbl_wrapper.dashboard { max-height: 24vh; }
+.inst_list_tbl_wrapper.dashboard { max-height: 30vh; }
 
 .tadi-table {
     margin-bottom: 0;

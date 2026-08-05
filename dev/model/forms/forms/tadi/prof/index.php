@@ -9,9 +9,8 @@
         <div class="tadi-header">
             <div>
                 <h3 class="tadi-title">
-                    <i class="fas fa-clipboard-list me-2"></i>TADI &mdash; Professor
+                    <i class="fas fa-clipboard-list me-2"></i>TADI &mdash; Faculty
                 </h3>
-                <p class="tadi-subtitle">Teaching Activity Documentation &amp; Implementation</p>
             </div>
             <button class="btn tadi-back-btn" id="summaryTadiBtn" style="display:none">
                 <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
@@ -64,9 +63,6 @@
             <div class="main-content-body">
 
                 <div class="summary">
-                    <h5 class="section-label" id="summaryId">
-                        <i class="fas fa-chart-bar me-2"></i>Dashboard Overview
-                    </h5>
                     <div class="stats-row">
                         <div class="stat-card stat-total">
                             <div class="stat-icon"><i class="fas fa-list-alt"></i></div>
