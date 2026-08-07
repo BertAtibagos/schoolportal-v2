@@ -585,7 +585,7 @@
                             SELECT 
                                 SUM(CASE WHEN schltadi_status = 1 AND schltadi_isactive = 1 THEN 1 ELSE 0 END) AS verified_count,
                                 SUM(CASE WHEN schltadi_status = 0 AND schltadi_isactive = 1 THEN 1 ELSE 0 END) AS total_unverified,
-                                SUM(CASE WHEN schltadi_status = 0 AND schltadi_isactive = 1 AND schltadi_date < CURDATE() - INTERVAL 3 DAY THEN 1 ELSE 0 END) AS total_overdue,
+                                SUM(CASE WHEN schltadi_status = 0 AND schltadi_isactive = 1 AND schltadi_isconfirm = 0 AND schltadi_status = 0 AND schltadi_date < CURDATE() - INTERVAL 3 DAY THEN 1 ELSE 0 END) AS total_overdue,
                                 COUNT(*) AS total_count
                             FROM schooltadi t
                             LEFT JOIN `schoolenrollmentsubjectoffered` AS `schl_enr_subj_off`

@@ -949,7 +949,6 @@ document.getElementById("searchButton").addEventListener("click", function () {
       const tableWrapper = document.querySelector('.inst_list_tbl_wrapper');
       tableWrapper.classList.remove('dashboard');
       summary.classList.add("summary-hide");
-      document.getElementById('summaryId').style.display = 'none';
 
   fetch('forms/tadi/prof/controller/index-info.php', {
       method: 'POST',

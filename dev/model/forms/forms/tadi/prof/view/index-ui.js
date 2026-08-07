@@ -296,13 +296,15 @@ function displaySummary() {
     document.querySelector('.inst_list_tbl_wrapper').classList.add("dashboard");
     thead.innerHTML = '';
     thead.innerHTML = `<tr id="defaultHeader">
-                            <th scope="col" style="background-color: #181a46; color: white;">Section</th>
-                            <th scope="col" style="background-color: #181a46; color: white;">Subject</th>
-                            <th scope="col" style="background-color: #181a46; color: white;">Total Records</th>
-                            <th scope="col" style="background-color: #181a46; color: white;">Unverified Records</th>
-                            <th scope="col" style="background-color: #181a46; color: white;"></th>
+                            <th scope="col">Section</th>
+                                <th scope="col">Subject</th>
+                                <th scope="col" class="text-center">Total Records</th>
+                                <th scope="col" class="text-center">Unverified</th>
+                                <th scope="col" class="text-center">Over Due</th>
+                                <th scope="col"></th>
                         </tr>`;
 
+    tadiSummary();
     if (!skipTadiSummaryAutoLoad) {
         tadiSummary();
         TOTAL_COUNT_SUMMARY(document.getElementById("period").value);
