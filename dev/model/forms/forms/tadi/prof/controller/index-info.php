@@ -378,7 +378,9 @@
                             schl_tadi.schlenrollsubjoff_id AS sub_off_id,
                             schl_tadi.schltadi_late_status AS late_status,
                             schl_tadi.schltadi_mkup_date AS mkup_date,
-                            schl_tadi.schltadi_isconfirm AS approve
+                            schl_tadi.schltadi_isconfirm AS approve,
+                            schl_tadi.schltadi_isactive as active,
+                            schl_tadi.schlprof_id AS prof 
 
                             FROM `schooltadi` AS schl_tadi
                             LEFT JOIN `schoolstudent` AS schl_stud 
@@ -434,7 +436,9 @@
                             schl_tadi.schltadi_late_status AS late_status,
                             schl_tadi.schltadi_mkup_date AS mkup_date,
                             schl_tadi.schltadi_isconfirm AS approve,
-                            schl_tadi.schlacadprd_id AS acad_prd_id
+                            schl_tadi.schlacadprd_id AS acad_prd_id,
+                            schl_tadi.schltadi_isactive as active,
+                            schl_tadi.schlprof_id AS prof 
 
                             FROM `schooltadi` AS schl_tadi
                                 LEFT JOIN `schoolstudent` AS schl_stud 

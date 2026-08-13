@@ -497,6 +497,10 @@ function DISPLAY_TADI_LOG(subj_off_id, summary = false) {
           ? `<button class="btn btn-sm w-70 viewAttch" id="viewAttch${record.schltadi_ID}" value="${record.schltadi_ID}">VIEW</button>`
           : `<button class="btn btn-sm w-70 upldprof" id="upldprof${record.schltadi_ID}" value="${record.schltadi_ID}">UPLOAD</button>`;
 
+        const showDenyButton = Number(record.active ?? 0) === 1
+          && Number(record.tadi_status ?? 0) === 0
+          && Number(record.approve ?? 0) === 0;
+
         const row = document.createElement('tr');
         row.className = record.late_status == 1 ? 'table-warning' : '';
         row.innerHTML = `
@@ -524,6 +528,13 @@ function DISPLAY_TADI_LOG(subj_off_id, summary = false) {
               data-approved="${record.approve}">
                 Verify
               </button>
+              ${showDenyButton ? 
+              `<button class="btn deny" data-subj-off="${record.sub_off_id}" data-from-summary="${summary}"
+                data-tadi-id="${record.schltadi_ID}"
+                data-prof="${record.prof}">
+                Deny
+              </button>`
+              : `` }
           </td>
         `;
         tbody.appendChild(row);
@@ -535,6 +546,10 @@ function DISPLAY_TADI_LOG(subj_off_id, summary = false) {
 
       document.querySelectorAll('.upldprof').forEach(button => {
         button.addEventListener('click', UPLOAD_IMAGE_PROF_MODAL);
+      });
+
+      document.querySelectorAll('.deny').forEach(button => {
+        button.addEventListener('click', denyTadiRecord);
       });
 
       disable_acknw_bttn();
@@ -580,6 +595,10 @@ function DISPLAYALL_TADI_RECORDS(subj_off_id,subjDesc = null,subjSec = null, sum
         viewUploadCell = `<button class="btn btn-sm btn-dark w-70 upldprof" id="upldprof${record.schltadi_ID}" value="${record.schltadi_ID}">UPLOAD</button>`;
       }
 
+      const showDenyButton = Number(record.active ?? 0) === 1
+        && Number(record.tadi_status ?? 0) === 0
+        && Number(record.approve ?? 0) === 0;
+
       let row = document.createElement('tr');
       row.className = record.late_status == 1 ? 'table-warning' : '';
       row.innerHTML = `
@@ -607,6 +626,13 @@ function DISPLAYALL_TADI_RECORDS(subj_off_id,subjDesc = null,subjSec = null, sum
             data-due-verify="${disable_due_verify_button(record.tadi_date) ? 'true' : 'false'}">
               Verify
             </button>
+            ${showDenyButton ? 
+              `<button class="btn deny" data-subj-off="${record.sub_off_id}" data-from-summary="${summary ? 'true' : 'false'}"
+                data-tadi-id="${record.schltadi_ID}"
+                data-prof="${record.prof}">
+                Deny
+              </button>`
+              : `` }
         </td>
       `;
       tbody.appendChild(row);
@@ -621,6 +647,10 @@ function DISPLAYALL_TADI_RECORDS(subj_off_id,subjDesc = null,subjSec = null, sum
 
     document.querySelectorAll('.upldprof').forEach(button => {
       button.addEventListener('click', UPLOAD_IMAGE_PROF_MODAL);
+    });
+
+    document.querySelectorAll('.deny').forEach(button => {
+        button.addEventListener('click', denyTadiRecord);
     });
   })
   .catch(error => console.error('Error fetching data:', error));
@@ -681,6 +711,9 @@ function UPDATE_TADI_STATUS() {
       span.style.color = '#eed038';
       span.textContent = 'Pending Approval';
       button.replaceWith(span);
+
+      const denyBtn = row.querySelector('.deny');
+      if (denyBtn) denyBtn.remove();
 
       if (subOffId) {
         const countResponse = await fetch("forms/tadi/prof/controller/index-post.php", {
@@ -960,6 +993,60 @@ document.getElementById("searchButton").addEventListener("click", function () {
   })
   .catch((err) => console.error("Fetch error:", err));
 });
+
+function denyTadiRecord(event) {
+    const button = event.currentTarget;
+
+    const subjOffId = button.getAttribute('data-subj-off');
+    const tadiId = button.getAttribute('data-tadi-id');
+    const prof = button.getAttribute('data-prof');
+    const summary = button.getAttribute('data-from-summary');
+
+    if (!confirm('Are you sure you want to deny this record?')) return;
+
+    const formData = new FormData();
+    formData.append('type', 'DENY_TADI_RECORD');
+    formData.append('sub_off_id', subjOffId);
+    formData.append('tadi_ID', tadiId);
+    formData.append('prof', prof);
+
+    fetch('forms/tadi/prof/controller/index-post.php', {
+      method: 'POST',
+      body: formData
+    })
+    .then(handleRateLimitJson)
+    .then(data => {
+      if (data.status === 'session_expired') {
+        alert('Your session has expired. Please log in again.');
+        window.location.href = 'index.php'; 
+        return;
+      }
+
+      if (data.error) {
+        console.log(data.error);
+        return;
+      }
+
+      const row = button.closest('tr');
+      if (row) {
+        row.remove();
+      }
+
+      showToastMessage('Record denied.', 'success', 'Success');
+
+      if (subjOffId) {
+        UPDATE_TADI_COUNT(subjOffId);
+      }
+
+      if (summary === "true") {
+        const period = button.getAttribute('data-period');
+        if (period) {
+          TOTAL_COUNT_SUMMARY(period);
+        }
+      }
+    })
+    .catch(error => console.error('Error denying record:', error));
+}
 
 GET_ACADEMICLEVEL();
 

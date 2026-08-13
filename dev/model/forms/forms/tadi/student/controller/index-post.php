@@ -174,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
                                 FROM schooltadi as tadi
                                 WHERE tadi.schlprof_id = ?
                                 AND tadi.schltadi_isactive = 1
-                                AND DATE(tadi.schltadi_actual_date) = ?
+                                AND DATE(tadi.schltadi_actual_date) = CURDATE()
                                 AND (
                                     (tadi.schltadi_timein <= ? AND tadi.schltadi_timeout >= ?) OR
                                     (tadi.schltadi_timein <= ? AND tadi.schltadi_timeout >= ?)
@@ -186,9 +186,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
         }
 
         $overlap_stmt->bind_param(
-            'isssss',
+            'issss',
             $prof_id,
-            $schltadi_date,
             $schltadi_timein,
             $schltadi_timein,
             $schltadi_timeout,

@@ -51,6 +51,8 @@ function disable_acknw_bttn() {
       const status = button.getAttribute('name');
       const approved = button.getAttribute('data-approved');
       const dueDate = button.getAttribute('data-due-verify') === 'true';
+      const row = button.closest('tr');
+      const denyBtn = row ? row.querySelector('.deny') : null;
       let acknowledgedText;
       if(status == 0 && approved == 0 && dueDate){
             acknowledgedText = document.createTextNode('Overdue');
@@ -58,6 +60,9 @@ function disable_acknw_bttn() {
             span.className = 'tadi-badge tadi-badge-duedate';
             span.appendChild(acknowledgedText);
             button.replaceWith(span);
+            if (denyBtn) {
+                denyBtn.style.display = 'none';
+            }
       } else if(status == 0 && approved == 1){
             acknowledgedText = document.createTextNode('Unavailable');
             let span = document.createElement('span');

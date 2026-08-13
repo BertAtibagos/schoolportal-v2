@@ -11,7 +11,7 @@
 
 $fetch = [];
 $type = $_POST['type'] ?? '';
-$queryType = ['UPDATE_TADI_STATUS', 'GET_UNVERIFIED_COUNT'];
+$queryType = ['UPDATE_TADI_STATUS', 'GET_UNVERIFIED_COUNT', 'DENY_TADI_RECORD'];
 
 if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
     switch($type){
@@ -144,6 +144,52 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                 $stmt->close();
                 $dbConn->close();
                 echo json_encode($fetch);
+            break;
+            
+        case 'DENY_TADI_RECORD':
+            $tadi_id = intval($_POST['tadi_ID'] ?? 0);
+            $subj_id = intval($_POST['sub_off_id'] ?? 0);
+            $prof_id = intval($_POST['prof'] ?? 0);
+
+            $session_prof_id = intval($_SESSION['EMPLOYEE']['ID'] ?? 0);
+
+            if($tadi_id <= 0 || $subj_id <= 0 || $prof_id <= 0 || $session_prof_id <= 0){
+                $fetch = ['success' => false, 'message' => 'Missing required information.'];
+            } else {
+                $verify_stmt = $dbConn->prepare(
+                    "SELECT schltadi_id FROM schooltadi 
+                    WHERE schltadi_id = ? AND schlprof_id = ? AND schltadi_isactive = 1"
+                );
+                $verify_stmt->bind_param("ii", $tadi_id, $session_prof_id);
+                $verify_stmt->execute();
+                $verify_stmt->store_result();
+
+                if($verify_stmt->num_rows === 0){
+                    $fetch = ['success' => false, 'message' => 'Unauthorized action.'];
+                    $verify_stmt->close();
+                } else {
+                    $verify_stmt->close();
+
+                    $qry = "UPDATE schooltadi tadi
+                            SET tadi.schltadi_isactive = 0
+                            WHERE tadi.schltadi_id = ?
+                                AND tadi.schlenrollsubjoff_id = ?
+                                AND tadi.schlprof_id = ?";
+                    
+                    $stmt = $dbConn->prepare($qry);
+                    $stmt->bind_param("iii", $tadi_id, $subj_id, $session_prof_id);
+                    $executed = $stmt->execute();
+                    $affected = $stmt->affected_rows;
+                    $stmt->close();
+
+                    if($executed && $affected > 0){
+                        $fetch = ['success' => true, 'message' => 'Record successfully deleted.'];
+                    } else {
+                        $fetch = ['success' => false, 'message' => 'Failed to delete record. It may have already been removed.'];
+                    }
+                }
+            }
+            echo json_encode($fetch);
             break;
         default:
             http_response_code(400);

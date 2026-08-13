@@ -7,6 +7,7 @@
     --tp-success:       #10b981;
     --tp-success-bg:    #d1fae5;
     --tp-danger:        #ef4444;
+    --tp-danger-deep:   #b91c1c;
     --tp-danger-bg:     #fee2e2;
     --tp-warning:       #f59e0b;
     --tp-warning-bg:    #fef3c7;
@@ -311,6 +312,18 @@ label { font-weight: bold; }
     white-space: nowrap;
 }
 .acknw:hover:not(:disabled) { background: var(--tp-primary-deep) !important; transform: translateY(-1px); }
+
+.deny {
+    background-color: var(--tp-danger);
+    color: #fff;
+    border-radius: 5px;
+    font-size: .74rem;
+    font-weight: 600;
+    padding: .24rem .6rem;
+    transition: all .2s ease;
+    white-space: nowrap;
+}
+.deny:hover:not(:disabled) { background-color: var(--tp-danger-deep); transform: translateY(-1px); color: #fff; }
 
 .tadi-badge-duedate, .tadi-badge-duedate {
     background-color: #d3d3d3;
