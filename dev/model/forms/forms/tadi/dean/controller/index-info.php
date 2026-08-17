@@ -36,22 +36,41 @@
             }
         }
     }
+	
+	$yearId = 19;
+	$programs = [
+		'COCS' => [749],
+		'COLA' => [],
+		'COAM' => [957],
+		'COCJ' => [],
+		'COE' => [],
+		'COA' => [11986],
+		'COBM' => [],
+		'COED' => []
+	];
+
+
+	function asstHeadSwitch($user, $programs) {
+		$forHead = " AND `SchlDeptHead_ID` = ?";
+		$isAssistant = false;
+		$crsCode = "";
+
+		foreach ($programs as $code => $ids) {
+			if (in_array($user, $ids)) {
+				$isAssistant = true;
+				$crsCode = $code;
+				$forHead = " AND `SchlDept_CODE` = ?";
+				break;
+			}
+		}
+		return [$forHead, $isAssistant, $crsCode];
+	}
 
 	$type = $_POST['type'];
-	$queryType = ['GET_ACADEMIC_LEVEL', 'GET_ACADEMIC_YEAR_LEVEL', 'GET_ACADEMIC_PERIOD', 'GET_ACAD_YEAR', 'GET_INSTRUCTOR_LIST', 'GET_SECTION_LIST', 'GETALL_TADI_RECORDS', 'GET_INSTRUCTOR_BY_SUBJECT', 'GET_SUBJECT_BY_INSTRUCTOR', 'SEARCH_SUBJECT_BY_INSTRUCTOR', 'GET_IMAGE', 'APPROVE_TADI_REQUEST'];
-	if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
-		$yearId = 19;
+	$queryType = ['GET_ACADEMIC_LEVEL', 'GET_ACADEMIC_YEAR_LEVEL', 'GET_ACADEMIC_PERIOD', 'GET_ACAD_YEAR', 'GET_INSTRUCTOR_LIST', 'GET_SECTION_LIST', 'GETALL_TADI_RECORDS', 'GET_SUBJECT_BY_INSTRUCTOR', 'SEARCH_SUBJECT_BY_INSTRUCTOR', 'GET_IMAGE', 'GET_TEACHER_TADI_REPORT', 'APPROVE_TADI_REQUEST'];
+	if((isset($_SESSION['STUDENT']) || isset($_SESSION['EMPLOYEE'])) && in_array($type, $queryType, true)){
 		switch($type){
 			case 'GET_ACADEMIC_LEVEL':
-				$user = $_SESSION['EMPLOYEE']['ID'];
-
-				$forHead = " AND `subj_off`.`SchlProf_ID` = ?";
-				$prep = $user;
-				
-				if($user == 11 || $user == 430){
-					$prep = 2;
-					$forHead = " AND acad_lvl.`SchlAcadLvl_ID` = ?";
-				}
 
 				$qry = "SELECT DISTINCT
 							acad_lvl.`SchlAcadLvl_ID`,
@@ -64,12 +83,11 @@
 						LEFT JOIN `schooldepartment` `schl_dept` 
 							ON acad_lvl.`SchlAcadLvlSms_ID` = `schl_dept`.`SchlAcadLvl_ID`
 						WHERE `SchlAcadLvl_ISACTIVE` = 1
-						$forHead";
+						AND acad_lvl.`SchlAcadLvl_ID` = 2";
 
 				$stmt = $dbConn->prepare($qry);                                
-				$stmt->bind_param("i",$prep);
 				$stmt->execute();
-				$result = $stmt->get_result();
+				$result = $stmt->get_result(); 
 				$fetch = $result->fetch_all(MYSQLI_ASSOC);
 				$stmt->close();
 				$dbConn->close();
@@ -158,17 +176,13 @@
 					exit;
 				}
 
-				$user = $_SESSION['EMPLOYEE']['ID'];
+				$user = $_SESSION['EMPLOYEE']['ID'] ?? $_SESSION['STUDENT']['ID'] ?? 0;
 				$lvlid = $_POST['lvl_id'];
 				$prdid = $_POST['prd_id'];
 				$yrid = $_POST['yr_id'];
 				$yrlvlid = $_POST['yrlvl_id'];
-
-				$forHead = " AND `SchlDeptHead_ID` = ?";
-
-				if($user == 11 || $user == 430){
-					$forHead = "";
-				}
+				
+				[$forHead, $isAssistant, $crsCode] = asstHeadSwitch($user, $programs);
 
 				$qry = "SELECT DISTINCT 
 							`schl_enr_subj_off`.`SchlProf_ID`,
@@ -198,6 +212,7 @@
 								AND st.schltadi_status = 1
 								AND st.`schltadi_isconfirm` = 0
 								AND st.schltadi_isactive = 1
+								AND st.`schltadi_date` >= CURDATE() - INTERVAL 3 DAY
 								$forHead) AS unverified_count 
 						FROM
 							`schoolenrollmentsubjectoffered` `schl_enr_subj_off` 
@@ -223,8 +238,8 @@
 
 				$stmt = $dbConn->prepare($qry);
 
-				if($user == 11 || $user == 430){
-					$stmt->bind_param("iiiiiiii", $lvlid, $yrid, $prdid, $yrlvlid, $lvlid, $yrid, $prdid, $yrlvlid);
+				if($isAssistant){
+					$stmt->bind_param("iiiisiiiis", $lvlid, $yrid, $prdid, $yrlvlid, $crsCode, $lvlid, $yrid, $prdid, $yrlvlid, $crsCode);
 				}else{
 					$stmt->bind_param("iiiiiiiiii", $lvlid, $yrid, $prdid, $yrlvlid, $user, $lvlid, $yrid, $prdid, $yrlvlid, $user);
 				}
@@ -249,13 +264,10 @@
 				$prdid = $_POST['prdid'];
 				$yrid = $_POST['yrid'];
 				$yrlvlid = $_POST['yrlvlid'];
-				$user = $_SESSION['EMPLOYEE']['ID'];
+				$user = $_SESSION['EMPLOYEE']['ID'] ?? $_SESSION['STUDENT']['ID'] ?? 0;
 
 				$forHead = "AND schl_dept.`SchlDeptHead_ID` = ?";
-
-				if($user == 11 || $user == 430){
-					$forHead = "";
-				}
+				[$forHead, $isAssistant, $crsCode] = asstHeadSwitch($user, $programs);
 
 				$qry = "SELECT DISTINCT
 							`schl_enr_subj_off`.`SchlProf_ID` AS `prof_id`,
@@ -288,8 +300,8 @@
 
 				$stmt = $dbConn->prepare($qry);
 
-				if($user == 11 || $user == 430){
-					$stmt->bind_param("iiiii",$profId ,$lvlid, $prdid, $yrid, $yrlvlid);
+				if($isAssistant){
+					$stmt->bind_param("iiiiis",$profId ,$lvlid, $prdid, $yrid, $yrlvlid,$crsCode);
 				}else{
 					$stmt->bind_param("iiiiii",$profId ,$lvlid, $prdid, $yrid, $yrlvlid, $user);
 				}
@@ -353,57 +365,7 @@
 				$dbConn->close();
 				break;
 
-			case 'GET_INSTRUCTOR_BY_SUBJECT':
-
-				if (!isset($_POST['subj_id'], $_POST['lvlid'], $_POST['prdid'], $_POST['yrid'], $_POST['yrlvlid'])) {
-					http_response_code(400);
-					echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
-					exit;
-				}
-
-				$subj_id = $_POST['subj_id'];
-				$lvlid = $_POST['lvlid'];
-				$prdid = $_POST['prdid'];
-				$yrid = $_POST['yrid'];
-				$yrlvlid = $_POST['yrlvlid'];
-
-				$qry = "SELECT DISTINCT 
-							`schl_enr_subj_off`.`SchlProf_ID`,
-							`schl_acad_subj`.`SchlAcadSubj_CODE` `subj_code`,
-							`schl_acad_subj`.`SchlAcadSubj_ID` `subj_id`,					
-							CONCAT(emp.SchlEmp_LNAME, ',', emp.SchlEmp_FNAME, ' ', emp.SchlEmp_MNAME) AS prof_name,
-							`schl_enr_subj_off`.`SchlAcadLvl_ID` AS lvlid,
-							`schl_enr_subj_off`.`SchlAcadPrd_ID` AS prdid,
-							`schl_enr_subj_off`.`SchlAcadYr_ID` AS yrid,
-							`schl_enr_subj_off`.`SchlAcadYrLvl_ID` AS yrlvlid
-						FROM `schoolenrollmentsubjectoffered` `schl_enr_subj_off`
-						
-						LEFT JOIN `schoolacademicsubject` `schl_acad_subj`
-							ON `schl_enr_subj_off`.`SchlAcadSubj_ID` = `schl_acad_subj`.`SchlAcadSubjSms_ID`
-
-						LEFT JOIN `schoolacademiccourses` `schl_acad_crses`
-							ON `schl_enr_subj_off`.`SchlAcadCrses_ID` = `schl_acad_crses`.`SchlAcadCrseSms_ID`
-
-						LEFT JOIN `schooldepartment` `schl_dept`
-							ON `schl_acad_crses`.`SchlDept_ID` = `schl_dept`.`SchlDeptSms_ID`
-
-						LEFT JOIN schoolemployee AS emp
-							ON `schl_enr_subj_off`. `SchlProf_ID`= emp.`SchlEmpSms_ID`
-
-						WHERE `schl_acad_subj`.`SchlAcadSubj_ID` = ?
-						AND `schl_enr_subj_off`.`SchlAcadLvl_ID` = ?
-						AND `schl_enr_subj_off`.`SchlAcadPrd_ID` = ?
-						AND `schl_enr_subj_off`.`SchlAcadYr_ID`  = ?
-						AND `schl_enr_subj_off`.`SchlAcadYrLvl_ID` = ?";
-
-				$stmt = $dbConn->prepare($qry);
-				$stmt->bind_param("iiiii",$subj_id, $lvlid, $prdid, $yrid, $yrlvlid);
-				$stmt->execute();
-				$result = $stmt->get_result();
-				$fetch = $result->fetch_all(MYSQLI_ASSOC);
-				$stmt->close();
-				$dbConn->close();	
-				break;
+			
 			case 'GET_SUBJECT_BY_INSTRUCTOR':
 
 				if (!isset($_POST['prof_id'], $_POST['lvl_id'], $_POST['prd_id'], $_POST['yr_id'], $_POST['yrlvl_id'])) {
@@ -417,13 +379,9 @@
 				$prdid = $_POST['prd_id'];
 				$yrid = $_POST['yr_id'];
 				$yrlvlid = $_POST['yrlvl_id'];
-				$user = $_SESSION['EMPLOYEE']['ID'];
+				$user = $_SESSION['EMPLOYEE']['ID'] ?? $_SESSION['STUDENT']['ID'] ?? 0;
 
-				$forHead = "AND schl_dept.`SchlDeptHead_ID` = ?";
-
-				if($user == 11 || $user == 430){
-					$forHead = "";
-				}
+				[$forHead, $isAssistant, $crsCode] = asstHeadSwitch($user, $programs);
 
 				$qry = "SELECT DISTINCT
 							CONCAT(emp.SchlEmp_LNAME, ', ', emp.SchlEmp_FNAME, ' ', emp.SchlEmp_MNAME) AS prof_name,
@@ -447,7 +405,8 @@
 								AND t.`schlprof_id` = ?
 								AND t.`schltadi_isconfirm` = 0
 								AND t.schltadi_isactive = 1
-								AND t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`) AS verified_count
+								AND t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`
+								AND t.`schltadi_date` >= CURDATE() - INTERVAL 3 DAY) AS unverified_count
 						FROM `schoolenrollmentsubjectoffered` AS `schl_enr_subj_off`
 
 						LEFT JOIN `schoolacademicsubject` AS `schl_acad_subj`
@@ -474,8 +433,8 @@
 						$forHead";
 
 				$stmt = $dbConn->prepare($qry);
-				if($user == 11 || $user == 430){
-					$stmt->bind_param("iiiiiiii", $profId, $profId, $profId, $profId, $lvlid, $yrid, $prdid, $yrlvlid);
+				if($isAssistant){
+					$stmt->bind_param("iiiiiiiis", $profId, $profId, $profId, $profId, $lvlid, $yrid, $prdid, $yrlvlid,$crsCode);
 				}else{
 					$stmt->bind_param("iiiiiiiii", $profId, $profId, $profId, $profId, $lvlid, $yrid, $prdid, $yrlvlid, $user);
 				}
@@ -503,13 +462,9 @@
 				$subjDesc = $_POST['subjDesc'];
 				$subjCode = $_POST['subjCode'];
 				$section = $_POST['section'];
-				$user = $_SESSION['EMPLOYEE']['ID'];
+				$user = $_SESSION['EMPLOYEE']['ID'] ?? $_SESSION['STUDENT']['ID'] ?? 0;
 
-				$forHead = " AND schl_dept.`SchlDeptHead_ID` = ?";
-
-				if($user == 11 || $user == 430){
-					$forHead = "";
-				}
+				[$forHead, $isAssistant, $crsCode] = asstHeadSwitch($user, $programs);
 
 				$qry = "SELECT DISTINCT 
 							CONCAT(emp.SchlEmp_LNAME,',',emp.SchlEmp_FNAME,' ',emp.SchlEmp_MNAME) AS prof_name,
@@ -573,8 +528,8 @@
 					$srchSubDesc = "%" . $subjDesc . "%";
 					$srchSection = "%" . $section . "%";
 
-					if($user == 11 || $user == 430){
-						$stmt->bind_param("iiiiisss",$prof_id, $lvlid, $yrid, $prdid, $yrlvlid, $srchSubCode, $srchSubDesc, $srchSection);
+					if($isAssistant){
+						$stmt->bind_param("iiiisisss",$prof_id, $lvlid, $yrid, $prdid, $crsCode, $yrlvlid, $srchSubCode, $srchSubDesc, $srchSection);
 					}else{
 						$stmt->bind_param("iiiiiisss",$prof_id, $lvlid, $yrid, $prdid, $user, $yrlvlid, $srchSubCode, $srchSubDesc, $srchSection);
 					}
@@ -703,32 +658,28 @@
 			case 'GET_TEACHER_TADI_REPORT':
 				rateLimit(60, 5, 'get_teacher_tadi_report_rate_limit');
 
-				if (!isset($_POST['lvl_id'], $_POST['prd_id'], $_POST['yr_id'], $_POST['yrlvl_id'], $_POST['startDate'], $_POST['endDate'])) {
+				if (!isset($_POST['lvl_id'], $_POST['prd_id'], $_POST['yr_id'], $_POST['yrlvl_id'])) {
 					http_response_code(400);
 					echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
 					exit;
 				}
 
-				$user = $_SESSION['EMPLOYEE']['ID'];
+				$user = $_SESSION['EMPLOYEE']['ID'] ?? $_SESSION['STUDENT']['ID'] ?? 0;
 				$lvlid = $_POST['lvl_id'];
 				$prdid = $_POST['prd_id'];
 				$yrid = $_POST['yr_id'];
 				$yrlvlid = $_POST['yrlvl_id'];
-				$startDate = $_POST['startDate'] ?? null;
-				$endDate = $_POST['endDate'] ?? null;
+				$startDate = trim((string)($_POST['startDate'] ?? ''));
+				$endDate = trim((string)($_POST['endDate'] ?? ''));
 
-				$forHead = "AND dept.`SchlDeptHead_ID` = ?";
-
-				if($user == 11 || $user == 430){
-					$forHead = "";
-				}
-
-				if(!$user){
-					$fetch = "Failed to generate report. Please login again.";
-					echo json_encode($fetch);
+				if (($startDate !== '' && $endDate === '') || ($startDate === '' && $endDate !== '')) {
+					http_response_code(400);
+					echo json_encode(['success' => false, 'error' => 'Both startDate and endDate are required together']);
 					exit;
 				}
-				
+
+				[$forHead, $isAssistant, $crsCode] = asstHeadSwitch($user, $programs);
+
 				$qry = "SELECT  
 							CONCAT(emp.`SchlEmp_LNAME`, ', ', emp.`SchlEmp_FNAME`) AS prof_name,
 							subj.`SchlAcadSubj_CODE` AS subject_code,
@@ -787,14 +738,14 @@
 				$stmt = $dbConn->prepare($qry);
 				
 				if ($startDate && $endDate) {
-					if($user == 11 || $user == 430){
-						$stmt->bind_param("iiiiss", $lvlid, $yrid, $prdid, $yrlvlid, $startDate, $endDate);
+					if($isAssistant){
+						$stmt->bind_param("iiiisss", $lvlid, $yrid, $prdid, $yrlvlid, $crsCode, $startDate, $endDate);
 					}else{
 						$stmt->bind_param("iiiiiss", $lvlid, $yrid, $prdid, $yrlvlid, $user, $startDate, $endDate);
 					}     
 				} else {
-					if($user == 11 || $user == 430){
-						$stmt->bind_param("iiii", $lvlid, $yrid, $prdid, $yrlvlid);
+					if($isAssistant){
+						$stmt->bind_param("iiiis", $lvlid, $yrid, $prdid, $yrlvlid, $crsCode);
 					}else{
 						$stmt->bind_param("iiiii", $lvlid, $yrid, $prdid, $yrlvlid, $user);
 					} 
@@ -807,7 +758,7 @@
 				$dbConn->close();
 				break;
 			case 'APPROVE_TADI_REQUEST':
-				$user = $_SESSION['EMPLOYEE']['ID'] ?? 0;
+				$user =$_SESSION['EMPLOYEE']['ID'] ?? $_SESSION['STUDENT']['ID'] ?? 0;
 				if (empty($user) && $_SESSION['EMPLOYEE']['ID'] == $user) {
 					$fetch = ['status' => 'failed', 'error' => 'Session expired'];
 					echo json_encode($fetch);
@@ -819,7 +770,7 @@
 					exit;
 				}
 
-				$user = $_SESSION['EMPLOYEE']['ID'];
+				$user = $_SESSION['EMPLOYEE']['ID'] ?? $_SESSION['STUDENT']['ID'] ?? 0;
 				$tadId = $_POST['tadi_id'];
 				$profId = $_POST['prof_id'];
 				$subjId = $_POST['subj_id'];
@@ -867,6 +818,7 @@
 					echo json_encode(['success' => false, 'error' => 'This record is dated in the future and cannot be approved']);
 					exit;
 				}
+				[$forHead, $isAssistant, $crsCode]=asstHeadSwitch($user, $programs);
 
 				$qry =	"UPDATE `schooltadi`
 						INNER JOIN `schoolenrollmentsubjectoffered` AS `off`
@@ -884,10 +836,15 @@
 						AND `schltadi_isconfirm` = 0
 						AND schooltadi.`schlprof_id` = ?
 						AND schooltadi.`schlenrollsubjoff_id` = ?
-						AND `dept`.`SchlDeptHead_ID` = ?";
+						$forHead";
 
 				$stmt = $dbConn->prepare($qry);
-				$stmt->bind_param("iiiii",$user, $tadId, $profId, $subjId, $user);
+				if($isAssistant){
+					$stmt->bind_param("iiiis",$user, $tadId, $profId, $subjId, $crsCode);
+				}else{
+					$stmt->bind_param("iiiii",$user, $tadId, $profId, $subjId, $user);
+				}
+				
 				$stmt->execute();
 				$affectedRows = $stmt->affected_rows;
 				$stmt->close();

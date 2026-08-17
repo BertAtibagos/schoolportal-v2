@@ -252,7 +252,7 @@ function displaySubjList(data) {
           data-sub-desc="${item.subj_desc}"
           data-sub-sect="${item.schl_sec || 'No Section'}">
           <i class="fas fa-eye me-1"></i> View TADI
-          <span class="tadi-badge tadi-badge-muted ms-1">${item.verified_count}</span>
+          <span class="tadi-badge tadi-badge-muted ms-1">${item.unverified_count}</span>
         </button>
       </td>
     </tr>`).join('');
