@@ -177,7 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
                                 AND DATE(tadi.schltadi_actual_date) = CURDATE()
                                 AND (
                                     (tadi.schltadi_timein < ? AND tadi.schltadi_timeout > ?) OR
-                                    (tadi.schltadi_timein < ? AND tadi.schltadi_timeout > ?)
+                                    (tadi.schltadi_timein <= ? AND tadi.schltadi_timeout >= ?)
                                 )";
 
         $overlap_stmt = $dbConn->prepare($overlapTimeSameProf);
