@@ -203,6 +203,10 @@ function viewSubmitted(subj_Id, prof_Id){
                 tabPane.innerHTML = `
                     <div class="record-panel" id="preview-${record.schltadi_ID}">
                         <div class="record-field" id="timeLabel${record.schltadi_ID}">
+                            <span class="field-label">Submitted by</span>
+                            <span class="field-value">${record.stud_name} &ndash; ${record.section}</span>
+                        </div>
+                        <div class="record-field" id="timeLabel${record.schltadi_ID}">
                             <span class="field-label">Date and Time</span>
                             <span class="field-value">${date} ${formatTimeToAmPm(record.tadi_timeIn)} &ndash; ${formatTimeToAmPm(record.tadi_timeOut)}</span>
                         </div>

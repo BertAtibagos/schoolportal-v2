@@ -237,7 +237,9 @@ if($_SESSION['STUDENT'] && in_array($type, $queryType, true)) {
                         schl_tadi.`startschltadi_filepath` AS tadi_filepath,
                         schl_tadi.schlenrollsubjoff_id AS sub_off_id,
                         schl_tadi.SchlProf_ID,
-                        schl_tadi.schlstud_id
+                        schl_tadi.schlstud_id,
+                        CONCAT(schl_reg_stud.SchlEnrollRegStudInfo_LAST_NAME, ', ', schl_reg_stud.SchlEnrollRegStudInfo_FIRST_NAME) AS stud_name,
+                        acad_sec.SchlAcadSec_DESC AS section
                     FROM `schooltadi` AS schl_tadi 
                     
                     LEFT JOIN `schoolstudent` AS schl_stud 
@@ -249,8 +251,14 @@ if($_SESSION['STUDENT'] && in_array($type, $queryType, true)) {
                     LEFT JOIN `schoolenrollmentregistrationstudentinformation` AS schl_reg_stud 
                         ON schl_enr_reg.`SchlEnrollRegSms_ID` = `schl_reg_stud`.`SchlEnrollReg_ID` 
 
-                    WHERE FIND_IN_SET(`schlprof_id`, ?) > 0
-                    AND `schlenrollsubjoff_id` =  ?
+                    LEFT JOIN schoolenrollmentsubjectoffered AS subj_off
+                        ON schl_tadi.schlenrollsubjoff_id = subj_off.SchlEnrollSubjOffSms_ID
+
+                    LEFT JOIN schoolacademicsection AS acad_sec
+                        ON subj_off.SchlAcadSec_ID = acad_sec.SchlAcadSecSms_ID
+
+                    WHERE FIND_IN_SET(schl_tadi.`schlprof_id`, ?) > 0
+                    AND schl_tadi.`schlenrollsubjoff_id` =  ?
                     AND schltadi_isactive = 1
                     -- AND `schl_tadi`.`schlstud_id` = ?
                     AND `schltadi_actual_date` = CURDATE()
