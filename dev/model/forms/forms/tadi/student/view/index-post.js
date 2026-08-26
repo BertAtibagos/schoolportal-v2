@@ -151,6 +151,29 @@ button.addEventListener("click", function (e) {
                         submitBtn.innerHTML = ``;
                         submitBtn.innerHTML = `Submit`;
                     } else {
+                        if(result.isoverlap){
+                            const errMessage = document.getElementById("error_alert");
+
+                            const ovelapStud = document.createElement("p");
+                            ovelapStud.textContent = `Student Name: ${result.overlap_details.student_name}`;
+                            const overlapSection = document.createElement("p");
+                            overlapSection.textContent = `Section: ${result.overlap_details.section}`;
+                            const overlapSubject = document.createElement("p");
+                            overlapSubject.textContent = `Subject: ${result.overlap_details.subject_name}`;
+                            const overlapdate = document.createElement("p");
+                            overlapdate.textContent = `Date: ${result.overlap_details.date}`;
+                            const overlapTime = document.createElement("p");
+                            overlapTime.textContent = `Time: ${result.overlap_details.time_in} - ${result.overlap_details.time_out}`;
+                            
+
+                            
+                            errMessage.appendChild(ovelapStud);
+                            errMessage.appendChild(overlapSection);
+                            errMessage.appendChild(overlapSubject);
+                            errMessage.appendChild(overlapdate);
+                            errMessage.appendChild(overlapTime);
+                        }
+
                         document.getElementById("errorAlertMessage").textContent = result.message;
                         document.getElementById("error_alert").classList.remove("d-none");
                         submitBtn.disabled = false;

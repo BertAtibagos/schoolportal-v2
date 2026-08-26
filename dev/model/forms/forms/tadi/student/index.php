@@ -39,7 +39,7 @@
                             </div>
 
                             <div class="col-md-6 col-lg-6">
-                                <label for="instructor" class="form-label">Date <span class="text-danger">*</span></label>
+                                <label for="instructor" class="form-label">Actual class date <span class="text-danger">*</span></label>
                                 <input type="date" class="form-control" name="classDate" id="classDate" value="<?php echo date('Y-m-d'); ?>" required>
                                 <div class="invalid-feedback">Please select a date</div>
                             </div>

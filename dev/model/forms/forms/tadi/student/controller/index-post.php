@@ -170,8 +170,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
         }
 
         $overlapTimeSameProf = "SELECT
-                                    COUNT(*) as count
+                                    CONCAT(`SchlEnrollRegStudInfo_LAST_NAME`, ', ', `SchlEnrollRegStudInfo_FIRST_NAME`,' ',`SchlEnrollRegStudInfo_MIDDLE_NAME`) AS stud_name,
+                                    tadi.`schltadi_date` AS tadi_date,
+                                    tadi.`schltadi_timein` AS tadi_timeIn,
+                                    tadi.`schltadi_timeout` AS tadi_timeOut,
+                                    sec.SchlAcadSec_DESC AS section,
+                                    subj.SchlAcadSubj_DESC AS subject_name
                                 FROM schooltadi as tadi
+                                LEFT JOIN `schoolstudent` AS schl_stud
+                                    ON tadi.`schlstud_id` = schl_stud.`SchlStudSms_ID`
+
+                                LEFT JOIN `schoolenrollmentregistration` AS schl_enr_reg
+                                    ON schl_stud.`SchlEnrollRegColl_ID` = schl_enr_reg.`SchlEnrollRegSms_ID`
+
+                                LEFT JOIN `schoolenrollmentregistrationstudentinformation` AS schl_reg_stud
+                                    ON schl_enr_reg.`SchlEnrollRegSms_ID` = `schl_reg_stud`.`SchlEnrollReg_ID`
+                                
+                                LEFT JOIN schoolenrollmentsubjectoffered off
+                                    ON tadi.`schlenrollsubjoff_id` = off.`SchlEnrollSubjOffSms_ID`
+
+                                LEFT JOIN schoolacademicsubject subj
+                                    ON off.`SchlAcadSubj_ID` = subj.`SchlAcadSubjSms_ID`
+
+                                LEFT JOIN schoolacademicsection sec
+                                    ON off.`SchlAcadSec_ID` = sec.`SchlAcadSecSms_ID`
+
                                 WHERE tadi.schlprof_id = ?
                                 AND tadi.schltadi_isactive = 1
                                 AND DATE(tadi.schltadi_date) = ?
@@ -192,12 +215,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
         );
 
         $overlap_stmt->execute();
-        $overlap_stmt->bind_result($overlapCount);
-        $overlap_stmt->fetch();
+        $overlap_stmt->bind_result($stud_name, $tadi_date, $tadi_timeIn, $tadi_timeOut, $section, $subject_name);
+        $hasOverlap = false;
+        if ($overlap_stmt->fetch()) {
+            $hasOverlap = true;
+        }
         $overlap_stmt->close();
 
-        if ((int)$overlapCount > 0) {
+        if ($hasOverlap) {
+            $fetch['isoverlap'] = true;
             $fetch['message'] = "A TADI with an overlapping time range already exists for this instructor.";
+            $fetch['overlap_details'] = [
+                    'student_name' => $stud_name,
+                    'date'         => $tadi_date,
+                    'time_in'      => $tadi_timeIn,
+                    'time_out'     => $tadi_timeOut,
+                    'section'      => $section,
+                    'subject_name' => $subject_name
+                ];
             logStudentTadiSubmit($dbConn, (int)$STUDID, $fetch['message']);
             echo json_encode($fetch);
             exit;
