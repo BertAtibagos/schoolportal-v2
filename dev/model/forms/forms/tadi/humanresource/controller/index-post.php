@@ -778,20 +778,20 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                 case 'byDept':
                     $dept = $_POST['dept'];
                     $filter = "AND dept.`SchlDept_CODE` = ?";
-                    $values = [$fDate, $lDate, $lvlid, $acadyrid, $prdid, $lvlid, $acadyrid, $prdid, $lvlid, $acadyrid, $prdid, $dept];
-                    $bind = "ssiiiiiiiiis";
+                    $values = [$fDate, $lDate, $lvlid, $acadyrid, $prdid, $lvlid, $acadyrid, $prdid, $lvlid, $acadyrid, $prdid, $lvlid, $acadyrid, $prdid, $dept];
+                    $bind = "ssiiiiiiiiiiiis";
                     break;
                 case 'byName':
                     $name = $_POST['name'];
                     $filter = "AND CONCAT(emp.`SchlEmp_LNAME`, ', ', emp.`SchlEmp_FNAME`) LIKE ?";
                     $bindName = "%". $name . "%";
-                    $values = [$fDate, $lDate, $lvlid, $acadyrid, $prdid, $lvlid, $acadyrid, $prdid, $lvlid, $acadyrid, $prdid, $bindName];
-                    $bind = "ssiiiiiiiiis";
+                    $values = [$fDate, $lDate, $lvlid, $acadyrid, $prdid, $lvlid, $acadyrid, $prdid, $lvlid, $acadyrid, $prdid, $lvlid, $acadyrid, $prdid, $bindName];
+                    $bind = "ssiiiiiiiiiiiis";
                     break;
                 case 'all':
                     $filter = "";
-                    $values = [$fDate, $lDate, $lvlid, $acadyrid, $prdid, $lvlid, $acadyrid, $prdid, $lvlid, $acadyrid, $prdid];
-                    $bind = "ssiiiiiiiii";
+                    $values = [$fDate, $lDate, $lvlid, $acadyrid, $prdid, $lvlid, $acadyrid, $prdid, $lvlid, $acadyrid, $prdid, $lvlid, $acadyrid, $prdid];
+                    $bind = "ssiiiiiiiiiiii";
                     break;
                 default:
                     echo json_encode(['error' => 'Invalid filter type']);
@@ -805,7 +805,7 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                             o.`SchlAcadSubj_ID`,
                             o.`SchlAcadCrses_ID`,
                             ROUND(SUM(
-                                CASE WHEN t.`tadi_approved_date` BETWEEN ? AND ?
+                                CASE WHEN t.schltadi_date BETWEEN ? AND ?
                                 THEN TIMESTAMPDIFF(MINUTE, t.`schltadi_timein`, t.`schltadi_timeout`)
                                 ELSE 0 END
                             ) / 60, 2) AS filtered_hours,
@@ -845,25 +845,44 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                             AND IFNULL(stud.`SchlStud_STATUS`, 0) = 1
                             AND IFNULL(stud.`SchlStud_ISACTIVE`, 0) = 1
                         GROUP BY o.`SchlEnrollSubjOffSms_ID`, o.`SchlAcadSubj_ID`, o.`SchlAcadCrses_ID`, o.`SchlProf_ID`
-                    )
-                    SELECT
-                        MIN(off.SchlEnrollSubjOffSms_ID) AS rec_id,
-                        off.SchlProf_ID AS profID,
-                        emp.`SchlEmpSms_ID` AS prof_id,
-                        CONCAT(emp.`SchlEmp_LNAME`, ', ', emp.`SchlEmp_FNAME`) AS prof_name,
-                        subj.`SchlAcadSubj_CODE` AS subject_code,
-                        subj.`SchlAcadSubj_DESC` AS subject_desc,
-                        crse.`SchlAcadCrses_NAME` AS course_name,
-                        dept.`SchlDept_CODE` AS dept_code,
-                        COUNT(DISTINCT off.`SchlEnrollSubjOffSms_ID`) AS section_count,
-                        GROUP_CONCAT(DISTINCT sec.`SchlAcadSec_NAME` ORDER BY sec.`SchlAcadSec_NAME` SEPARATOR ', ') AS sections,
-                        IFNULL(MAX(ec.total_enrolled), 0) AS total_enrolled_students,
-                        IFNULL(MAX(th.filtered_hours), 0) AS filtered_hours,
-                        IFNULL(MAX(th.total_accumulated_hours), 0) AS total_accumulated_hours,
-                        subj.`SchlAcadSubj_LEC` AS lec_units,
-                        subj.`SchlAcadSubj_LAB` AS lab_units,
-                        off.SchlProf_UNIT_HRS AS prof_unit_hrs,
-                        off.SchlEnrollSubjOff_UNIT_HRS AS subj_unit_hrs
+                        ),
+                        merge_map AS (
+                        SELECT
+                            mcd.`SchlEnrollSubjOff_ID`,
+                            mcd.`SchlEnrollMerCls_ID`,
+                            mc.`SchlEnrollMerCls_NAME`
+                        FROM schoolenrollmentmergeclass mc
+                        INNER JOIN schoolenrollmentmergeclassdetails mcd
+                            ON mc.`SchlEnrollMerCls_ID` = mcd.`SchlEnrollMerCls_ID`
+                        WHERE mcd.`SchlEnrollMerClsDet_STATUS` = 1
+                            AND mcd.`SchlEnrollMerClsDet_ISACTIVE` = 1
+                            AND mc.`SchlEnrollMerCls_STATUS` = 1
+                            AND mc.`SchlEnrollMerCls_ISACTIVE` = 1
+                            AND mc.`SchlAcadLvl_ID` = ?
+                            AND mc.`SchlAcadYr_ID` = ?
+                            AND mc.`SchlAcadPrd_ID` = ?
+                        )
+                        SELECT
+                            MIN(off.SchlEnrollSubjOffSms_ID) AS rec_id,
+                            off.SchlProf_ID AS profID,
+                            emp.`SchlEmpSms_ID` AS prof_id,
+                            CONCAT(emp.`SchlEmp_LNAME`, ', ', emp.`SchlEmp_FNAME`) AS prof_name,
+                            subj.`SchlAcadSubj_CODE` AS subject_code,
+                            subj.`SchlAcadSubj_DESC` AS subject_desc,
+                            crse.`SchlAcadCrses_NAME` AS course_name,
+                            dept.`SchlDept_CODE` AS dept_code,
+                            COUNT(DISTINCT CASE
+                                WHEN mm.`SchlEnrollMerCls_ID` IS NOT NULL THEN CONCAT('M-', mm.`SchlEnrollMerCls_ID`)
+                                ELSE CONCAT('S-', off.`SchlEnrollSubjOffSms_ID`)
+                            END) AS section_count,
+                            GROUP_CONCAT(DISTINCT COALESCE(mm.`SchlEnrollMerCls_NAME`, sec.`SchlAcadSec_NAME`) ORDER BY sec.`SchlAcadSec_NAME` SEPARATOR ', ') AS sections,
+                            IFNULL(MAX(ec.total_enrolled), 0) AS total_enrolled_students,
+                            IFNULL(MAX(th.filtered_hours), 0) AS filtered_hours,
+                            IFNULL(MAX(th.total_accumulated_hours), 0) AS total_accumulated_hours,
+                            subj.`SchlAcadSubj_LEC` AS lec_units,
+                            subj.`SchlAcadSubj_LAB` AS lab_units,
+                            off.SchlProf_UNIT_HRS AS prof_unit_hrs,
+                            off.SchlEnrollSubjOff_UNIT_HRS AS subj_unit_hrs
 
                     FROM schoolenrollmentsubjectoffered off
                     LEFT JOIN schoolacademicsubject subj ON off.`SchlAcadSubj_ID` = subj.`SchlAcadSubjSms_ID`
@@ -881,6 +900,8 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                         AND ec.`SchlAcadSubj_ID` = subj.`SchlAcadSubjSms_ID`
                         AND ec.`SchlAcadCrses_ID` = crse.`SchlAcadCrseSms_ID`
                         AND FIND_IN_SET(emp.`SchlEmpSms_ID`, ec.`SchlProf_ID`) > 0
+                    LEFT JOIN merge_map mm
+                        ON mm.`SchlEnrollSubjOff_ID` = off.`SchlEnrollSubjOffSms_ID`
 
                     WHERE off.`SchlAcadLvl_ID` = ?
                         AND off.`SchlAcadYr_ID` = ?

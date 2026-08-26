@@ -870,14 +870,25 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
                 total_enrolled_students: 0,
                 filtered_hours: 0,
                 total_accumulated_hours: 0,
-                prof_id: data.prof_id,
-                subj_id: data.rec_id
+                subj_id: data.rec_id,
+                sections: data.sections,
+                _sectionKeys: new Set() // tracks distinct section/merge-group identities; not rendered
             };
         }
-        profGroups[data.prof_name][subjKey].section_count += parseInt(data.section_count) || 0;
-        profGroups[data.prof_name][subjKey].total_enrolled_students += parseFloat(data.total_enrolled_students) || 0;
-        profGroups[data.prof_name][subjKey].filtered_hours += parseFloat(data.filtered_hours) || 0;
-        profGroups[data.prof_name][subjKey].total_accumulated_hours += parseFloat(data.total_accumulated_hours) || 0;
+
+        const group = profGroups[data.prof_name][subjKey];
+
+        // Rows whose section label contains "MC" belong to the same merge group -
+        // dedupe by that shared label so all merged offerings count as ONE section.
+        // Everything else is its own section, keyed by its unique rec_id.
+        const sectionLabel = data.sections || '';
+        const sectionKey = sectionLabel.includes('MC') ? sectionLabel : `row-${data.rec_id}`;
+        group._sectionKeys.add(sectionKey);
+        group.section_count = group._sectionKeys.size;
+
+        group.total_enrolled_students += parseFloat(data.total_enrolled_students) || 0;
+        group.filtered_hours += parseFloat(data.filtered_hours) || 0;
+        group.total_accumulated_hours += parseFloat(data.total_accumulated_hours) || 0;
     });
 
     const totalInstructors = Object.keys(profGroups).length;

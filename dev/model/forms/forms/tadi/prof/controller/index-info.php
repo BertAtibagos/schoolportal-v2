@@ -55,56 +55,78 @@
                 $USERID = $_SESSION['EMPLOYEE']['ID']; 
                 $search = $_POST['search'];  
 
-                $qry = "SELECT DISTINCT
+                $qry = "SELECT
                             `schl_acad_sec`.`SchlAcadSec_NAME` AS schl_sec,
                             `schl_acad_subj`.`SchlAcadSubj_CODE` AS `subj_code`,
                             `schl_acad_subj`.`SchlAcadSubj_desc` AS `subj_desc`,
                             `schl_enr_subj_off`.`SchlProf_ID` AS `prof_id`,
                             `schl_enr_subj_off`.`SchlEnrollSubjOff_ISACTIVE` AS `subj_act`,
-                            schl_enr_subj_off.`SchlEnrollSubjOffSms_ID` AS sub_off_id,
+                            `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID` AS sub_off_id,
                             (
-                            SELECT 
-                                COUNT(*) 
-                            FROM
-                                `schooltadi` AS t 
-                                WHERE t.`schlprof_id` = ? 
+                                SELECT COUNT(*)
+                                FROM `schooltadi` AS t
+                                WHERE t.`schlprof_id` = ?
                                     AND t.schltadi_isactive = 1
-                                    AND t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`) AS total_count,
+                                    AND t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`
+                            ) AS total_count,
                             (
-                                SELECT COUNT(*) 
+                                SELECT COUNT(*)
                                 FROM `schooltadi` AS t
                                 WHERE t.`schltadi_status` = 0
                                     AND t.schltadi_isactive = 1
                                     AND t.`schlprof_id` = ?
                                     AND t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`
-                            ) AS unverified_count
+                            ) AS unverified_count,
+                            COALESCE(enr.total_enrolled, 0) AS total_enrolled
                         FROM
                             `schoolenrollmentsubjectoffered` AS `schl_enr_subj_off`
                         LEFT JOIN
-                            `schoolacademicsubject` AS `schl_acad_subj` 
+                            `schoolacademicsubject` AS `schl_acad_subj`
                             ON `schl_enr_subj_off`.`SchlAcadSubj_ID` = `schl_acad_subj`.`SchlAcadSubjSms_ID`
                         LEFT JOIN
-                            `schoolacademicsection` AS `schl_acad_sec` 
+                            `schoolacademicsection` AS `schl_acad_sec`
                             ON `schl_enr_subj_off`.`SchlAcadSec_ID` = `schl_acad_sec`.`SchlAcadSecSms_ID`
-                        LEFT JOIN 
-                            `schoolacademiccourses` AS `schl_acad_crses` 
+                        LEFT JOIN
+                            `schoolacademiccourses` AS `schl_acad_crses`
                             ON `schl_enr_subj_off`.`SchlAcadCrses_ID` = `schl_acad_crses`.`SchlAcadCrseSms_ID`
-
-                        LEFT JOIN 
-                            `schooldepartment` AS `schl_dept` 
+                        LEFT JOIN
+                            `schooldepartment` AS `schl_dept`
                             ON `schl_acad_crses`.`SchlDept_ID` = `schl_dept`.`SchlDeptSms_ID`
                         LEFT JOIN
-                            `schoolacademicyearperiod` AS `schl_acad_yr_prd` 
+                            `schoolacademicyearperiod` AS `schl_acad_yr_prd`
                             ON `schl_enr_subj_off`.`SchlAcadYr_ID` = `schl_acad_yr_prd`.`SchlAcadYr_ID`
-                            
                         LEFT JOIN
-                            `schoolacademicyear` AS `schl_yr` ON `schl_acad_yr_prd`.`SchlAcadYr_ID` = `schl_yr`.`SchlAcadYrSms_ID`
-                        WHERE`schl_enr_subj_off`.`SchlAcadLvl_ID` = ?
+                            `schoolacademicyear` AS `schl_yr`
+                            ON `schl_acad_yr_prd`.`SchlAcadYr_ID` = `schl_yr`.`SchlAcadYrSms_ID`
+                        LEFT JOIN (
+                            SELECT
+                                o.`SchlEnrollSubjOffSms_ID`,
+                                o.`SchlAcadSubj_ID`,
+                                o.`SchlAcadCrses_ID`,
+                                o.`SchlProf_ID`,
+                                COUNT(DISTINCT asmt.`SchlEnrollAssSms_ID`) AS total_enrolled
+                            FROM schoolenrollmentsubjectoffered o
+                            INNER JOIN schoolenrollmentassessment asmt
+                                ON FIND_IN_SET(o.`SchlEnrollSubjOffSms_ID`, asmt.`SchlAcadSubj_ID`) > 0
+                                AND asmt.`SchlAcadLvl_ID` = o.`SchlAcadLvl_ID`
+                                AND asmt.`SchlAcadYr_ID` = o.`SchlAcadYr_ID`
+                                AND asmt.`SchlAcadPrd_ID` = o.`SchlAcadPrd_ID`
+                            INNER JOIN schoolstudent stud
+                                ON asmt.`SchlStud_ID` = stud.`SchlStudSms_ID`
+                            WHERE o.`SchlAcadLvl_ID` = ? AND o.`SchlAcadYr_ID` = ? AND o.`SchlAcadPrd_ID` = ?
+                                AND IFNULL(asmt.`SchlEnrollAss_STATUS`, 0) = 1
+                                AND IFNULL(asmt.`SchlEnrollWithdrawType_ID`, 0) = 0
+                                AND IFNULL(stud.`SchlStud_STATUS`, 0) = 1
+                                AND IFNULL(stud.`SchlStud_ISACTIVE`, 0) = 1
+                            GROUP BY o.`SchlEnrollSubjOffSms_ID`, o.`SchlAcadSubj_ID`, o.`SchlAcadCrses_ID`, o.`SchlProf_ID`
+                        ) AS enr
+                            ON enr.`SchlEnrollSubjOffSms_ID` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`
+                        WHERE `schl_enr_subj_off`.`SchlAcadLvl_ID` = ?
                             AND `schl_acad_yr_prd`.`SchlAcadYr_ID` = ?
                             AND `schl_enr_subj_off`.`SchlAcadPrd_ID` = ?
                             AND FIND_IN_SET(?, `schl_enr_subj_off`.`SchlProf_ID`) > 0
-                            AND schl_enr_subj_off.`SchlAcadYrLvl_ID`= ?
-                            AND `schl_enr_subj_off`.`SchlEnrollSubjOff_ISACTIVE` = 1 
+                            AND schl_enr_subj_off.`SchlAcadYrLvl_ID` = ?
+                            AND `schl_enr_subj_off`.`SchlEnrollSubjOff_ISACTIVE` = 1
                             AND `schl_acad_subj`.`SchlAcadSubj_CODE` LIKE ? ";
 
                     $stmt = $dbConn->prepare($qry);
@@ -112,7 +134,7 @@
                 if ($stmt) {
                     
                     $searchTerm = "%" . $search . "%";
-                    $stmt->bind_param("iiiiiiis", $USERID,$USERID,$lvlid, $yrid, $prdid, $USERID, $yrlvlid, $searchTerm);
+                    $stmt->bind_param("iiiiiiiiiis", $USERID,$USERID,$lvlid, $yrid, $prdid, $lvlid, $yrid, $prdid, $USERID, $yrlvlid, $searchTerm);
 
                     $stmt->execute();
                     $result = $stmt->get_result();
