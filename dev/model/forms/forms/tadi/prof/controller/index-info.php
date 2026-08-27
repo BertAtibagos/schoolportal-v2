@@ -231,7 +231,7 @@
                         LEFT JOIN `schooldepartment` `schl_dept` 
                             ON acad_lvl.`SchlAcadLvlSms_ID` = `schl_dept`.`SchlAcadLvl_ID`
                         WHERE `SchlAcadLvl_ISACTIVE` = 1
-                        AND  `subj_off`.`SchlProf_ID` = ?
+                        AND  CONCAT(',',`subj_off`.`SchlProf_ID`,',') LIKE CONCAT('%,',?,',%')
                         ORDER BY AcadLvl_Name DESC";
 
                 $stmt = $dbConn->prepare($qry);
