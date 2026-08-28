@@ -257,7 +257,7 @@ if($_SESSION['STUDENT'] && in_array($type, $queryType, true)) {
                     LEFT JOIN schoolacademicsection AS acad_sec
                         ON subj_off.SchlAcadSec_ID = acad_sec.SchlAcadSecSms_ID
 
-                    WHERE FIND_IN_SET(schl_tadi.`schlprof_id`, ?) > 0
+                    WHERE schl_tadi.`schlprof_id` IN (?)
                     AND schl_tadi.`schlenrollsubjoff_id` =  ?
                     AND schltadi_isactive = 1
                     -- AND `schl_tadi`.`schlstud_id` = ?

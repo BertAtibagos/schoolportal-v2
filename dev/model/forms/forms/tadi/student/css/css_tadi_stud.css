@@ -112,6 +112,18 @@
     gap: .45rem;
     flex-shrink: 0;
 }
+#student_tadi_section .subj-card .sub-limit {
+    display: inline-block;
+    font-size: .7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--tadi-warning);
+    background: #fef3c7;
+    padding: .2rem .55rem;
+    border-radius: 50px;
+    margin-bottom: .35rem;
+}
 
 /* ===== Buttons ===== */
 #student_tadi_section .btn-tadi {

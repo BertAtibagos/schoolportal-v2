@@ -127,22 +127,23 @@ function displaySubjectTable(result) {
     const tbody = document.getElementById('card_container');
     
     tbody.innerHTML = result.map((item, index) => 
-        `<div class="subj-card">
+        `<div class="subj-card" style="${item.record_count_today == 3 ? 'border-left: 4px solid #facc15' : ''}">
             <div class="subj-info">
                 <span class="subj-code">${escapeHtml(item.subj_code)}</span>
                 <div class="subj-desc">${escapeHtml(item.subj_desc)}</div>
                 <div class="subj-faculty">${item.prof_name ? escapeHtml(item.prof_name) : "No faculty assigned"}</div>
             </div>
             <div class="subj-actions">
-                <button 
-                    class="btn-tadi btn-tadi-primary"
-                    ${item.prof_name ? "" : "disabled"}
-                    id="tadiModalHandler${index}" 
-                    data-bs-toggle="modal" 
-                    data-bs-target="#modal"
-                    ${item.record_count_today == 3 ? "hidden" : ""}>
-                    Submit
-                </button>
+                ${item.record_count_today == 3 
+                    ? `<span class="sub-limit">Submission limit reached</span>` 
+                    : `<button 
+                            class="btn-tadi btn-tadi-primary"
+                            ${item.prof_name ? "" : "disabled"}
+                            id="tadiModalHandler${index}" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#modal">
+                            Submit
+                        </button>`}
                 <button 
                     class="btn-tadi btn-tadi-success vw_tadi_rec"
                     data-subj-id="${escapeHtml(item.subj_id)}"
