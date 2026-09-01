@@ -226,7 +226,6 @@
                                         <th>Make-up Date</th>
                                         <th>Activity</th>
                                         <th>Status</th>
-                                        <th>Attachment</th>
                                         <th>Approval</th>
                                     </tr>
                                 </thead>

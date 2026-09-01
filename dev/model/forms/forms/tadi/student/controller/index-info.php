@@ -234,7 +234,6 @@ if($_SESSION['STUDENT'] && in_array($type, $queryType, true)) {
                         schl_tadi.`schltadi_timeout` AS tadi_timeOut,
                         schl_tadi.`schltadi_activity` AS tadi_act,
                         schl_tadi.`schltadi_status` AS tadi_status,
-                        schl_tadi.`startschltadi_filepath` AS tadi_filepath,
                         schl_tadi.schlenrollsubjoff_id AS sub_off_id,
                         schl_tadi.SchlProf_ID,
                         schl_tadi.schlstud_id,

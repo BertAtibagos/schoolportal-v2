@@ -146,6 +146,7 @@ async function approveTadiRequest(tadiId, profId, subjId) {
             if(respond.status === 'success'){
                 const currentProfId = profId;
                 const currentSubjId = subjId;
+                showToastMessage("TADI request approved successfully.", "success", "Success");
                 GETALL_TADI_RECORDS(currentProfId, currentSubjId);
             }else{
                 showAlertModal("Failed to approve TADI request. Please try again.");
@@ -180,6 +181,7 @@ async function rejectTadiRequest(tadiId, profId, subjId) {
             if(respond.status === 'success'){
                 const currentProfId = profId;
                 const currentSubjId = subjId;
+                showToastMessage("TADI request rejected successfully.", "success", "Success");
                 GETALL_TADI_RECORDS(currentProfId, currentSubjId);
             }else{
                 showAlertModal("Failed to reject TADI request. Please try again.");
@@ -315,9 +317,9 @@ function GETALL_TADI_RECORDS(prof_id, subj_id) {
 
       tbody.innerHTML = data.map(record => {
         const activity = record.tadi_act.replace(/\\r\\n/g, "<br>");
-        const viewBtn = record.tadi_filepath
-          ? `<button class="tadi-btn tadi-btn-view viewAttch" value="${record.schltadi_ID}" data-prof="${record.SchlProf_ID}"><i class="fas fa-eye"></i> View</button>`
-          : `<span class="tadi-badge tadi-badge-muted" style="pointer-events:none;">No Attachment</span>`;
+        // const viewBtn = record.tadi_filepath
+        //   ? `<button class="tadi-btn tadi-btn-view viewAttch" value="${record.schltadi_ID}" data-prof="${record.SchlProf_ID}"><i class="fas fa-eye"></i> View</button>`
+        //   : `<span class="tadi-badge tadi-badge-muted" style="pointer-events:none;">No Attachment</span>`;
 
         const modeTypeMap = {
           'online_learning regular': 'Online Regular',
@@ -340,7 +342,6 @@ function GETALL_TADI_RECORDS(prof_id, subj_id) {
             <td>${record.mkup_date === null ? '<span class="text-muted">&#8212;</span>' : record.mkup_date}</td>
             <td><span class="activity-text">${activity}</span></td>
             <td>${status}</td>
-            <td>${viewBtn}</td>
             ${dynamic_button(record.schltadi_ID, record.SchlProf_ID, record.sub_off_id, record.approved, record.date_approved)}
           </tr>`;
       }).join('');
@@ -384,28 +385,28 @@ function isSafeAttachmentPath(value) {
     return /^attachment\/[A-Za-z0-9._-]+\/\d{4}-\d{2}-\d{2}(?:\/[A-Za-z0-9._-]+)?\/[A-Za-z0-9._-]+$/.test(value);
 }
 
-function GET_IMAGE(tadi_id, prof_id) {
-  const formData = new FormData();
-  formData.append('type', 'GET_IMAGE');
-  formData.append('tadi_id', tadi_id);
-  formData.append('prof_id', prof_id);
+// function GET_IMAGE(tadi_id, prof_id) {
+//   const formData = new FormData();
+//   formData.append('type', 'GET_IMAGE');
+//   formData.append('tadi_id', tadi_id);
+//   formData.append('prof_id', prof_id);
 
-  fetch("forms/tadi/dean/controller/index-info.php", { method: "POST", body: formData })
-    .then(handleRateLimitJson)
-    .then(data => {
-        if (!data) {
-            return;
-        }
-        if (!data || !isSafeAttachmentPath(data.starttadi_filepath) || !isSafeAttachmentPath(data.endtadi_filepath)) {
-                showToastMessage("Invalid image path.", "warning", "Notice");
-                return;
-        }
-        document.getElementById("start_attchPrev").src =`/schoolportal-v2/dev/public/${data.starttadi_filepath}`;
-        document.getElementById("end_attchPrev").src =`/schoolportal-v2/dev/public/${data.endtadi_filepath}`;
-        showImageModal(data);
-    })
-    .catch(err => console.error("Error fetching image:", err));
-}
+//   fetch("forms/tadi/dean/controller/index-info.php", { method: "POST", body: formData })
+//     .then(handleRateLimitJson)
+//     .then(data => {
+//         if (!data) {
+//             return;
+//         }
+//         if (!data || !isSafeAttachmentPath(data.starttadi_filepath) || !isSafeAttachmentPath(data.endtadi_filepath)) {
+//                 showToastMessage("Invalid image path.", "warning", "Notice");
+//                 return;
+//         }
+//         document.getElementById("start_attchPrev").src =`/schoolportal-v2/dev/public/${data.starttadi_filepath}`;
+//         document.getElementById("end_attchPrev").src =`/schoolportal-v2/dev/public/${data.endtadi_filepath}`;
+//         showImageModal(data);
+//     })
+//     .catch(err => console.error("Error fetching image:", err));
+// }
 
 document.getElementById("searchSubjBtn").addEventListener("click", function() {
   let BySubjDesc = document.getElementById("BySubjDesc").value;

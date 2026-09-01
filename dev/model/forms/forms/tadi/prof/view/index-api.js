@@ -493,9 +493,9 @@ function DISPLAY_TADI_LOG(subj_off_id, summary = false) {
       tbody.innerHTML = data.length ? "" : "<tr><td colspan='6' class='text-center'>No records found</td></tr>";
 
       data.forEach(record => {
-        const viewUploadCell = record.tadi_filepath
-          ? `<button class="btn btn-sm w-70 viewAttch" id="viewAttch${record.schltadi_ID}" value="${record.schltadi_ID}">VIEW</button>`
-          : `<button class="btn btn-sm w-70 upldprof" id="upldprof${record.schltadi_ID}" value="${record.schltadi_ID}">UPLOAD</button>`;
+        // const viewUploadCell = record.tadi_filepath
+        //   ? `<button class="btn btn-sm w-70 viewAttch" id="viewAttch${record.schltadi_ID}" value="${record.schltadi_ID}">VIEW</button>`
+        //   : `<button class="btn btn-sm w-70 upldprof" id="upldprof${record.schltadi_ID}" value="${record.schltadi_ID}">UPLOAD</button>`;
 
         const showDenyButton = Number(record.active ?? 0) === 1
           && Number(record.tadi_status ?? 0) === 0
@@ -515,10 +515,6 @@ function DISPLAY_TADI_LOG(subj_off_id, summary = false) {
           <td>${new Date('1970-01-01T' + record.tadi_timein).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} - 
               ${new Date('1970-01-01T' + record.tadi_timeout).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</td>
           
-          <td>
-            ${viewUploadCell}
-            <input type="hidden" class="pass" id="pass${record.sub_off_id}" value="${record.sub_off_id}">
-          </td>
           <td>
             <button class="btn acknw btn-success" 
               value="${record.schltadi_ID}" 
@@ -540,13 +536,13 @@ function DISPLAY_TADI_LOG(subj_off_id, summary = false) {
         tbody.appendChild(row);
       });
 
-      document.querySelectorAll('.viewAttch').forEach(button => {
-        button.addEventListener('click', GET_IMAGE);
-      });
+      // document.querySelectorAll('.viewAttch').forEach(button => {
+      //   button.addEventListener('click', GET_IMAGE);
+      // });
 
-      document.querySelectorAll('.upldprof').forEach(button => {
-        button.addEventListener('click', UPLOAD_IMAGE_PROF_MODAL);
-      });
+      // document.querySelectorAll('.upldprof').forEach(button => {
+      //   button.addEventListener('click', UPLOAD_IMAGE_PROF_MODAL);
+      // });
 
       document.querySelectorAll('.deny').forEach(button => {
         button.addEventListener('click', denyTadiRecord);
@@ -588,12 +584,12 @@ function DISPLAYALL_TADI_RECORDS(subj_off_id,subjDesc = null,subjSec = null, sum
     tbody.innerHTML = data.length ? "" : "<tr><td colspan='6' class='text-center'>No records found</td></tr>";
 
     for (let record of data) {
-      let viewUploadCell = '';
-      if (record.tadi_filepath) {
-        viewUploadCell = `<button class="btn btn-sm btn-secondary w-70 viewAttch" id="viewAttch${record.schltadi_ID}" value="${record.schltadi_ID}">VIEW</button>`;
-      } else {
-        viewUploadCell = `<button class="btn btn-sm btn-dark w-70 upldprof" id="upldprof${record.schltadi_ID}" value="${record.schltadi_ID}">UPLOAD</button>`;
-      }
+      // let viewUploadCell = '';
+      // // if (record.tadi_filepath) {
+      // //   viewUploadCell = `<button class="btn btn-sm btn-secondary w-70 viewAttch" id="viewAttch${record.schltadi_ID}" value="${record.schltadi_ID}">VIEW</button>`;
+      // // } else {
+      // //   viewUploadCell = `<button class="btn btn-sm btn-dark w-70 upldprof" id="upldprof${record.schltadi_ID}" value="${record.schltadi_ID}">UPLOAD</button>`;
+      // // }
 
       const showDenyButton = Number(record.active ?? 0) === 1
         && Number(record.tadi_status ?? 0) === 0
@@ -612,10 +608,6 @@ function DISPLAYALL_TADI_RECORDS(subj_off_id,subjDesc = null,subjSec = null, sum
         <td>${new Date('1970-01-01T' + record.tadi_timein).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} - 
             ${new Date('1970-01-01T' + record.tadi_timeout).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</td>
         
-        <td>
-          ${viewUploadCell}
-          <input type="hidden" class="pass" id="pass${record.sub_off_id}" value="${record.sub_off_id}">
-        </td>
         <td><button class="btn acknw" 
             value="${record.schltadi_ID}" 
             name="${record.tadi_status}" 
@@ -641,13 +633,13 @@ function DISPLAYALL_TADI_RECORDS(subj_off_id,subjDesc = null,subjSec = null, sum
     document.getElementById('date_srch').dataset.summary = summary ? "true" : "false";
     disable_acknw_bttn();
 
-    document.querySelectorAll('.viewAttch').forEach(button => {
-      button.addEventListener('click', GET_IMAGE);
-    });
+    // document.querySelectorAll('.viewAttch').forEach(button => {
+    //   button.addEventListener('click', GET_IMAGE);
+    // });
 
-    document.querySelectorAll('.upldprof').forEach(button => {
-      button.addEventListener('click', UPLOAD_IMAGE_PROF_MODAL);
-    });
+    // document.querySelectorAll('.upldprof').forEach(button => {
+    //   button.addEventListener('click', UPLOAD_IMAGE_PROF_MODAL);
+    // });
 
     document.querySelectorAll('.deny').forEach(button => {
         button.addEventListener('click', denyTadiRecord);
@@ -686,7 +678,7 @@ function UPDATE_TADI_STATUS() {
           type: "UPDATE_TADI_STATUS",
           tadi_status: status,
           tadi_ID: tadiId,
-          sub_off_id: subOffId,
+          sub_off_id: subjId,
         })
       });
 
@@ -715,13 +707,13 @@ function UPDATE_TADI_STATUS() {
       const denyBtn = row.querySelector('.deny');
       if (denyBtn) denyBtn.remove();
 
-      if (subOffId) {
+      if (subjId) {
         const countResponse = await fetch("forms/tadi/prof/controller/index-post.php", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: new URLSearchParams({
             type: "GET_UNVERIFIED_COUNT",
-            sub_off_id: subOffId
+            sub_off_id: subjId
           })
         });
 
@@ -742,7 +734,7 @@ function UPDATE_TADI_STATUS() {
           return;
         }
 
-        const mainTableButton = document.querySelector(`button[name="${subOffId}"]`);
+        const mainTableButton = document.querySelector(`button[name="${subjId}"]`);
         
         if (mainTableButton) {
           const badge = mainTableButton.querySelector('.badge.bg-danger');
@@ -763,7 +755,7 @@ function UPDATE_TADI_STATUS() {
 
       if (summary === "true") {
         TOTAL_COUNT_SUMMARY(period);
-        UPDATE_TADI_COUNT(subOffId);
+        UPDATE_TADI_COUNT(subjId);
       }
 
     } catch (error) {

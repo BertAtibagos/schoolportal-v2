@@ -161,7 +161,7 @@
                                     <th scope="col">Session Type</th>
                                     <th scope="col">Make-up Date</th>
                                     <th scope="col">Time</th>
-                                    <th scope="col" class="text-center">Attachment</th>
+                                    <!-- <th scope="col" class="text-center">Attachment</th> -->
                                     <th scope="col" class="text-center">Action</th>
                                 </tr>
                             </thead>
@@ -174,7 +174,7 @@
         </div>
     </div>
 
-    <div id="imageModal" class="modal fade" tabindex="-1">
+    <!-- <div id="imageModal" class="modal fade" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content tadi-img-modal">
 
@@ -190,7 +190,6 @@
                 <div class="modal-body p-3">
                     <div id="imageCarousel" class="carousel slide" data-bs-interval="false">
                         <div class="carousel-inner">
-                            <!-- Start Image -->
                             <div class="carousel-item active">
                                 <div class="img-container">
                                     <span class="image-label start-label">
@@ -199,7 +198,7 @@
                                     <img id="start_attchPrev" src="" alt="Start Image" class="img-fluid">
                                 </div>
                             </div>
-                            <!-- End Image -->
+                            
                             <div class="carousel-item">
                                 <div class="img-container">
                                     <span class="image-label end-label">
@@ -209,16 +208,16 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Previous -->
+                        
                         <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev">
                             <span class="carousel-control-prev-icon"></span>
                         </button>
-                        <!-- Next -->
+                        
                         <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next">
                             <span class="carousel-control-next-icon"></span>
                         </button>
 
-                        <!-- Indicators -->
+                        
                         <div class="carousel-indicators">
                             <button type="button" data-bs-target="#imageCarousel" data-bs-slide-to="0" class="active"></button>
                             <button type="button" data-bs-target="#imageCarousel" data-bs-slide-to="1"></button>
@@ -244,7 +243,7 @@
         </div>
     </div>
 
-    <!-- <div id="uploadModal" class="modal fade" tabindex="-1">
+    <div id="uploadModal" class="modal fade" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content tadi-modal-content">
                 <div class="tadi-modal-header">

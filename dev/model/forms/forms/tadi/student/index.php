@@ -87,7 +87,7 @@
                         </div>
 
                         <div class="row g-3 mb-3">
-                            <div class="col-md-6 col-lg-6">
+                            <!-- <div class="col-md-6 col-lg-6">
                                 <label for="start_attach" class="form-label">Start of Class Attachment<span class="text-danger">*</span></label>
                                 <input type="file" class="form-control" name="start_attach" id="start_attach" accept=".jpg,.jpeg,.png,.webp" required>
                                 <div class="invalid-feedback">Please upload an image</div>
@@ -97,20 +97,60 @@
                                 <label for="end_attach" class="form-label">End of Class Attachment<span class="text-danger">*</span></label>
                                 <input type="file" class="form-control" name="end_attach" id="end_attach" accept=".jpg,.jpeg,.png,.webp" required>
                                 <div class="invalid-feedback">Please upload an image</div>
+                            </div> -->
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="1">
+                                <label class="form-check-label" for="1">1</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="2">
+                                <label class="form-check-label" for="2">2</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="3">
+                                <label class="form-check-label" for="3">3</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="4">
+                                <label class="form-check-label" for="4">4</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="5">
+                                <label class="form-check-label" for="5">5</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="6">
+                                <label class="form-check-label" for="6">6</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="7">
+                                <label class="form-check-label" for="7">7</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="8">
+                                <label class="form-check-label" for="8">8</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="9">
+                                <label class="form-check-label" for="9">9</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="10">
+                                <label class="form-check-label" for="10">10</label>
                             </div>
                         </div>
 
-                        <div id="chckbox_late_submss_div" class="d-none mb-3">
+                        <!-- <div id="chckbox_late_submss_div" class="d-none mb-3">
                             <div class="form-check">
                                 <input type="checkbox" class="form-check-input" id="chck_late_submt">
                                 <label class="form-check-label" for="chck_late_submt">Late Submission</label>
                             </div>
                         </div>
 
-                        <div class="d-none" id="late_submss_section"></div>
+                        <div class="d-none" id="late_submss_section"></div> -->
 
                         <div class="mb-3">
-                            <label for="comments" class="form-label">Remarks <span class="text-danger">*</span></label>
+                            <label for="comments" class="form-label">Remarks</label>
                             <textarea class="form-control" name="comments" id="comments" rows="4"
                                 placeholder="Enter any additional comments or notes here..." required></textarea>
                             <div class="invalid-feedback">Please enter remarks</div>
