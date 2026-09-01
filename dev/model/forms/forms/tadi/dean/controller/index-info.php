@@ -856,6 +856,105 @@
 					$fetch = ['status' => 'failed'];
 				}
 				break;
+			case 'REJECT_TADI_REQUEST':
+				$user =$_SESSION['EMPLOYEE']['ID'] ?? $_SESSION['STUDENT']['ID'] ?? 0;
+				if (empty($user) && $_SESSION['EMPLOYEE']['ID'] == $user) {
+					$fetch = ['status' => 'failed', 'error' => 'Session expired'];
+					echo json_encode($fetch);
+					exit;
+				}
+				
+				if (!isset($_POST['tadi_id'], $_POST['prof_id'], $_POST['subj_id'])) {
+					echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+					exit;
+				}
+
+				$user = $_SESSION['EMPLOYEE']['ID'] ?? $_SESSION['STUDENT']['ID'] ?? 0;
+				$tadId = $_POST['tadi_id'];
+				$profId = $_POST['prof_id'];
+				$subjId = $_POST['subj_id'];
+
+				$dueDateQuery = "SELECT t.tadi_verified_date
+								FROM schooltadi t
+								WHERE t.schlprof_id = ?
+								AND t.schltadi_id = ?
+								AND t.schlenrollsubjoff_id = ?
+								AND t.schltadi_isconfirm = 0
+								AND t.schltadi_status = 1
+								AND t.schltadi_isactive = 1";
+
+				$dueStmt = $dbConn->prepare($dueDateQuery);
+
+				if (!$dueStmt) {
+					echo json_encode(['success' => false, 'error' => 'Prepare failed: ' . $dbConn->error]);
+					exit;
+				}
+				$dueStmt->bind_param("iii", $profId, $tadId, $subjId);
+				$dueStmt->execute();
+				$dueResult = $dueStmt->get_result();
+				$dueRow = $dueResult->fetch_assoc();
+				$dueStmt->close();
+
+				if (!$dueRow) {
+					echo json_encode(['success' => false, 'error' => 'Record not found or already processed']);
+					exit;
+				}
+				
+				$recordDate = new DateTime($dueRow['tadi_verified_date']);
+				$today = new DateTime();
+				$today->setTime(0, 0, 0);
+				$recordDate->setTime(0, 0, 0);
+
+				$pastLimit = clone $today;
+				$pastLimit->modify('-3 days');
+
+				if ($recordDate < $pastLimit) {
+					echo json_encode(['success' => false, 'error' => 'This record is past the 3-day verification window and can no longer be updated']);
+					exit;
+				}
+
+				if ($recordDate > $today) {
+					echo json_encode(['success' => false, 'error' => 'This record is dated in the future and cannot be rejected']);
+					exit;
+				}
+				[$forHead, $isAssistant, $crsCode]=asstHeadSwitch($user, $programs);
+
+				$qry =	"UPDATE `schooltadi`
+						INNER JOIN `schoolenrollmentsubjectoffered` AS `off`
+							ON `schooltadi`.`schlenrollsubjoff_id` = `off`.`SchlEnrollSubjOffSms_ID`
+						INNER JOIN `schoolacademiccourses` AS `crse`
+							ON `off`.`SchlAcadCrses_ID` = `crse`.`SchlAcadCrseSms_ID`
+						INNER JOIN `schooldepartment` AS `dept`
+							ON `crse`.`SchlDept_ID` = `dept`.`SchlDeptSms_ID`
+						SET `schltadi_status` = 0,
+							tadi_who_rejected = ?,
+							tadi_rejected_date = NOW()
+						WHERE `schltadi_id` = ?
+						AND `schltadi_status` = 1
+						AND `schltadi_isactive` = 1
+						AND `schltadi_isconfirm` = 0
+						AND schooltadi.`schlprof_id` = ?
+						AND schooltadi.`schlenrollsubjoff_id` = ?
+						$forHead";
+
+				$stmt = $dbConn->prepare($qry);
+				if($isAssistant){
+					$stmt->bind_param("iiiis",$user, $tadId, $profId, $subjId, $crsCode);
+				}else{
+					$stmt->bind_param("iiiii",$user, $tadId, $profId, $subjId, $user);
+				}
+				
+				$stmt->execute();
+				$affectedRows = $stmt->affected_rows;
+				$stmt->close();
+				$dbConn->close();
+
+				if($affectedRows > 0){
+					$fetch = ['status' => 'success'];
+				} else {
+					$fetch = ['status' => 'failed'];
+				}
+			break;
 			default:
 				http_response_code(400);
                 echo json_encode(["error" => "Invalid request type."]);

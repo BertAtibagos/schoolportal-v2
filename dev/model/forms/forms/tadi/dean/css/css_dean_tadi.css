@@ -221,6 +221,24 @@ label {
     transform: translateY(-1px);
 }
 
+.tadi-btn-return {
+    background: var(--td-danger);
+    color: #fff;
+    border-radius: 6px;
+    font-size: .78rem;
+    font-weight: 500;
+    padding: 4px 11px;
+    border: none;
+    cursor: pointer;
+    transition: var(--td-transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.tadi-btn-return:hover:not(:disabled) {
+    background: var(--td-danger);
+    transform: translateY(-1px);
+}
 /* --- Filter card --- */
 .tadi-filter-card {
     background: #fff;

@@ -160,6 +160,40 @@ async function approveTadiRequest(tadiId, profId, subjId) {
     }
 }
 
+async function rejectTadiRequest(tadiId, profId, subjId) {
+    if(confirm("Are you sure you want to reject this TADI?") == true){
+        document.querySelectorAll(".reject").forEach(btn => btn.disabled = true);
+        const formData = new FormData();
+        formData.append('type', 'REJECT_TADI_REQUEST');
+        formData.append('tadi_id', tadiId);
+        formData.append('prof_id', profId);
+        formData.append('subj_id', subjId);
+
+        try{
+            const resquest = await fetch(`forms/tadi/dean/controller/index-info.php`, {
+                method: "POST",
+                body: formData
+            });
+
+            const respond = await resquest.json();
+
+            if(respond.status === 'success'){
+                const currentProfId = profId;
+                const currentSubjId = subjId;
+                GETALL_TADI_RECORDS(currentProfId, currentSubjId);
+            }else{
+                showAlertModal("Failed to reject TADI request. Please try again.");
+            }
+        }catch(err){
+            console.error("Error:", err);
+            showAlertModal("An error occurred while processing the request. Please try again.");
+        }
+    }else{
+        document.querySelectorAll(".reject").forEach(btn => btn.disabled = false);
+        return;
+    }
+}
+
 function GETACADEMICLEVEL() {
   const formData = new FormData();
   formData.append('type', 'GET_ACADEMIC_LEVEL');
@@ -241,16 +275,24 @@ function dynamic_button(tadiId, profId, subjId, approve, date) {
     const isPastDue = disable_due_verify_button(date);
     
     if(isPastDue && approve === 0){
-        return `<span class="tadi-badge tadi-badge-pastDue"><i class="fas fa-exclamation-triangle"></i> Overdue</span>`
+        return `<td><span class="tadi-badge tadi-badge-pastDue"><i class="fas fa-exclamation-triangle"></i> Overdue</span></td>`
     }else if(approve === 0){
-       return `<button class="tadi-btn tadi-btn-approve approve"
-            value="${tadiId}"
-            data-prof="${profId}"
-            data-subj-id="${subjId}">
-            <i class="fas fa-check"></i> Approve
-        </button>`
+       return `<td>
+                <button class="tadi-btn tadi-btn-approve approve"
+                    value="${tadiId}"
+                    data-prof="${profId}"
+                    data-subj-id="${subjId}">
+                     Approve
+                </button>
+                <button class="tadi-btn tadi-btn-return reject"
+                    value="${tadiId}"
+                    data-prof="${profId}"
+                    data-subj-id="${subjId}">
+                     Reject
+                </button>
+                </td>`;
     }else if(approve === 1){
-        return `<span class="tadi-badge tadi-badge-approved"><i class="fas fa-check-circle"></i> Approved</span>`
+        return `<td><span class="tadi-badge tadi-badge-approved"><i class="fas fa-check-circle"></i> Approved</span></td>`
     }
 }
 
@@ -299,9 +341,7 @@ function GETALL_TADI_RECORDS(prof_id, subj_id) {
             <td><span class="activity-text">${activity}</span></td>
             <td>${status}</td>
             <td>${viewBtn}</td>
-            <td>
             ${dynamic_button(record.schltadi_ID, record.SchlProf_ID, record.sub_off_id, record.approved, record.date_approved)}
-            </td>
           </tr>`;
       }).join('');
 
@@ -315,6 +355,15 @@ function GETALL_TADI_RECORDS(prof_id, subj_id) {
           const profId = e.currentTarget.dataset.prof;
           const subjId = e.currentTarget.dataset.subjId;
           approveTadiRequest(tadiId, profId, subjId);
+        })
+      );
+
+      tbody.querySelectorAll(".reject").forEach(btn =>
+        btn.addEventListener("click", e => {
+          const tadiId = e.currentTarget.value;
+          const profId = e.currentTarget.dataset.prof;
+          const subjId = e.currentTarget.dataset.subjId;
+          rejectTadiRequest(tadiId, profId, subjId);
         })
       );
 
