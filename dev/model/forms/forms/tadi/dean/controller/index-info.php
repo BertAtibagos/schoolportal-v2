@@ -544,39 +544,7 @@
 					echo json_encode(["error" => "Failed to prepare SQL statement."]);
 				}
 				break;
-			// case 'GET_IMAGE':
-			// 	rateLimit(60, 10, 'get_image_rate_limit');
-
-			// 	if (!isset($_POST['prof_id'], $_POST['tadi_id'])) {
-			// 		http_response_code(400);
-			// 		echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
-			// 		exit;
-			// 	}
-
-			// 	$prof_id = $_POST['prof_id'];
-			// 	$REC_ID = $_POST['tadi_id'];
-
-			// 	$qry = "SELECT 
-			// 				`startschltadi_filepath` AS `starttadi_filepath`,
-			// 				`starttadi_exifDate` AS startexif_date,
-			// 				`starttadi_exifTime` AS startexif_time,
-			// 				`endschltadi_filepath` AS endtadi_filepath,
-			// 				`endtadi_exifDate` AS endexif_date,
-			// 				`starttadi_exifTime` AS endexif_time,
-			// 				`schltadi_date` AS upld_date,
-			// 				`schltadi_timein` AS upld_time
-			// 			FROM `schooltadi`
-			// 			WHERE `schlprof_id` = ?
-			// 			AND `schltadi_id` = ?";
-				
-			// 	$stmt = $dbConn->prepare($qry);
-			// 	$stmt->bind_param("ii", $prof_id, $REC_ID);
-			// 	$stmt->execute();
-			// 	$result = $stmt->get_result();
-			// 	$fetch = $result->fetch_assoc();
-			// 	$stmt->close();
-			// 	$dbConn->close();
-			// 	break;
+			
 			case 'GET_TADI_RECORDS':
 
 				if (!isset($_POST['prof_id'], $_POST['subj_off_id'], $_POST['strtDateSearch'], $_POST['endDateSearch'], $_POST['tadiStatus'])) {

@@ -71,58 +71,6 @@ function showToastMessage(message, variant = "success", title = "Success") {
 }
 
 function displaySubjectTable(result) {
-
-    // const late_sub_sec = document.getElementById('late_submss_section');
-
-    // if(late_sub_sec && result.length > 0 && result[0].user_id == 957){
-    //     document.getElementById('chckbox_late_submss_div').classList.remove('d-none');
-    //     late_sub_sec.classList.remove('d-none');
-    //     late_sub_sec.innerHTML = `
-    //                             <div class="row mb-4 late-submission-fields d-none">
-    //                                 <div class="col-md-6 col-lg-4">
-    //                                     <label for="late_class_date" class="form-label">
-    //                                         Date of actual class held <span class="text-danger">*</span></label>
-    //                                     </label>
-    //                                     <input class="form-control" type="date" name="late_class_date" id="late_class_date" required>
-    //                                     <div class="invalid-feedback">Please set a date</div>
-    //                                 </div>
-
-    //                                 <div class="col-md-6 col-lg-4">
-    //                                     <label for="late_reason" class="form-label">
-    //                                         Reason for late submission <span class="text-danger">*</span></label>
-    //                                     </label>
-    //                                     <select class="form-select" name="late_reason" id="late_reason" required>
-    //                                         <option value="">-- Select a reason --</option>
-    //                                         <option value="1">No Internet Connection</option>
-    //                                         <option value="2">Device Unavailable</option>
-    //                                     </select>
-    //                                     <div class="invalid-feedback">Please select a reason</div>
-    //                                 </div>
-    //                             </div>
-    //                             `;
-
-    //     document.getElementById("chck_late_submt").addEventListener("change", (e) =>{
-    //     const isChecked = e.target.checked;
-    //     const lateSubmtField = document.querySelector(".late-submission-fields");
-
-    //         if(isChecked){
-    //             lateSubmtField.classList.remove("d-none");
-    //         }
-
-    //         if(!isChecked){
-    //             lateSubmtField.classList.add("d-none");
-
-    //             document.getElementById("late_class_date").classList.remove("is-invalid");
-    //             document.getElementById("late_reason").classList.remove("is-invalid");
-                
-    //             document.getElementById("late_class_date").value = "";
-    //             document.getElementById("late_reason").value = "";
-    //         }
-    //     })
-
-    // }else if(!late_sub_sec){
-    //     console.log("Not loaded yet")
-    // }
         
     const tbody = document.getElementById('card_container');
     

@@ -45,21 +45,6 @@ button.addEventListener("click", function (e) {
             isValid = false;
         }
     });
-    
-    // if (lateSubmissionCheckbox.checked) {
-    //     const lateClassDate = document.getElementById("late_class_date");
-    //     const lateReason = document.getElementById("late_reason");
-
-    //     if (!lateClassDate.value) {
-    //         lateClassDate.classList.add("is-invalid");
-    //         isValid = false;
-    //     }
-
-    //     if (!lateReason.value) {
-    //         lateReason.classList.add("is-invalid");
-    //         isValid = false;
-    //     }
-    // }
 
     const startTime = document.getElementById("classStartDateTime").value;
     const endTime = document.getElementById("classEndDateTime").value;
@@ -79,12 +64,6 @@ button.addEventListener("click", function (e) {
         comments.nextElementSibling.textContent = "Comments cannot contain special characters.";
         isValid = false;
     }
-
-    // if (comments.value.length < 1) {
-    //     comments.classList.add("is-invalid");
-    //     comments.nextElementSibling.textContent = "Comments must be at least 1 character long";
-    //     isValid = false;
-    // }
 
     const dateInput = document.getElementById("classDate");
     const inputDate = parseDateOnly(dateInput.value);
@@ -120,12 +99,6 @@ button.addEventListener("click", function (e) {
         if (confirmed) {
             const formData = new FormData(form);
             formData.append("type", "SUBMIT_TADI");
-
-            // const lateSubmissionCheckbox = document.getElementById("chck_late_submt");
-            // if (!lateSubmissionCheckbox.checked) {
-            //     formData.delete("late_class_date");
-            //     formData.delete("late_reason");
-            // }
 
             submitBtn.disabled = true;
             submitBtn.innerHTML = ``;

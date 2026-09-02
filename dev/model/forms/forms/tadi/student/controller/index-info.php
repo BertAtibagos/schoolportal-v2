@@ -85,61 +85,6 @@ $queryType = ['GET_SCHOOL_YEAR', 'GET_ACADEMIC_PRD', 'GET_YEAR_LEVEL', 'GET_ACAD
 
 if($_SESSION['STUDENT'] && in_array($type, $queryType, true)) {
     switch ($type) {
-        // case 'GET_SCHOOL_YEAR':
-        //     $qry = "SELECT `SchlAcadYr_NAME` AS `AcadYr_Name`,
-        //             `SchlAcadYr_DESC` AS `AcadYr_Desc`,
-        //             `SchlAcadYrSms_ID` AS `AcadYr_ID`
-        //         FROM `schoolacademicyear`
-        //         WHERE `SchlAcadYr_ID` = " . $_SESSION['STUDENT']['YRID'] . "
-        //         AND `SchlAcadYr_STATUS` = 1 
-        //         AND`SchlAcadYr_ISACTIVE` = 1";
-
-        //     $rreg = $dbConn->query($qry);
-        //     $fetch = $rreg->fetch_all(MYSQLI_ASSOC);
-        //     logStudentTadiInfo($dbConn, 'student.GET_SCHOOL_YEAR', null);
-        // break;
-
-        // case 'GET_ACADEMIC_PRD':
-        //     $qry = "SELECT `SchlAcadPrd_NAME` AS `Period_Name`,
-        //             `SchlAcadPrd_DESC` AS `Period_Desc`,
-        //             `SchlAcadPrdSms_ID` AS `Period_ID`
-        //         FROM `schoolacademicperiod`
-        //         WHERE `SchlAcadPrdSms_ID` = " . $_SESSION['STUDENT']['PRDID'] . "
-        //         AND `SchlAcadPrd_STATUS` = 1
-        //         AND `SchlAcadPrd_ISACTIVE` = 1";
-
-        //     $rreg = $dbConn->query($qry);
-        //     $fetch = $rreg->fetch_all(MYSQLI_ASSOC);
-        //     logStudentTadiInfo($dbConn, 'student.GET_ACADEMIC_PRD', null);
-        // break;
-
-        // case 'GET_YEAR_LEVEL':
-        //     $qry = "SELECT `SchlAcadYrLvl_NAME` AS `Yrlvl_Name`,
-        //             `SchlAcadYrLvl_DESC` AS `Yrlvl_Desc`,
-        //             `SchlAcadYrLvlSms_ID` AS `Yrlvl_ID`
-        //         FROM `schoolacademicyearlevel`
-        //         WHERE `SchlAcadYrLvlSms_ID` = " . $_SESSION['STUDENT']['YRLVLID'] . " 
-        //         AND `SchlAcadYrLvl_STATUS` = 1 
-        //         AND `SchlAcadYrLvl_ISACTIVE` = 1";
-
-        //     $rreg = $dbConn->query($qry);
-        //     $fetch = $rreg->fetch_all(MYSQLI_ASSOC);
-        //     logStudentTadiInfo($dbConn, 'student.GET_YEAR_LEVEL', null);
-        // break;
-
-        // case 'GET_ACADEMIC_LEVEL':
-        //     $qry = "SELECT `SchlAcadLvl_NAME` AS `AcadLvl_Name`,
-        //             `SchlAcadLvl_DESC` AS `AcadLvl_Desc`,
-        //             `SchlAcadLvlSms_ID` AS `AcadLvl_ID`
-        //         FROM `schoolacademiclevel`
-        //         WHERE `SchlAcadLvlSms_ID` =  " . $_SESSION['STUDENT']['LVLID'] . " 
-        //         AND `SchlAcadLvl_STATUS` = 1 
-        //         AND `SchlAcadLvl_ISACTIVE` = 1";
-
-        //     $rreg = $dbConn->query($qry);
-        //     $fetch = $rreg->fetch_all(MYSQLI_ASSOC);
-        //     logStudentTadiInfo($dbConn, 'student.GET_ACADEMIC_LEVEL', null);
-        // break;
 
         case 'GET_SUBJECT_LIST':
             $USERID = $_SESSION['STUDENT']['ID'];

@@ -385,29 +385,6 @@ function isSafeAttachmentPath(value) {
     return /^attachment\/[A-Za-z0-9._-]+\/\d{4}-\d{2}-\d{2}(?:\/[A-Za-z0-9._-]+)?\/[A-Za-z0-9._-]+$/.test(value);
 }
 
-// function GET_IMAGE(tadi_id, prof_id) {
-//   const formData = new FormData();
-//   formData.append('type', 'GET_IMAGE');
-//   formData.append('tadi_id', tadi_id);
-//   formData.append('prof_id', prof_id);
-
-//   fetch("forms/tadi/dean/controller/index-info.php", { method: "POST", body: formData })
-//     .then(handleRateLimitJson)
-//     .then(data => {
-//         if (!data) {
-//             return;
-//         }
-//         if (!data || !isSafeAttachmentPath(data.starttadi_filepath) || !isSafeAttachmentPath(data.endtadi_filepath)) {
-//                 showToastMessage("Invalid image path.", "warning", "Notice");
-//                 return;
-//         }
-//         document.getElementById("start_attchPrev").src =`/schoolportal-v2/dev/public/${data.starttadi_filepath}`;
-//         document.getElementById("end_attchPrev").src =`/schoolportal-v2/dev/public/${data.endtadi_filepath}`;
-//         showImageModal(data);
-//     })
-//     .catch(err => console.error("Error fetching image:", err));
-// }
-
 document.getElementById("searchSubjBtn").addEventListener("click", function() {
   let BySubjDesc = document.getElementById("BySubjDesc").value;
   let BySubjCode = document.getElementById("ByCode").value;

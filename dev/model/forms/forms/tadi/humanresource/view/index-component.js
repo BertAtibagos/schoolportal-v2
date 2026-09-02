@@ -912,9 +912,9 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
                             <th class="text-center">No. of Students</th>
                             <th class="text-center">Total Hours Conducted${dateRange.startDate && dateRange.endDate ? ` for ${dateRange.startDate} to ${dateRange.endDate}` : ' for this month'}</th>
                             <th class="text-center">Total Accumulated Hours per Subject</th>
-                            <th class="text-center">Total Accumulated Hours per Faculty</th>
                             <th class="text-center">No. of Units</th>
                             <th class="text-center">Total Hours for Sem</th>
+                            <th class="text-center">Total Accumulated Hours per Faculty</th>
                             <th class="text-center">Remaining Hours for Sem</th>
                         </tr>
                     </thead>
@@ -938,10 +938,10 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
                                     <td class="text-center align-middle">${subj.subject_desc}</td>
                                     <td class="text-center align-middle">${Math.round(subj.total_enrolled_students)}</td>
                                     <td class="text-center align-middle">${Math.round(subj.filtered_hours)}</td>
-                                    <td class="text-center align-middle">${Math.round(subj.total_accumulated_hours)}</td>
                                     ${idx === 0 ? `<td rowspan="${subjects.length}" class="text-center align-middle">${Math.round(facultyFilteredTotal)}</td>` : ''}
                                     <td class="text-center align-middle">${num_units}</td>
                                     <td class="text-center align-middle tab-total-sem tab-total-sem-cell ${hoursTextClass}">${totalForSem}</td>
+                                    <td class="text-center align-middle">${Math.round(subj.total_accumulated_hours)}</td>
                                     <td class="text-center align-middle tab-remaining tab-remaining-cell ${hoursTextClass}">${remaining}</td>
                                 </tr>
                             `;
@@ -968,8 +968,8 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
         <th>No. of Students</th>
         <th>Total Hours Conducted</th>
         <th>Total Accumulated Hours per Subject</th>
-        <th>Total Accumulated Hours per Faculty</th>
         <th>Total Hours for Sem</th>
+        <th>Total Accumulated Hours per Faculty</th>
         <th>Remaining Hours for Sem</th>
     `;
     thead.appendChild(headerRow);
@@ -995,9 +995,9 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
                 <td>${subj.subject_desc}</td>
                 <td>${Math.round(subj.total_enrolled_students)}</td>
                 <td>${Math.round(subj.filtered_hours)}</td>
-                <td>${Math.round(subj.total_accumulated_hours)}</td>
                 <td>${idx === 0 ? Math.round(facultyFilteredTotal) : ''}</td>
                 <td>${totalForSem}</td>
+                <td>${Math.round(subj.total_accumulated_hours)}</td>
                 <td>${remaining}</td>
             `;
             tbody.appendChild(row);

@@ -347,72 +347,6 @@ function isSafeAttachmentPath(value) {
 
     return /^attachment\/[A-Za-z0-9._-]+\/\d{4}-\d{2}-\d{2}(?:\/[A-Za-z0-9._-]+)?\/[A-Za-z0-9._-]+$/.test(value);
 }
-// function UPLOAD_IMAGE_PROF(){
-//   const tadiId = document.querySelector('.profUploadBtn').value;
-//   const fileInput = document.getElementById('attach');
-//   const file = fileInput.files[0];
-
-//    if (!file) {
-//     alert("Please select a file to upload.");
-//     return;
-//   }
-  
-//   const formData =new FormData();
-//     formData.append("type", "UPLOAD_IMAGE_PROF");
-//     formData.append("tadi_id", tadiId); 
-//     formData.append("attach", file);
-  
-//   fetch(`forms/tadi/prof/controller/index-post.php`, {
-//           method: "POST",
-//           body: formData
-//         })
-//     .then(response => response.text())
-//     .then(text => {
-//       try {
-//         const data = JSON.parse(text);
-
-//         if (data.success) {
-//           alert("Uploading Successful");
-
-//         const uploadModalEl = document.getElementById('uploadModal');
-//         const uploadModal = bootstrap.Modal.getInstance(uploadModalEl);
-//         if (uploadModal) uploadModal.hide();
-
-//         const sectionListModalEl = document.getElementById('sectionList');
-//         const sectionListModal = bootstrap.Modal.getOrCreateInstance(sectionListModalEl);
-//         sectionListModal.show();
-
-//         const viewTadi = document.querySelector('.pass').value;
-//         DISPLAYALL_TADI_RECORDS(viewTadi);
-
-//         } else {
-//           alert("Upload failed: " + (data.message || "Unknown error"));
-//         }
-
-//       } catch (err) {
-//         console.error("Failed to parse JSON:");
-//       }
-//     })
-//     .catch(error =>{
-//        console.error("Error");
-//     })
-// }
-
-// function UPLOAD_IMAGE_PROF_MODAL() {
-//    const modalEl = document.getElementById('uploadModal');
-//     const imageModal = new bootstrap.Modal(modalEl);
-//     imageModal.show();
-//     const upldbtnmain = document.querySelector('.upldprof').value;
-//     document.querySelector('.profUploadBtn').value = upldbtnmain;
-
-//     document.querySelectorAll('.profUploadBtn').forEach(button => {
-//       button.addEventListener('click', UPLOAD_IMAGE_PROF);
-//       })
-
-//   document.getElementById('uploadcloseModalBtn').onclick = function () {
-//     imageModal.hide();
-//   };
-// }
 
 function parseDateOnly(s) {
   if (!s) return null;
@@ -535,14 +469,6 @@ function DISPLAY_TADI_LOG(subj_off_id, summary = false) {
         `;
         tbody.appendChild(row);
       });
-
-      // document.querySelectorAll('.viewAttch').forEach(button => {
-      //   button.addEventListener('click', GET_IMAGE);
-      // });
-
-      // document.querySelectorAll('.upldprof').forEach(button => {
-      //   button.addEventListener('click', UPLOAD_IMAGE_PROF_MODAL);
-      // });
 
       document.querySelectorAll('.deny').forEach(button => {
         button.addEventListener('click', denyTadiRecord);

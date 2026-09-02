@@ -494,42 +494,6 @@
                 $dbConn->close();
                 break;
 
-            // case 'GET_IMAGE':
-            //     rateLimit(60, 5, 'get_image_rate_limit');
-
-            //     if (!isset($_POST['tadi_id'])) {
-            //         http_response_code(400);
-            //         echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
-            //         exit;
-            //     }
-
-            //     $USERID = $_SESSION['EMPLOYEE']['ID'];
-            //     $REC_ID = $_POST['tadi_id'];
-            //     $qry = "SELECT 
-            //             `startschltadi_filepath` AS `starttadi_filepath`,
-            //                 `starttadi_exifDate` AS startexif_date,
-            //                 `starttadi_exifTime` AS startexif_time,
-            //                 `endschltadi_filepath` AS endtadi_filepath,
-            //                 `endtadi_exifDate` AS endexif_date,
-            //                 `starttadi_exifTime` AS endexif_time,
-            //                 `schltadi_date` AS upld_date,
-            //                 `schltadi_timein` AS upld_time
-            //             FROM 
-            //                 `schooltadi`
-            //             WHERE 
-            //                 `schlprof_id` = ?
-            //             AND 
-            //                 `schltadi_id` = ?";
-                
-            //     $stmt = $dbConn->prepare($qry);
-            //     $stmt->bind_param("ii", $USERID, $REC_ID);
-            //     $stmt->execute();
-            //     $result = $stmt->get_result();
-            //     $fetch = $result->fetch_assoc();
-            //     $stmt->close();
-            //     $dbConn->close();
-            //     break;
-
             case 'GET_ALL_TADI_SUMMARY':
 
                 if (!isset($_POST['lvl_id'], $_POST['prd_id'], $_POST['yr_id'])) {
