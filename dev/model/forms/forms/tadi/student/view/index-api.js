@@ -18,6 +18,42 @@ function GET_SUBJECTLIST() {
     })
 }
 
+const CLASS_ACTIVITY_LABELS = {
+    1: "Lesson",
+    2: "Assessment",
+    3: "Lab Work",
+    4: "ELS",
+    5: "Prelim",
+    6: "Long Exam",
+    7: "PRC",
+    8: "Events",
+    9: "Internship"
+};
+
+function renderClassActivityPills(container, rawValue) {
+    let ids = [];
+
+    try {
+        ids = JSON.parse(rawValue || "[]");
+    } catch (e) {
+        console.error("Invalid class activity data:", rawValue);
+        ids = [];
+    }
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+        container.innerHTML += `<span class="field-value"> -- </span>`;
+        return;
+    }
+
+    const pillsHtml = ids
+        .map(id => CLASS_ACTIVITY_LABELS[id])
+        .filter(Boolean) // drop unknown/unmapped IDs instead of showing "undefined"
+        .map(label => `<span class="badge-pill">${escapeHtml(label)}</span>`)
+        .join(" ");
+
+    container.innerHTML += `<div class="d-flex flex-wrap gap-1 mt-1">${pillsHtml}</div>`;
+}
+
 function viewSubmitted(subj_Id, prof_Id){
 
     const params = new URLSearchParams({
@@ -59,11 +95,6 @@ function viewSubmitted(subj_Id, prof_Id){
                 tabBtn.role = 'tab';
                 tabBtn.innerText = `Record ${index + 1}`;
                 navTabs.appendChild(tabBtn);
-
-                
-                // const viewUploadCell = record.tadi_filepath
-                //     ? `<button class="btn-tadi btn-tadi-view viewAttch" value="${escapeHtml(record.schltadi_ID)}">View</button>`
-                //     : `<span class="btn-tadi" style="background: #cbd5e1; color: #64748b; cursor: default;">No Attachment</span>`;
 
                 const modeTypeMap = {
                     'online_learning regular': 'Online Regular',
@@ -108,8 +139,11 @@ function viewSubmitted(subj_Id, prof_Id){
                             <span class="field-value">${escapeHtml(modeTypeMap[record.tadi_modeType] || record.tadi_modeType)}</span>
                         </div>
                         <div class="record-field" id="actLabel${record.schltadi_ID}">
-                            <span class="field-label">Activity</span>
-                            <span class="activity-text field-value">${activity && activity.trim() !== "" ? activity : "No activity recorded"}</span>
+                            <span class="field-label">Remarks</span>
+                            <span class="activity-text field-value">${activity && activity.trim() !== "" ? activity : " -- "}</span>
+                        </div>
+                        <div class="record-field" id="classinstruct${record.schltadi_ID}">
+                            <span class="field-label">Class Activity</span>
                         </div>
                         <div class="record-field" id="status${record.schltadi_ID}">
                             <span class="field-label">Status</span>
@@ -140,6 +174,11 @@ function viewSubmitted(subj_Id, prof_Id){
 
                 const text = tabPane.querySelector('.activity-text');
                 setupActivityText(text);
+
+                const classInstructDiv = tabPane.querySelector(`#classinstruct${record.schltadi_ID}`);
+                if (classInstructDiv) {
+                    renderClassActivityPills(classInstructDiv, record.class_instruction);
+                }
             });
 
             navTabs.addEventListener('shown.bs.tab', function (e) {
@@ -151,9 +190,6 @@ function viewSubmitted(subj_Id, prof_Id){
                 e.target.classList.add('fw-bold');
             });
 
-            document.querySelectorAll('.viewAttch').forEach(button =>
-                button.addEventListener('click', GET_IMAGE)
-            );
         })
         .catch(err => {
             console.error("Error loading records:", err);

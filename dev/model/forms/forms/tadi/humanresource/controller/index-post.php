@@ -805,7 +805,7 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                             o.`SchlAcadSubj_ID`,
                             o.`SchlAcadCrses_ID`,
                             ROUND(SUM(
-                                CASE WHEN t.schltadi_date BETWEEN ? AND ?
+                                CASE WHEN t.`tadi_approved_date` BETWEEN ? AND ? AND t.schltadi_date BETWEEN '2026-08-16' AND '2026-08-31'
                                 THEN TIMESTAMPDIFF(MINUTE, t.`schltadi_timein`, t.`schltadi_timeout`)
                                 ELSE 0 END
                             ) / 60, 2) AS filtered_hours,
@@ -851,8 +851,8 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                             mcd.`SchlEnrollSubjOff_ID`,
                             mcd.`SchlEnrollMerCls_ID`,
                             mc.`SchlEnrollMerCls_NAME`
-                        FROM schoolenrollmentmergeclass mc
-                        INNER JOIN schoolenrollmentmergeclassdetails mcd
+                        FROM SchoolEnrollmentMergeClass mc
+                        INNER JOIN SchoolEnrollmentMergeClassDetails mcd
                             ON mc.`SchlEnrollMerCls_ID` = mcd.`SchlEnrollMerCls_ID`
                         WHERE mcd.`SchlEnrollMerClsDet_STATUS` = 1
                             AND mcd.`SchlEnrollMerClsDet_ISACTIVE` = 1

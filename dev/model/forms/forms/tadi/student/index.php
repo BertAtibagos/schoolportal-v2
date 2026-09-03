@@ -87,7 +87,7 @@
                         </div>
 
                         <div class="row g-3 mb-3">
-                            <div class="col-md-12 col-lg-12">
+                            <div class="col-md-12 col-lg-12" id="classInstSection">
                                 <label for="tadi_type" class="form-label">Class Instruction</label>
                                 <div class="form-check">
                                     <input type="checkbox" class="form-check-input" name="classInst[]" value="1">
@@ -126,6 +126,7 @@
                                     <label class="form-check-label" for="8">Internship</label>
                                 </div>
                             </div>
+                            <div class="invalid-feedback">Please check atleast one(1) of the checkboxes above.</div>
                         </div>
 
                         <div class="mb-3">
@@ -172,71 +173,7 @@
             </div>
         </div>
     </div>
-
-    <!-- Image Preview Modal -->
-    <div id="imageModal" class="modal fade" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content fixed-modal" style="margin:auto">
-                <div class="modalHead">
-                    <button type="button" class="btn-close" id="closeModalBtn"></button>
-                </div>
-                <div class="modal-body p-0">
-                    <div id="imageCarousel" class="carousel slide">
-                        <div class="carousel-inner">
-
-                            <div class="carousel-item active">
-                                <div class="img-container">
-                                    <span class="image-label start-label">Start of class</span>
-                                    <img id="start_attchPrev" class="d-block w-100" src="" alt="Start Image">
-                                </div>
-                            </div>
-
-                            <div class="carousel-item">
-                                <div class="img-container">
-                                    <span class="image-label end-label">End of class</span>
-                                    <img id="end_attchPrev" class="d-block w-100" src="" alt="End Image">
-                                </div>
-                            </div>
-
-                        </div>
-                        <!-- Previous -->
-                        <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev">
-                            <span class="carousel-control-prev-icon"></span>
-                        </button>
-                        <!-- Next -->
-                        <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next">
-                            <span class="carousel-control-next-icon"></span>
-                        </button>
-
-                        <!-- Dots -->
-                        <div class="carousel-indicators">
-                            <button type="button" data-bs-target="#imageCarousel" data-bs-slide-to="0" class="active"></button>
-                            <button type="button" data-bs-target="#imageCarousel" data-bs-slide-to="1"></button>
-                        </div>
-
-                    </div>
-
-                    <!-- Leave your details here -->
-                    <div class="img_details">
-                        <div class="imgDetails img-taken">
-                            <div id="startdateTimeTaken"></div>
-                        </div>
-
-                        <div class="imgDetails img-taken">
-                            <div id="enddateTimeTaken"></div>
-                        </div>
-
-                        <div class="imgDetails img-uploaded">
-                            <div id="dateTimeUpld"></div>
-                        </div>
-                    </div>
-
-                </div>
-
-            </div>
-        </div>
-    </div>
-
+    
     <!-- Toast -->
     <div class="toast-container position-fixed top-0 end-0 p-3">
         <div id="successToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true">

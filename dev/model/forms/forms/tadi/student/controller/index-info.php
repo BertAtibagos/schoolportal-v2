@@ -183,7 +183,8 @@ if($_SESSION['STUDENT'] && in_array($type, $queryType, true)) {
                         schl_tadi.SchlProf_ID,
                         schl_tadi.schlstud_id,
                         CONCAT(schl_reg_stud.SchlEnrollRegStudInfo_LAST_NAME, ', ', schl_reg_stud.SchlEnrollRegStudInfo_FIRST_NAME) AS stud_name,
-                        acad_sec.SchlAcadSec_DESC AS section
+                        acad_sec.SchlAcadSec_DESC AS section,
+                        schl_tadi.schltadi_class_instruct AS class_instruction
                     FROM `schooltadi` AS schl_tadi 
                     
                     LEFT JOIN `schoolstudent` AS schl_stud 

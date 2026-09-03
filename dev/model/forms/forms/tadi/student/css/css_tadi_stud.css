@@ -125,6 +125,15 @@
     margin-bottom: .35rem;
 }
 
+.badge-pill {
+    display: inline-block;
+    padding: 0.25em 0.75em;
+    border-radius: 999px;
+    background-color: #e0e7ff; /* matches your indigo-blue palette */
+    color: #3730a3;
+    font-size: 0.8rem;
+}
+
 /* ===== Buttons ===== */
 #student_tadi_section .btn-tadi {
     font-size: .78rem;

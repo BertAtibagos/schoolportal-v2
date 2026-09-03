@@ -325,6 +325,18 @@ label { font-weight: bold; }
 }
 .deny:hover:not(:disabled) { background-color: var(--tp-danger-deep); transform: translateY(-1px); color: #fff; }
 
+.details {
+    background-color: var(--tp-primary);
+    color: #fff;
+    border-radius: 5px;
+    font-size: .74rem;
+    font-weight: 600;
+    padding: .24rem .6rem;
+    transition: all .2s ease;
+    white-space: nowrap;
+}
+.details:hover:not(:disabled) { background-color: var(--tp-primary-deep); transform: translateY(-1px); color: #fff; }
+
 .tadi-badge-duedate, .tadi-badge-duedate {
     background-color: #d3d3d3;
     color: #888;
@@ -490,124 +502,6 @@ label { font-weight: bold; }
     border: none;
 }
 
-.tadi-img-modal { border: none; border-radius: var(--tp-radius); overflow: hidden; }
-.tadi-img-modal-header {
-    background: var(--tp-primary);
-    color: white;
-    padding: .8rem 1.1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.img-modal-title { font-size: .88rem; font-weight: 600; }
-.img-container {
-    width: 100%;
-    height: 370px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-    background: #f8fafc;
-    border-radius: var(--tp-radius-sm);
-}
-.img-container img { max-width: 100%; max-height: 100%; object-fit: contain; }
-.img_details { padding: 4px 0; }
-.img-meta-item {
-    font-size: .8rem;
-    color: var(--tp-muted);
-    display: flex;
-    align-items: center;
-    margin-top: 4px;
-}
-
-.img-container{
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #f8f9fa;
-    border-radius: 8px;
-    overflow: hidden;
-    min-height: 450px;
-}
-
-.img-container img{
-    max-width: 100%;
-    max-height: 450px;
-    object-fit: contain;
-}
-
-/* Overlay Label */
-.image-label{
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    z-index: 5;
-
-    display: inline-flex;
-    align-items: center;
-    gap: .35rem;
-
-    padding: .45rem .9rem;
-    border-radius: 999px;
-
-    color: #fff;
-    font-size: .85rem;
-    font-weight: 600;
-
-    backdrop-filter: blur(6px);
-    box-shadow: 0 2px 10px rgba(0,0,0,.2);
-}
-
-.start-label{
-    background: rgba(25,135,84,.9);
-}
-
-.end-label{
-    background: rgba(220,53,69,.9);
-}
-
-/* Carousel Controls */
-.carousel-control-prev,
-.carousel-control-next{
-    width: 8%;
-}
-
-.carousel-control-prev-icon,
-.carousel-control-next-icon{
-    background-color: rgba(0,0,0,.55);
-    border-radius: 50%;
-    padding: 18px;
-}
-
-/* Indicators */
-.carousel-indicators{
-    margin-bottom: .5rem;
-}
-
-.carousel-indicators button{
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-}
-
-/* Optional: Hide arrows when only one image is available */
-.carousel-control-prev.hidden,
-.carousel-control-next.hidden,
-.carousel-indicators.hidden{
-    display: none !important;
-}
-
-.upload-area {
-    text-align: center;
-    padding: 1.4rem;
-    border: 2px dashed var(--tp-border);
-    border-radius: var(--tp-radius-sm);
-    background: #fafbff;
-}
-.upload-icon { font-size: 2.2rem; color: var(--tp-accent); margin-bottom: .6rem; opacity: .65; }
-.upload-hint { font-size: .8rem; color: var(--tp-muted); margin-bottom: .75rem; }
-
 .tadi-cancel-btn {
     background: #f1f5f9;
     color: var(--tp-text);
@@ -689,6 +583,104 @@ label { font-weight: bold; }
     color: rgb(25, 135, 84);
     font-size: .8rem;
     font-weight: bold;
+}
+
+.tadi-prof-section #Instructor_Tadi_List .modal-dialog {
+    max-width: min(680px, calc(100% - 1.5rem));
+}
+.tadi-prof-section #Instructor_Tadi_List .modal-content {
+    background: var(--tp-card);
+    border: none;
+    border-radius: var(--tp-radius);
+    box-shadow: var(--tp-shadow-md);
+    overflow: hidden;
+}
+.tadi-prof-section #Instructor_Tadi_List .modal-header {
+    background: var(--tp-primary);
+    color: #fff;
+    padding: 1rem 1.25rem;
+    border-bottom: none;
+}
+.tadi-prof-section #Instructor_Tadi_List .modal-header > div {
+    font-size: 1rem;
+    font-weight: 700;
+}
+.tadi-prof-section #Instructor_Tadi_List .modal-body {
+    background: var(--tp-bg);
+    padding: 1rem;
+    max-height: 75vh;
+    overflow-y: auto;
+}
+.tadi-prof-section #Instructor_Tadi_List .table_tadi_responsive {
+    overflow: visible;
+}
+.tadi-prof-section #Instructor_Tadi_List .modal-footer {
+    border-top: 1px solid var(--tp-border);
+    background: var(--tp-card);
+    padding: .75rem 1rem;
+}
+.tadi-prof-section #Instructor_Tadi_List .modal-footer .btn-secondary {
+    background: var(--tp-primary);
+    border: none;
+    border-radius: var(--tp-radius-sm) !important;
+    font-size: .82rem;
+    font-weight: 600;
+    padding: .45rem 1rem;
+}
+
+.tadi-prof-section .record-panel {
+    background: var(--tp-card);
+    border: 1px solid var(--tp-border);
+    border-radius: var(--tp-radius-sm);
+    padding: 1rem 1.15rem;
+}
+.tadi-prof-section .record-field {
+    display: flex;
+    align-items: flex-start;
+    gap: .5rem;
+    padding: .6rem 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: .875rem;
+}
+.tadi-prof-section .record-field:last-of-type {
+    border-bottom: none;
+}
+.tadi-prof-section .record-field .field-label {
+    font-weight: 600;
+    color: var(--tp-text);
+    min-width: 105px;
+    flex-shrink: 0;
+}
+.tadi-prof-section .record-field .field-value {
+    color: var(--tp-muted);
+    line-height: 1.5;
+}
+
+/* Status badges */
+.tadi-prof-section .badge-verified {
+    background: var(--tp-success-bg);
+    color: #065f46;
+    font-weight: 600;
+    font-size: .75rem;
+    padding: .3rem .65rem;
+    border-radius: 50px;
+}
+.tadi-prof-section .badge-unverified {
+    background: var(--tp-warning-bg);
+    color: #92400e;
+    font-weight: 600;
+    font-size: .75rem;
+    padding: .3rem .65rem;
+    border-radius: 50px;
+}
+
+.badge-pill {
+    display: inline-block;
+    padding: 0.25em 0.75em;
+    border-radius: 999px;
+    background-color: #e0e7ff; /* matches your indigo-blue palette */
+    color: #3730a3;
+    font-size: 0.8rem;
 }
 
 @media (max-width: 768px) {

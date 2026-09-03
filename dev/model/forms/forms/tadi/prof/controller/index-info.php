@@ -33,9 +33,15 @@
         }
     }
 
+    function sanitizeText(?string $value): string {
+        $value = trim((string)$value);
+        $value = strip_tags($value);
+        return preg_replace('/\s+/', ' ', $value) ?? '';
+    }
+    
     $fetch = [];
     $type = $_POST['type'];
-    $queryType = ['GET_SUBJECT_LIST', 'CHECK_MATCHED_SUBJ_ID', 'GET_TADI_RECORD', 'GETALL_TADI_RECORD', 'GET_IMAGE', 'GET_ACADEMIC_LEVEL', 'GET_ACADEMIC_YEAR_LEVEL', 'GET_ACADEMIC_PERIOD', 'GET_ACAD_YEAR', 'GET_INSTRUCTOR_DETAILS', 'GET_ALL_TADI_SUMMARY', 'GET_TOTAL_COUNT_SUMMARY', 'UPDATE_SUBJECT_COUNT'];
+    $queryType = ['GET_SUBJECT_LIST', 'CHECK_MATCHED_SUBJ_ID', 'GET_TADI_RECORD', 'GETALL_TADI_RECORD', 'GET_IMAGE', 'GET_ACADEMIC_LEVEL', 'GET_ACADEMIC_YEAR_LEVEL', 'GET_ACADEMIC_PERIOD', 'GET_ACAD_YEAR', 'GET_INSTRUCTOR_DETAILS', 'GET_ALL_TADI_SUMMARY', 'GET_TOTAL_COUNT_SUMMARY', 'UPDATE_SUBJECT_COUNT', 'GET_SUBMITTED_REC'];
     if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
         $yearId = 19;
         switch($type){
@@ -460,14 +466,11 @@
                             ) AS stud_name,
                             schl_tadi.`schltadi_id` AS schltadi_ID,
                             schl_tadi.`schltadi_date` AS tadi_date,
-                            schl_tadi.`schltadi_mode` AS tadi_mode,
-                            schl_tadi.`schltadi_type` AS tadi_type,
                             schl_tadi.`schltadi_timein` AS tadi_timein,
                             schl_tadi.`schltadi_timeout` AS tadi_timeout,
                             schl_tadi.`schltadi_status` AS tadi_status,
                             schl_tadi.schlenrollsubjoff_id AS sub_off_id,
                             schl_tadi.schltadi_late_status AS late_status,
-                            schl_tadi.schltadi_mkup_date AS mkup_date,
                             schl_tadi.schltadi_isconfirm AS approve,
                             schl_tadi.schlacadprd_id AS acad_prd_id,
                             schl_tadi.schltadi_isactive as active,
@@ -700,7 +703,67 @@
                 $stmt->close();
                 $dbConn->close();
                 break;
+            case 'GET_SUBMITTED_REC':
+                if (!isset($_POST['subj_Id'], $_POST['tadiId'])) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+                    exit;
+                }
 
+                $subj_Id = $_POST['subj_Id'];
+                $tadi_id = $_POST['tadiId'];
+                $USERID = $_SESSION['EMPLOYEE']['ID'];
+
+                $qry = "SELECT 
+                            schl_tadi.`schltadi_id` AS schltadi_ID,
+                            schl_tadi.`schltadi_date` AS tadi_date,
+                            CONCAT(schl_tadi.`schltadi_mode`, ' ', schl_tadi.`schltadi_type`) AS tadi_modeType,
+                            schl_tadi.`schltadi_timein` AS tadi_timeIn,
+                            schl_tadi.`schltadi_timeout` AS tadi_timeOut,
+                            schl_tadi.`schltadi_activity` AS tadi_act,
+                            schl_tadi.`schltadi_status` AS tadi_status,
+                            schl_tadi.schlenrollsubjoff_id AS sub_off_id,
+                            schl_tadi.SchlProf_ID,
+                            schl_tadi.schlstud_id,
+                            CONCAT(schl_reg_stud.SchlEnrollRegStudInfo_LAST_NAME, ', ', schl_reg_stud.SchlEnrollRegStudInfo_FIRST_NAME) AS stud_name,
+                            acad_sec.SchlAcadSec_DESC AS section,
+                            schl_tadi.schltadi_class_instruct AS class_instruction
+                        FROM `schooltadi` AS schl_tadi 
+                        
+                        LEFT JOIN `schoolstudent` AS schl_stud 
+                            ON schl_tadi.`schlstud_id` = schl_stud.`SchlStudSms_ID` 
+
+                        LEFT JOIN `schoolenrollmentregistration` AS schl_enr_reg 
+                            ON schl_stud.`SchlEnrollRegColl_ID` = schl_enr_reg.`SchlEnrollRegSms_ID` 
+
+                        LEFT JOIN `schoolenrollmentregistrationstudentinformation` AS schl_reg_stud 
+                            ON schl_enr_reg.`SchlEnrollRegSms_ID` = `schl_reg_stud`.`SchlEnrollReg_ID` 
+
+                        LEFT JOIN schoolenrollmentsubjectoffered AS subj_off
+                            ON schl_tadi.schlenrollsubjoff_id = subj_off.SchlEnrollSubjOffSms_ID
+
+                        LEFT JOIN schoolacademicsection AS acad_sec
+                            ON subj_off.SchlAcadSec_ID = acad_sec.SchlAcadSecSms_ID
+
+                        WHERE schl_tadi.`schlprof_id` IN (?)
+                        AND schl_tadi.`schlenrollsubjoff_id` =  ?
+                        AND schltadi_isactive = 1
+                        AND `schl_tadi`.`schltadi_id` = ?
+                        ORDER BY schl_tadi.`schltadi_date`, schl_tadi.`schltadi_timein`";
+                
+                $stmt = $dbConn->prepare($qry);
+                $stmt->bind_param("iii",$USERID,$subj_Id,$tadi_id);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $fetch = $result->fetch_all(MYSQLI_ASSOC);
+                $stmt->close();
+
+                foreach ($fetch as &$row) {
+                    $row['tadi_act'] = sanitizeText($row['tadi_act'] ?? '');
+                    $row['tadi_modeType'] = sanitizeText($row['tadi_modeType'] ?? '');
+                }
+                unset($row);
+                break;
             default:
                 http_response_code(400);
                 echo json_encode(["error" => "Invalid request type."]);

@@ -157,11 +157,8 @@
                                 <tr>
                                     <th scope="col">Date</th>
                                     <th scope="col">Student Name</th>
-                                    <th scope="col">Modality</th>
-                                    <th scope="col">Session Type</th>
-                                    <th scope="col">Make-up Date</th>
                                     <th scope="col">Time</th>
-                                    <!-- <th scope="col" class="text-center">Attachment</th> -->
+                                    <th></th>
                                     <th scope="col" class="text-center">Action</th>
                                 </tr>
                             </thead>
@@ -209,6 +206,25 @@
                     <button type="button" class="btn tadi-confirm-btn" id="confirmVerifyBtn">
                         <i class="fas fa-check me-2"></i>Verify
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade tadirecord_list" id="Instructor_Tadi_List" tabindex="-1" aria-labelledby="tadiModalLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-lg rcrd-preview-mdl">
+            <div class="modal-content">
+                <div class="modal-header d-flex justify-content-between align-items-center">
+                    <div>Tadi Details</div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" id="closeTadiModal1"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive table_tadi_responsive">
+                        <div class="tab-content" id="tadiDetails"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 8px;">Close</button>
                 </div>
             </div>
         </div>

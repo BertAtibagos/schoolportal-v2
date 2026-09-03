@@ -1,3 +1,36 @@
+function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (match) => htmlEscapes[match]);
+}
+
+function formatActivityText(value) {
+    return escapeHtml(value ?? "").replace(/\\r\\n|\r?\n/g, "<br>");
+}
+
+function formatTimeToAmPm(timeString) {
+  const [hours, minutes] = timeString.split(":");
+  let hoursInt = parseInt(hours, 10);
+  const period = hoursInt >= 12 ? "PM" : "AM";
+  hoursInt = hoursInt % 12 || 12;
+  return `${hoursInt}:${minutes} ${period}`;
+}
+
+function setupActivityText(element) {
+  const initialStyle = {
+    display: '-webkit-box',
+    webkitLineClamp: '2',
+    webkitBoxOrient: 'vertical',
+    overflow: 'hidden'
+  };
+
+  Object.assign(element.style, initialStyle);
+  
+  element.addEventListener('click', function() {
+    const isCollapsed = this.style.display === '-webkit-box';
+    this.style.display = isCollapsed ? 'block' : '-webkit-box';
+    this.style.webkitLineClamp = isCollapsed ? 'none' : '2';
+  });
+}
+
 function showRateLimitToast(message) {
   const toastEl = document.getElementById("successToast");
   const toastHeader = document.getElementById("toastHeader");

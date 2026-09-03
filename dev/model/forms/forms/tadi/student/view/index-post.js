@@ -20,18 +20,9 @@ button.addEventListener("click", function (e) {
     form.querySelectorAll(".is-invalid").forEach(el => el.classList.remove("is-invalid"));
 
     let isValid = true;
-    const lateSubmissionCheckbox = document.getElementById("chck_late_submt");
     const makeupDate = document.getElementById("session_type").value;
     let requiredFields =[];
 
-    if(lateSubmissionCheckbox){
-        if(lateSubmissionCheckbox.checked || makeupDate === "makeup"){
-            requiredFields = ["instructor", "classDate", "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "late_class_date", "late_reason", "makeup_class_date"];
-        }else if(lateSubmissionCheckbox.checked){
-            requiredFields = ["instructor", "classDate", "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "late_class_date", "late_reason"];
-        }
-    }
-    
     if(makeupDate === "makeup"){
         requiredFields = ["instructor", "classDate",  "learning_delivery_modalities", "session_type", "classStartDateTime", "classEndDateTime", "makeup_class_date"];
     }else{
@@ -91,6 +82,13 @@ button.addEventListener("click", function (e) {
             dateInput.nextElementSibling.textContent = `Date cannot be in the future`;
             isValid = false;
         }
+    }
+
+    const classInstChecked = document.querySelectorAll('input[name="classInst[]"]:checked');
+    const classInstSection = document.getElementById("classInstSection");
+    if (classInstChecked.length === 0) {
+        classInstSection.classList.add("is-invalid");
+        isValid = false;
     }
 
     if (isValid) {
