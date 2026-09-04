@@ -338,9 +338,6 @@ function DISPLAY_TADI_LOG(subj_off_id, summary = false) {
       tbody.innerHTML = data.length ? "" : "<tr><td colspan='6' class='text-center'>No records found</td></tr>";
 
       data.forEach(record => {
-        // const viewUploadCell = record.tadi_filepath
-        //   ? `<button class="btn btn-sm w-70 viewAttch" id="viewAttch${record.schltadi_ID}" value="${record.schltadi_ID}">VIEW</button>`
-        //   : `<button class="btn btn-sm w-70 upldprof" id="upldprof${record.schltadi_ID}" value="${record.schltadi_ID}">UPLOAD</button>`;
 
         const showDenyButton = Number(record.active ?? 0) === 1
           && Number(record.tadi_status ?? 0) === 0
@@ -351,22 +348,25 @@ function DISPLAY_TADI_LOG(subj_off_id, summary = false) {
         row.innerHTML = `
           <td>${record.tadi_date}</td>
           <td>${record.stud_name}</td>
-          <td>${record.tadi_mode === 'online_learning' ? 'Online' : 
-                record.tadi_mode === 'onsite_learning' ? 'Onsite' : 
-                record.tadi_mode}
-          </td>
-          <td>${record.tadi_type}</td>
-          <td>${record.mkup_date === null ? '--' : record.mkup_date}</td>
           <td>${new Date('1970-01-01T' + record.tadi_timein).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} - 
-              ${new Date('1970-01-01T' + record.tadi_timeout).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</td>
-          
+              ${new Date('1970-01-01T' + record.tadi_timeout).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+          </td>
+          <td>
+          <button class="btn details" 
+            data-tadi-id="${record.schltadi_ID}" 
+            data-subj-id="${record.sub_off_id}"
+            data-from-summary="${summary ? 'true' : 'false'}">
+              Details
+            </button>
+          </td>
           <td>
             <button class="btn acknw btn-success" 
               value="${record.schltadi_ID}" 
               name="${record.tadi_status}" 
               data-subj-off="${record.sub_off_id}" 
               data-from-summary="${summary}" 
-              data-approved="${record.approve}">
+              data-approved="${record.approve}"
+              data-due-verify="${disable_due_verify_button(record.tadi_date) ? 'true' : 'false'}">
                 Verify
               </button>
               ${showDenyButton ? 
@@ -383,6 +383,15 @@ function DISPLAY_TADI_LOG(subj_off_id, summary = false) {
 
       document.querySelectorAll('.deny').forEach(button => {
         button.addEventListener('click', denyTadiRecord);
+      });
+
+      document.querySelectorAll('.details').forEach(button => {
+          button.addEventListener("click", function () {
+              const subj_Id = this.dataset.subjId;
+              const tadiId = this.dataset.tadiId;
+
+              viewSubmitted(subj_Id, tadiId);
+          });
       });
 
       disable_acknw_bttn();
@@ -903,7 +912,7 @@ function renderClassActivityPills(container, rawValue) {
 
     const pillsHtml = ids
         .map(id => CLASS_ACTIVITY_LABELS[id])
-        .filter(Boolean) // drop unknown/unmapped IDs instead of showing "undefined"
+        .filter(Boolean)
         .map(label => `<span class="badge-pill">${escapeHtml(label)}</span>`)
         .join(" ");
 
@@ -952,9 +961,6 @@ function viewSubmitted(subj_Id, tadiId) {
                 };
 
                 const activity = formatActivityText(record.tadi_act);
-                const statusConfig = record.tadi_status == 1
-                    ? { text: "Verified", badgeClass: "badge-verified" }
-                    : { text: "Unverified", badgeClass: "badge-unverified" };
 
                 const tabPane = document.createElement('div');
                 tabPane.className = `tab-pane fade show ${isActive} bg-white`;
@@ -988,10 +994,6 @@ function viewSubmitted(subj_Id, tadiId) {
                         </div>
                         <div class="record-field" id="classinstruct${record.schltadi_ID}">
                             <span class="field-label">Class Activity</span>
-                        </div>
-                        <div class="record-field" id="status${record.schltadi_ID}">
-                            <span class="field-label">Status</span>
-                            <span class="${statusConfig.badgeClass}" value="${escapeHtml(record.schltadi_ID)}" name="${escapeHtml(record.tadi_status)}">${statusConfig.text}</span>
                         </div>
                     </div>`;
 

@@ -88,7 +88,7 @@
 
                         <div class="row g-3 mb-3">
                             <div class="col-md-12 col-lg-12" id="classInstSection">
-                                <label for="tadi_type" class="form-label">Class Instruction</label>
+                                <label for="tadi_type" class="form-label">Class Instruction <span class="text-danger">*</span></label>
                                 <div class="form-check">
                                     <input type="checkbox" class="form-check-input" name="classInst[]" value="1">
                                     <label class="form-check-label" for="9">Lesson</label>

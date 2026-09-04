@@ -1,5 +1,38 @@
 GETACADEMICLEVEL();
 
+function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (match) => htmlEscapes[match]);
+}
+
+function formatActivityText(value) {
+    return escapeHtml(value ?? "").replace(/\\r\\n|\r?\n/g, "<br>");
+}
+
+function formatTimeToAmPm(timeString) {
+  const [hours, minutes] = timeString.split(":");
+  let hoursInt = parseInt(hours, 10);
+  const period = hoursInt >= 12 ? "PM" : "AM";
+  hoursInt = hoursInt % 12 || 12;
+  return `${hoursInt}:${minutes} ${period}`;
+}
+
+function setupActivityText(element) {
+  const initialStyle = {
+    display: '-webkit-box',
+    webkitLineClamp: '2',
+    webkitBoxOrient: 'vertical',
+    overflow: 'hidden'
+  };
+
+  Object.assign(element.style, initialStyle);
+  
+  element.addEventListener('click', function() {
+    const isCollapsed = this.style.display === '-webkit-box';
+    this.style.display = isCollapsed ? 'block' : '-webkit-box';
+    this.style.webkitLineClamp = isCollapsed ? 'none' : '2';
+  });
+}
+
 function GETYEARLVL(){
     const lvlid = document.getElementById('academiclevel').value;
 
@@ -316,21 +349,6 @@ function GETALL_TADI_RECORDS(prof_id, subj_id) {
       }
 
       tbody.innerHTML = data.map(record => {
-        const activity = record.tadi_act.replace(/\\r\\n/g, "<br>");
-        // const viewBtn = record.tadi_filepath
-        //   ? `<button class="tadi-btn tadi-btn-view viewAttch" value="${record.schltadi_ID}" data-prof="${record.SchlProf_ID}"><i class="fas fa-eye"></i> View</button>`
-        //   : `<span class="tadi-badge tadi-badge-muted" style="pointer-events:none;">No Attachment</span>`;
-
-        const modeTypeMap = {
-          'online_learning regular': 'Online Regular',
-          'online_learning makeup': 'Online Make-Up',
-          'onsite_learning regular': 'Onsite Regular',
-          'onsite_learning makeup': 'Onsite Make-Up'
-        };
-
-        const status = record.tadi_status == 1
-          ? `<span class="tadi-badge tadi-badge-success"><i class="fas fa-check-circle"></i> Verified</span>`
-          : `<span class="tadi-badge tadi-badge-danger"><i class="fas fa-times-circle"></i> Unverified</span>`;
 
         const rowClass = record.late_status == 1 ? 'tadi-row-late' : '';
         const lateBadge = record.late_status == 1 ? `<br><span class="tadi-badge tadi-badge-warning mt-1"><i class="fas fa-clock"></i> Late</span>` : '';
@@ -338,17 +356,27 @@ function GETALL_TADI_RECORDS(prof_id, subj_id) {
           <tr class="text-center ${rowClass}">
             <td>${record.stud_name}${lateBadge}</td>
             <td>${record.tadi_date}<br><small class="text-muted">${formatTimeToAmPm(record.tadi_timeIn)} &mdash; ${formatTimeToAmPm(record.tadi_timeOut)}</small></td>
-            <td><span class="tadi-badge tadi-badge-primary">${modeTypeMap[record.tadi_modeType] || record.tadi_modeType}</span></td>
-            <td>${record.mkup_date === null ? '<span class="text-muted">&#8212;</span>' : record.mkup_date}</td>
-            <td><span class="activity-text">${activity}</span></td>
-            <td>${status}</td>
+             <td>
+                <button class="btn details" 
+                    data-tadi-id="${record.schltadi_ID}" 
+                    data-subj-id="${record.sub_off_id}"
+                    data-prof-id="${record.SchlProf_ID}">
+                    Details
+                </button>
+            </td>
             ${dynamic_button(record.schltadi_ID, record.SchlProf_ID, record.sub_off_id, record.approved, record.date_approved)}
           </tr>`;
       }).join('');
 
-      tbody.querySelectorAll(".viewAttch").forEach(btn =>
-        btn.addEventListener("click", e => GET_IMAGE(e.currentTarget.value, e.currentTarget.dataset.prof))
-      );
+      tbody.querySelectorAll('.details').forEach(button => {
+        button.addEventListener("click", function () {
+            const subj_Id = this.dataset.subjId;
+            const tadiId = this.dataset.tadiId;
+            const profId = this.dataset.profId;
+
+            viewSubmitted(subj_Id, tadiId, profId);
+        });
+    });
 
       tbody.querySelectorAll(".approve").forEach(btn =>
         btn.addEventListener("click", e => {
@@ -433,8 +461,6 @@ document.getElementById("searchSubjBtn").addEventListener("click", function() {
         <td>
           <button 
             class="tadi-btn tadi-btn-ghost tadi-btn-sm w-100 position-relative vw_tadi" 
-            data-bs-target="#Instructor_Tadi_List" 
-            data-bs-toggle="modal"
             data-prof-id="${record.SchlProf_ID}"
             data-suboff-id="${record.sub_off_id}"
             data-sub-desc="${record.subj_desc}"
@@ -456,6 +482,7 @@ document.getElementById("searchSubjBtn").addEventListener("click", function() {
         document.getElementById("tadi_subj_name").innerText = subj_desc;
         document.getElementById("section_name").innerText = subj_sect;
 
+        showInstructorTadiModal();
         GETALL_TADI_RECORDS(prof_id, subj_id);
       });
     });
@@ -780,3 +807,140 @@ document.getElementById("reportSearch").addEventListener("click", function(){
   backTadi.disabled = false;
 });
 })
+
+const CLASS_ACTIVITY_LABELS = {
+    1: "Lesson",
+    2: "Assessment",
+    3: "Lab Work",
+    4: "ELS",
+    5: "Prelim",
+    6: "Long Exam",
+    7: "PRC",
+    8: "Events",
+    9: "Internship"
+};
+
+function renderClassActivityPills(container, rawValue) {
+    let ids = [];
+
+    try {
+        ids = JSON.parse(rawValue || "[]");
+    } catch (e) {
+        console.error("Invalid class activity data:", rawValue);
+        ids = [];
+    }
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+        container.innerHTML += `<span class="field-value"> -- </span>`;
+        return;
+    }
+
+    const pillsHtml = ids
+        .map(id => CLASS_ACTIVITY_LABELS[id])
+        .filter(Boolean)
+        .map(label => `<span class="badge-pill">${escapeHtml(label)}</span>`)
+        .join(" ");
+
+    container.innerHTML += `<div class="d-flex flex-wrap gap-1 mt-1">${pillsHtml}</div>`;
+}
+
+function viewSubmitted(subj_Id, tadiId, profId) {
+
+    const params = new URLSearchParams({
+        type: 'GET_SUBMITTED_REC',
+        subj_Id: subj_Id,
+        tadiId: tadiId,
+        profId: profId
+    });
+
+    fetch(`forms/tadi/dean/controller/index-info.php`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: params
+    })
+        .then(res => res.json())
+        .then(data => {          
+            const navTabContent = document.getElementById('tadiDetails'); 
+
+            navTabContent.innerHTML = '';
+
+            const detailsModal = document.getElementById('dean_Tadi_List');
+            if (detailsModal) {
+                            detailsModal.addEventListener('shown.bs.modal', () => {
+                                const backdrops = document.querySelectorAll('.modal-backdrop');
+                                const detailsBackdrop = backdrops[backdrops.length - 1];
+                                detailsBackdrop?.classList.add('dean-tadi-backdrop');
+                            }, { once: true });
+                            bootstrap.Modal.getOrCreateInstance(detailsModal).show();
+            }
+
+            if (!data.length) {
+                navTabContent.innerHTML = "<div class='p-3 text-center'>No records found</div>";
+                return;
+            }
+
+            data.forEach((record, index) => {
+                const isActive = index === 0 ? "active" : "";
+
+                const modeTypeMap = {
+                    'online_learning regular': 'Online Regular',
+                    'online_learning makeup': 'Online Make-Up',
+                    'onsite_learning regular': 'Onsite Regular',
+                    'onsite_learning makeup': 'Onsite Make-Up'
+                };
+
+                const activity = formatActivityText(record.tadi_act);
+
+                const tabPane = document.createElement('div');
+                tabPane.className = `tab-pane fade show ${isActive} bg-white`;
+                tabPane.id = `tab-pane-${record.schltadi_ID}`;
+                tabPane.role = "tabpanel";
+                tabPane.setAttribute("aria-labelledby", `nav-tab-${record.schltadi_ID}`);
+
+                const date = new Date(record.tadi_date).toLocaleDateString("en-PH", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                });
+
+                tabPane.innerHTML = `
+                    <div class="record-panel" id="preview-${record.schltadi_ID}">
+                        <div class="record-field" id="timeLabel${record.schltadi_ID}">
+                            <span class="field-label">Submitted by</span>
+                            <span class="field-value">${record.stud_name} &ndash; ${record.section}</span>
+                        </div>
+                        <div class="record-field" id="timeLabel${record.schltadi_ID}">
+                            <span class="field-label">Date and Time</span>
+                            <span class="field-value">${date} ${formatTimeToAmPm(record.tadi_timeIn)} &ndash; ${formatTimeToAmPm(record.tadi_timeOut)}</span>
+                        </div>
+                        <div class="record-field" id="classTypeLabel${record.schltadi_ID}">
+                            <span class="field-label">Class Type</span>
+                            <span class="field-value">${escapeHtml(modeTypeMap[record.tadi_modeType] || record.tadi_modeType)}</span>
+                        </div>
+                        <div class="record-field" id="actLabel${record.schltadi_ID}">
+                            <span class="field-label">Remarks</span>
+                            <span class="activity-text field-value">${activity && activity.trim() !== "" ? activity : " -- "}</span>
+                        </div>
+                        <div class="record-field" id="classinstruct${record.schltadi_ID}">
+                            <span class="field-label">Class Activity</span>
+                        </div>
+                    </div>`;
+
+                navTabContent.appendChild(tabPane);
+
+                const text = tabPane.querySelector('.activity-text');
+                setupActivityText(text);
+
+                const classInstructDiv = tabPane.querySelector(`#classinstruct${record.schltadi_ID}`);
+                if (classInstructDiv) {
+                    renderClassActivityPills(classInstructDiv, record.class_instruction);
+                }
+            });
+
+        })
+        .catch(err => {
+            console.error("Error loading records:", err);
+        });
+}

@@ -222,10 +222,7 @@
                                     <tr style="text-align:center;">
                                         <th>Student Name</th>
                                         <th>Date &amp; Time</th>
-                                        <th>Class Type</th>
-                                        <th>Make-up Date</th>
-                                        <th>Activity</th>
-                                        <th>Status</th>
+                                        <th>Details</th>
                                         <th>Approval</th>
                                     </tr>
                                 </thead>
@@ -275,72 +272,21 @@
         </div>
     </div>
 
-    <div id="imageModal" class="modal fade" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered" >
-            <div class="modal-content tadi-img-modal">
-
-                <div class="tadi-img-modal-header">
-                    <span class="img-modal-title">
-                        <i class="fas fa-image me-2"></i>Attachment Preview
-                    </span>
-
-                    <button type="button" class="tadi-close-btn" id="closeModalBtn">
-                        <i class="fas fa-times"></i>
-                    </button>
+    <div class="modal fade tadirecord_list" id="dean_Tadi_List" tabindex="-1" aria-labelledby="tadiModalLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-lg rcrd-preview-mdl">
+            <div class="modal-content">
+                <div class="modal-header d-flex justify-content-between align-items-center">
+                    <div>Tadi Details</div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" id="closeTadiModal1"></button>
                 </div>
-                <div class="modal-body p-3">
-                    <div id="imageCarousel" class="carousel slide" data-bs-interval="false">
-                        <div class="carousel-inner">
-                            <!-- Start Image -->
-                            <div class="carousel-item active">
-                                <div class="img-container">
-                                    <span class="image-label start-label">
-                                        Start of class
-                                    </span>
-                                    <img id="start_attchPrev" src="" alt="Start Image" class="img-fluid">
-                                </div>
-                            </div>
-                            <!-- End Image -->
-                            <div class="carousel-item">
-                                <div class="img-container">
-                                    <span class="image-label end-label">
-                                        End of class
-                                    </span>
-                                    <img id="end_attchPrev" src="" alt="End Image" class="img-fluid">
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Previous -->
-                        <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev">
-                            <span class="carousel-control-prev-icon"></span>
-                        </button>
-                        <!-- Next -->
-                        <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next">
-                            <span class="carousel-control-next-icon"></span>
-                        </button>
-
-                        <!-- Indicators -->
-                        <div class="carousel-indicators">
-                            <button type="button" data-bs-target="#imageCarousel" data-bs-slide-to="0" class="active"></button>
-                            <button type="button" data-bs-target="#imageCarousel" data-bs-slide-to="1"></button>
-                        </div>
+                <div class="modal-body">
+                    <div class="table-responsive table_tadi_responsive">
+                        <div class="tab-content" id="tadiDetails"></div>
                     </div>
-                    <div class="img_details mt-2">
-                        <div class="imgDetails img-taken">
-                            <div id="startdateTimeTaken"></div>
-                        </div>
-
-                        <div class="imgDetails img-taken">
-                            <div id="enddateTimeTaken"></div>
-                        </div>
-
-                        <div class="imgDetails img-uploaded">
-                            <div id="dateTimeUpld"></div>
-                        </div>
-                    </div>
-
                 </div>
-
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 8px;">Close</button>
+                </div>
             </div>
         </div>
     </div>

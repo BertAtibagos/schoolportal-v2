@@ -64,6 +64,25 @@ function showAlertModal(message) {
   modal.show();
 }
 
+function showInstructorTadiModal() {
+  const subjectModalEl = document.getElementById("Instructor_Subject_List");
+  const tadiModalEl = document.getElementById("Instructor_Tadi_List");
+  const subjectModal = bootstrap.Modal.getOrCreateInstance(subjectModalEl);
+  const tadiModal = bootstrap.Modal.getOrCreateInstance(tadiModalEl);
+
+  tadiModalEl.addEventListener("hidden.bs.modal", () => {
+    subjectModal.show();
+  }, { once: true });
+
+  const openTadiModal = () => tadiModal.show();
+  if (subjectModalEl.classList.contains("show")) {
+    subjectModalEl.addEventListener("hidden.bs.modal", openTadiModal, { once: true });
+    subjectModal.hide();
+  } else {
+    openTadiModal();
+  }
+}
+
 function invalidStartDateInput(){
     const startDate = document.getElementById("startDate");
       startDate.classList.remove("border-dark");
@@ -245,8 +264,6 @@ function displaySubjList(data) {
       <td>
         <button 
           class="tadi-btn tadi-btn-ghost tadi-btn-sm w-100 position-relative vw_tadi" 
-          data-bs-target="#Instructor_Tadi_List" 
-          data-bs-toggle="modal"
           data-prof-id="${item.SchlProf_ID}"
           data-suboff-id="${item.sub_off_id}"
           data-sub-desc="${item.subj_desc}"
@@ -269,6 +286,7 @@ function displaySubjList(data) {
       document.getElementById("tadi_subj_name").innerText = subj_desc;
       document.getElementById("section_name").innerText = subj_sect;
 
+      showInstructorTadiModal();
       GETALL_TADI_RECORDS(prof_id, subj_id);
     });
   });
