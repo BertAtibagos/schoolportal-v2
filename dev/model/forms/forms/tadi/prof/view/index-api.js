@@ -677,6 +677,11 @@ async function tadiSummary(){
                         </span>
                       </td>
                       <td class="text-center">
+                        <span id="pending-${value.sub_off_id}" class="text-${value.schl_sec == null ? 'secondary' : 'warning'}" style="font-size: 1.4rem; font-weight: bold;">
+                          ${value.pending_approval}
+                        </span>
+                      </td>
+                      <td class="text-center">
                         <span id="overdue-${value.sub_off_id}" class="text-${value.schl_sec == null ? 'secondary' : 'secondary-emphasis'}" style="font-size: 1.4rem; font-weight: bold;">
                           ${value.overdue_count}
                         </span>

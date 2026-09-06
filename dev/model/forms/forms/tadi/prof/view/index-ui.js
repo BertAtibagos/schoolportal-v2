@@ -338,6 +338,7 @@ function displaySummary() {
                                 <th scope="col">Subject</th>
                                 <th scope="col" class="text-center">Total Records</th>
                                 <th scope="col" class="text-center">Unverified</th>
+                                <th scope="col" class="text-center">Pending Approval</th>
                                 <th scope="col" class="text-center">Over Due</th>
                                 <th scope="col"></th>
                         </tr>`;

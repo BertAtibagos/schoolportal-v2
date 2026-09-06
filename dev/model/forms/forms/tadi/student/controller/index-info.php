@@ -225,55 +225,6 @@ if($_SESSION['STUDENT'] && in_array($type, $queryType, true)) {
             logStudentTadiInfo($dbConn, 'student.GET_SUBMITTED_REC', null);
         break;
 
-        case 'GET_IMAGE':
-            rateLimit(60, 5, 'get_image_rate_limit', $dbConn, 'student.GET_IMAGE');
-
-            if (!isset($_POST['prof_id'], $_POST['tadi_id'])) {
-                http_response_code(400);
-                echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
-                exit;
-            }
-
-            $prof_id = $_POST['prof_id'];
-            $REC_ID = $_POST['tadi_id'];
-
-            $qry = "SELECT 
-                        `startschltadi_filepath` AS `starttadi_filepath`,
-                        `starttadi_exifDate` AS startexif_date,
-                        `starttadi_exifTime` AS startexif_time,
-                        `endschltadi_filepath` AS endtadi_filepath,
-                        `endtadi_exifDate` AS endexif_date,
-                        `starttadi_exifTime` AS endexif_time,
-                        `schltadi_date` AS upld_date,
-                        `schltadi_timein` AS upld_time
-                    FROM `schooltadi`
-                    WHERE `schlprof_id` = ?
-                    AND `schltadi_id` = ?";
-            
-            $stmt = $dbConn->prepare($qry);
-            $stmt->bind_param("ii", $prof_id, $REC_ID);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $fetch = $result->fetch_assoc();
-            $stmt->close();
-
-            if (!$fetch || empty($fetch['starttadi_filepath'])) {
-                $fetch = ['message' => 'Image not found.'];
-                logStudentTadiInfo($dbConn, 'student.GET_IMAGE', $fetch['message']);
-            } elseif (!isSafeAttachmentPath($fetch['starttadi_filepath'])) {
-                $fetch = ['message' => 'Invalid image path.'];
-                logStudentTadiInfo($dbConn, 'student.GET_IMAGE', $fetch['message']);
-            } else {
-                $publicPath = __DIR__ . '/../../../../../../public/' . $fetch['starttadi_filepath'];
-                if (!is_file($publicPath)) {
-                    $fetch['message'] = 'Image file missing on server.';
-                    logStudentTadiInfo($dbConn, 'student.GET_IMAGE', $fetch['message']);
-                } else {
-                    logStudentTadiInfo($dbConn, 'student.GET_IMAGE', null);
-                }
-            }
-        break;
-
         case 'REVERT_SUBMISSION':
             $tadi_id = intval($_POST['tadi_id'] ?? 0);
             $subj_id = intval($_POST['subj_id'] ?? 0);

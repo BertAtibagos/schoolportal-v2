@@ -84,6 +84,8 @@
                                     AND t.schltadi_isactive = 1
                                     AND t.`schlprof_id` = ?
                                     AND t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`
+                                    AND t.`schltadi_date` >= CURDATE() - INTERVAL 3 DAY
+                                    AND t.`schltadi_date` <= CURDATE()
                             ) AS unverified_count,
                             COALESCE(enr.total_enrolled, 0) AS total_enrolled
                         FROM
@@ -523,7 +525,7 @@
                             COUNT(*)
                         FROM
                             `schooltadi` AS t
-                        WHERE FIND_IN_SET(18, schl_enr_subj_off.`SchlProf_ID`) > 0
+                        WHERE FIND_IN_SET(?, schl_enr_subj_off.`SchlProf_ID`) > 0
                             AND t.schltadi_isactive = 1
                             AND t.`schlprof_id` = ?
                             AND t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`) AS total_count,
@@ -536,6 +538,16 @@
                             AND t.`schlprof_id` = ?
                             AND FIND_IN_SET(?, schl_enr_subj_off.`SchlProf_ID`) > 0
                             AND t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`) AS unverified_count,
+                        (SELECT
+                            COUNT(*)
+                        FROM
+                            `schooltadi` AS t
+                        WHERE t.`schltadi_status` = 1
+                            AND t.schltadi_isconfirm = 0
+                            AND t.schltadi_isactive = 1
+                            AND t.`schlprof_id` = ?
+                            AND FIND_IN_SET(?, schl_enr_subj_off.`SchlProf_ID`) > 0
+                            AND t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`) AS pending_approval,
                         (SELECT
                             COUNT(*)
                         FROM
@@ -604,7 +616,7 @@
 
 
                 $stmt = $dbConn->prepare($qry);
-                $stmt->bind_param("iiiiiiiiiiiiiii", $USERID,$USERID,$USERID,$USERID,$USERID, $lvlid, $yrid, $prdid, $lvlid, $yrid, $prdid, $lvlid, $yrid, $prdid, $USERID);
+                $stmt->bind_param("iiiiiiiiiiiiiiiiii", $USERID, $USERID, $USERID, $USERID, $USERID, $USERID, $USERID, $USERID, $lvlid, $yrid, $prdid, $lvlid, $yrid, $prdid, $lvlid, $yrid, $prdid, $USERID);
                 $stmt->execute();
                 $result = $stmt->get_result();
                 $fetch = $result->fetch_all(MYSQLI_ASSOC);
@@ -670,14 +682,14 @@
                         (SELECT 
                         SUM(
                             CASE
-                            WHEN schltadi_status = 1 
+                            WHEN schltadi_status = 1 AND schltadi_isactive = 1
                             THEN 1 
                             ELSE 0 
                             END
                         ) AS verified_count,
                         SUM(
                             CASE
-                            WHEN schltadi_status = 0 
+                            WHEN schltadi_status = 0 schltadi_isactive = 1
                             THEN 1 
                             ELSE 0 
                             END

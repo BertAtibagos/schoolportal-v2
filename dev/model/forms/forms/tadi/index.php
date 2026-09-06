@@ -1,4 +1,4 @@
-<?php 
+<?php
     if(isset($_SESSION['EMPLOYEE']['ID'])){
         if(str_contains($_SESSION['EMPLOYEE']['INFO'], 'HR STAFF') || str_contains($_SESSION['EMPLOYEE']['INFO'], 'FINANCE')){
             include_once 'humanresource/index.php';

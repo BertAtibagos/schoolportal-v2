@@ -91,6 +91,13 @@
             </div>
             
             <div class="flex-grow-1" id="divContent">
+                <?php
+                    $tadiMaintenance = false;
+                    if (in_array($_SESSION['page'], ['tadi', 'tadi - dean', 'tadi - hr'], true)) {
+                        require_once __DIR__ . '/forms/tadi/maintenance_guard.php';
+                        $tadiMaintenance = checkMaintenanceMode();
+                    }
+                ?>
                 <?php 
                     // var_dump($_SERVER); 
 						// echo '<pre>';
@@ -98,11 +105,11 @@
 						// echo '</pre>';
                 ?>
                 
-                <?php 
-					if ($_SESSION['page'] === "online enrollment") {
+                <?php
+                    if (!$tadiMaintenance && $_SESSION['page'] === "online enrollment") {
 						$code = isset($_SESSION['STUDENT']['ID']) ? $_SESSION['STUDENT']['ID'] : 0;
 						echo "<script>window.location.href='https://schoolportal.fcpc.edu.ph/onlineregistration/online-campus/login.php?code=" . $code . "';</script>";
-					} else {
+					} elseif (!$tadiMaintenance) {
                         include_once $currentPage; 
                     }
                 ?>
