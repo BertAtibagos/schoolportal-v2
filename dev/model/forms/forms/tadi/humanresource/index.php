@@ -129,6 +129,7 @@
 
 </section>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <script src="forms/tadi/humanresource/view/index-component.js?t=<?php echo time(); ?>" defer></script>
 <script src="forms/tadi/humanresource/view/index-script.js?t=<?php echo time(); ?>" defer></script>
 <script src="forms/tadi/humanresource/view/index-function.js?t=<?php echo time(); ?>" defer></script>

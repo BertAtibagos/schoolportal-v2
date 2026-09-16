@@ -199,6 +199,24 @@
   color: #fff !important;
 }
 
+.btn-hr-credit {
+  background: #e7ad00 !important;
+  border: none !important;
+  border-radius: var(--hr-radius-sm) !important;
+  color: #fff !important;
+  font-weight: 600;
+  padding: 0.45rem 1.2rem;
+  font-size: var(--hr-font-sm);
+  transition: var(--hr-transition);
+  white-space: nowrap;
+}
+.btn-hr-credit:hover {
+  background: linear-gradient(135deg, #977100 0%, #fdc10c 100%) !important;
+  box-shadow: 0 4px 14px rgba(21, 128, 61, 0.3);
+  transform: translateY(-1px);
+  color: #fff !important;
+}
+
 /* ---- Modern Table ---- */
 .tadi-table {
   width: 100%;

@@ -1,3 +1,30 @@
+function setupTabulationCheckboxes() {
+    document.addEventListener('change', event => {
+        const checkbox = event.target;
+
+        if (checkbox.matches('#selectAllRows')) {
+            const table = checkbox.closest('table');
+            table.querySelectorAll('.row-checkbox').forEach(rowCheckbox => {
+                rowCheckbox.checked = checkbox.checked;
+            });
+            checkbox.indeterminate = false;
+            return;
+        }
+
+        if (checkbox.matches('.row-checkbox')) {
+            const table = checkbox.closest('table');
+            const selectAllCheckbox = table.querySelector('#selectAllRows');
+            const rowCheckboxes = [...table.querySelectorAll('.row-checkbox')];
+            const checkedCount = rowCheckboxes.filter(rowCheckbox => rowCheckbox.checked).length;
+
+            selectAllCheckbox.checked = rowCheckboxes.length > 0 && checkedCount === rowCheckboxes.length;
+            selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < rowCheckboxes.length;
+        }
+    });
+}
+
+setupTabulationCheckboxes();
+
 async function dashBoardContent(){
 
     try{
@@ -326,35 +353,126 @@ function formatTime(timeString){
     }
 }
 
-function exportTableToCSV(tableId, filename){
+async function exportTableToExcel(tableId, filename){
     const table = document.getElementById(tableId);
-    let csv = [];
-    
-    // Get headers
-    const headers = [];
-    table.querySelectorAll('thead th').forEach(th => {
-        headers.push('"' + th.textContent.trim().replace(/"/g, '""') + '"');
+
+    if(!table || typeof ExcelJS === 'undefined'){
+        alert('Excel export is unavailable. Please reload the page and try again.');
+        return;
+    }
+
+    const headers = Array.from(table.querySelectorAll('thead th'), th => th.textContent.trim());
+    const rows = Array.from(table.querySelectorAll('tbody tr'))
+        .filter(tr => !tr.classList.contains('table-info'))
+        .map(tr => Array.from(tr.querySelectorAll('td'), td => {
+            const value = td.textContent.trim();
+            return value !== '' && !Number.isNaN(Number(value)) ? Number(value) : value;
+        }))
+        .filter(row => row.length > 0);
+
+    const NAME_COL_INDEX = 0; // adjust if needed
+    const TOTAL_HOURS_COL_INDEX = headers.findIndex(h =>
+        h.toLowerCase().includes('total accumulated hours')
+    );
+
+    // Group index per row, based on the name column defining block boundaries
+    let currentGroup = -1;
+    const rowGroupIndex = rows.map(row => {
+        if (row[NAME_COL_INDEX] !== '' && row[NAME_COL_INDEX] !== undefined && row[NAME_COL_INDEX] !== null) {
+            currentGroup++;
+        }
+        return currentGroup;
     });
-    csv.push(headers.join(','));
-    
-    // Get rows (excluding professor header rows)
-    table.querySelectorAll('tbody tr').forEach(tr => {
-        if(!tr.classList.contains('table-info')) {
-            const row = [];
-            tr.querySelectorAll('td').forEach(td => {
-                let text = td.textContent.trim().replace(/"/g, '""');
-                row.push('"' + text + '"');
-            });
-            if(row.length > 0) csv.push(row.join(','));
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'School Portal';
+    workbook.created = new Date();
+    const worksheet = workbook.addWorksheet('Report', {
+        views: [{ state: 'frozen', ySplit: 1 }]
+    });
+
+    worksheet.addRow(headers);
+    rows.forEach(row => worksheet.addRow(row));
+
+    // --- Merge any column using the SAME group boundaries as the name column ---
+    const mergeColumnByGroup = (colIndex) => {
+        if (colIndex < 0) return;
+
+        let blockStartIdx = 0;
+        for (let i = 1; i <= rowGroupIndex.length; i++) {
+            const isNewGroup = i === rowGroupIndex.length || rowGroupIndex[i] !== rowGroupIndex[blockStartIdx];
+            if (isNewGroup) {
+                const endIdx = i - 1;
+                if (endIdx > blockStartIdx) {
+                    const startRow = blockStartIdx + 2;
+                    const endRow = endIdx + 2;
+                    worksheet.mergeCells(startRow, colIndex + 1, endRow, colIndex + 1);
+                    // alignment now handled centrally in the eachRow loop below
+                }
+                blockStartIdx = i;
+            }
+        }
+    };
+
+    mergeColumnByGroup(NAME_COL_INDEX);
+    mergeColumnByGroup(TOTAL_HOURS_COL_INDEX);
+
+    const borderColor = { argb: 'FFD9E2F0' };
+    const headerRow = worksheet.getRow(1);
+    headerRow.height = 28;
+    headerRow.eachCell(cell => {
+        cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF032A74' } };
+        cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        cell.border = { top: { style: 'thin', color: borderColor }, left: { style: 'thin', color: borderColor }, bottom: { style: 'thin', color: borderColor }, right: { style: 'thin', color: borderColor } };
+    });
+
+    worksheet.autoFilter = { from: 'A1', to: `${String.fromCharCode(64 + headers.length)}1` };
+    worksheet.eachRow((row, rowNumber) => {
+        if(rowNumber === 1) return;
+        row.height = 22;
+        const groupIdx = rowGroupIndex[rowNumber - 2];
+        row.eachCell((cell, colNumber) => {
+            const isTotalHoursCol = colNumber - 1 === TOTAL_HOURS_COL_INDEX;
+
+            cell.alignment = {
+                vertical: 'middle',
+                horizontal: isTotalHoursCol ? 'center' : undefined,
+                wrapText: true,
+            };
+            cell.border = { top: { style: 'thin', color: borderColor }, left: { style: 'thin', color: borderColor }, bottom: { style: 'thin', color: borderColor }, right: { style: 'thin', color: borderColor } };
+            if(groupIdx % 2 === 0) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F6FA' } };
+            if(typeof cell.value === 'number') cell.numFmt = Number.isInteger(cell.value) ? '0' : '0.00';
+        });
+    });
+
+    worksheet.columns.forEach(column => {
+        let width = 12;
+        const header = String(headers[column.number - 1] || '').toLowerCase();
+        const isSubjectColumn = header.includes('subject');
+
+        column.eachCell({ includeEmpty: true }, cell => {
+            const longestLine = String(cell.value || '')
+                .split(/\r?\n/)
+                .reduce((longest, line) => Math.max(longest, line.length), 0);
+            width = Math.max(width, longestLine + 2);
+        });
+
+        if (isSubjectColumn) {
+            width = Math.max(width, 18);
+            column.width = width;
+        } else {
+            column.width = Math.min(width, 35);
         }
     });
-    
-    // Create blob and download
-    const csvContent = 'data:text/csv;charset=utf-8,' + csv.join('\n');
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     const link = document.createElement('a');
-    link.setAttribute('href', encodeURI(csvContent));
-    link.setAttribute('download', filename);
+    link.href = URL.createObjectURL(blob);
+    link.download = filename.replace(/\.csv$/i, '.xlsx');
     link.click();
+    URL.revokeObjectURL(link.href);
 }
 
 let loadingModalInstance = null;
@@ -714,3 +832,38 @@ async function confirmProfDetails(profId, subjCode, profHrs, subjHrs) {
 
     
 // })
+
+async function creditMark(data){
+    if (!confirm('Are you sure you want to credit this generated tabulation?')) return;
+
+    if (!Array.isArray(data) || data.length === 0) {
+        alert('No TADI records found to credit.');
+        return;
+    }
+
+    try {
+        const params = new URLSearchParams({
+            type: "CREDIT_RECORD_TABULATION"
+        });
+        data.forEach(tadiId => params.append('tadiIds[]', String(tadiId)));
+
+        const req = await fetch(`forms/tadi/humanresource/controller/index-post.php`, {
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: params
+        });
+
+        const res = await req.json();
+
+        if (!req.ok) {
+            console.error("Credit request failed:", res.error || req.status);
+            alert("Failed to credit the tabulation. Please try again.");
+        } else {
+            alert("Tabulation credited successfully.");
+            tabulationReport();
+        }
+    } catch(e) {
+        console.error("Error crediting tabulation: ", e);
+        alert("An error occurred while crediting the tabulation. Please try again.");
+    }
+}

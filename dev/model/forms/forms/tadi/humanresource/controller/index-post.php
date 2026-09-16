@@ -882,7 +882,8 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                             subj.`SchlAcadSubj_LEC` AS lec_units,
                             subj.`SchlAcadSubj_LAB` AS lab_units,
                             off.SchlProf_UNIT_HRS AS prof_unit_hrs,
-                            off.SchlEnrollSubjOff_UNIT_HRS AS subj_unit_hrs
+                            off.SchlEnrollSubjOff_UNIT_HRS AS subj_unit_hrs,
+                            CONCAT('[', GROUP_CONCAT(DISTINCT t.schltadi_id ORDER BY t.schltadi_id SEPARATOR ','), ']') AS tadi_ids
 
                     FROM schoolenrollmentsubjectoffered off
                     LEFT JOIN schoolacademicsubject subj ON off.`SchlAcadSubj_ID` = subj.`SchlAcadSubjSms_ID`
@@ -902,6 +903,8 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                         AND FIND_IN_SET(emp.`SchlEmpSms_ID`, ec.`SchlProf_ID`) > 0
                     LEFT JOIN merge_map mm
                         ON mm.`SchlEnrollSubjOff_ID` = off.`SchlEnrollSubjOffSms_ID`
+                    LEFT JOIN schooltadi t
+                        ON off.SchlEnrollSubjOffSms_ID = t.schlenrollsubjoff_id
 
                     WHERE off.`SchlAcadLvl_ID` = ?
                         AND off.`SchlAcadYr_ID` = ?
@@ -971,7 +974,105 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
             ]);
 
             $stmt->close();
-            break; 
+            break;
+        case "CREDIT_RECORD_TABULATION":
+            if(!isset($_SESSION['EMPLOYEE']['ID'],$_POST['tadiIds'])){
+                http_response_code(401);
+                echo json_encode(["error" => "Missing session data"]);
+                exit;
+            }
+
+            if(!is_array($_POST['tadiIds']) || empty($_POST['tadiIds'])){
+                http_response_code(400);
+                echo json_encode(["error" => "Invalid input data"]);
+                exit;
+            }
+
+            // Sanitize incoming IDs -> ints only
+            $tadiIds = array_values(array_filter(array_map('intval', $_POST['tadiIds']), function($v){
+                return $v > 0;
+            }));
+
+            if(empty($tadiIds)){
+                http_response_code(400);
+                echo json_encode(["error" => "Invalid input data"]);
+                exit;
+            }
+
+            // 1. Determine current cutoff key (1-15 or 16-31) from today's date only
+            $today = date('Y-m-d');
+            $curYear  = date('Y', strtotime($today));
+            $curMonth = date('m', strtotime($today));
+            $curHalf  = (date('d', strtotime($today)) <= 15) ? 1 : 2; // 1 = 1-15, 2 = 16-31
+            $currentCutoffKey = "$curYear-$curMonth-$curHalf";
+
+            // 2. Find the last batch id used, and the cutoff key it belongs to
+            $lastBatchQry = "SELECT tadi_cutoff_batchID, MAX(tadi_approved_date) AS last_date
+                            FROM schooltadi
+                            WHERE tadi_cutoff_batchID = (
+                                SELECT MAX(tadi_cutoff_batchID) FROM schooltadi WHERE tadi_cutoff_batchID IS NOT NULL
+                            )
+                            GROUP BY tadi_cutoff_batchID";
+
+            $stmt = $dbConn->prepare($lastBatchQry);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $lastBatchRow = $result->fetch_assoc();
+            $stmt->close();
+
+            if ($lastBatchRow && $lastBatchRow['tadi_cutoff_batchID'] !== null) {
+                $lastBatchId  = (int) $lastBatchRow['tadi_cutoff_batchID'];
+                $lastDate     = $lastBatchRow['last_date'];
+                $lastYear     = date('Y', strtotime($lastDate));
+                $lastMonth    = date('m', strtotime($lastDate));
+                $lastHalf     = (date('d', strtotime($lastDate)) <= 15) ? 1 : 2;
+                $lastCutoffKey = "$lastYear-$lastMonth-$lastHalf";
+
+                // Same cutoff period as today -> reuse the batch id.
+                // Different cutoff period -> a new cutoff has started, increment.
+                $batchId = ($lastCutoffKey === $currentCutoffKey) ? $lastBatchId : $lastBatchId + 1;
+            } else {
+                // No batch exists yet at all
+                $batchId = 1;
+            }
+
+            // 3. Update the selected TADI records
+            $placeholders = implode(',', array_fill(0, count($tadiIds), '?'));
+            $types = 'i' . str_repeat('i', count($tadiIds));
+
+            $updateQry = "UPDATE schooltadi
+                        SET tadi_payroll_status = 'paid',
+                            tadi_cutoff_batchID = ?
+                        WHERE schltadi_id IN ($placeholders)
+                            AND schltadi_isactive = 1";
+
+            $stmt = $dbConn->prepare($updateQry);
+
+            if (!$stmt) {
+                http_response_code(500);
+                echo json_encode(["error" => $dbConn->error]);
+                exit;
+            }
+
+            $params = array_merge([$batchId], $tadiIds);
+            $stmt->bind_param($types, ...$params);
+
+            if (!$stmt->execute()) {
+                http_response_code(500);
+                echo json_encode(["error" => $stmt->error]);
+                $stmt->close();
+                exit;
+            }
+
+            echo json_encode([
+                "success"        => true,
+                "batch_id"       => $batchId,
+                "affected_rows"  => $stmt->affected_rows
+            ]);
+
+            $stmt->close();
+            $dbConn->close();
+            break;
         default:
             http_response_code(400);
             $fetch = ['error' => 'Invalid request type'];

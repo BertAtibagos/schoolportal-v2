@@ -242,7 +242,7 @@ function detailedReportView(result, filterRange, date, dept, filterType){
     
     const exportBtn = document.createElement('button');
     exportBtn.className = 'btn btn-hr-export';
-    exportBtn.textContent = 'Export to CSV';
+    exportBtn.textContent = 'Export to Excel';
 
     const reportLabel = document.createElement('h3');
     reportLabel.className = 'me-3 fw-bold';
@@ -272,13 +272,13 @@ function detailedReportView(result, filterRange, date, dept, filterType){
 
             if (filterType === 'deptName_all') {
                 reportLabel.textContent = `Current Cut-off Report as of ${timeFormat.current_cutoff_start} to ${timeFormat.current_cutoff_end} for All Departments`;
-                fileName = `CURRENT_CUT-OFF_REPORT_${timeFormat.current_cutoff_start}_TO_${timeFormat.current_cutoff_end}_ALL_DEPARTMENTS.csv`;
+                fileName = `CURRENT_CUT-OFF_REPORT_${timeFormat.current_cutoff_start}_TO_${timeFormat.current_cutoff_end}_ALL_DEPARTMENTS.xlsx`;
             }else if(filterType === 'byName'){
                 reportLabel.textContent = `Current Cut-off Report as of ${timeFormat.current_cutoff_start} to ${timeFormat.current_cutoff_end} for ${data.prof_name}`;
-                fileName = `CURRENT_CUT-OFF_REPORT_${timeFormat.current_cutoff_start}_TO_${timeFormat.current_cutoff_end}_${data.prof_name.replace(/[,]/g, '_').toUpperCase()}.csv`;
+                fileName = `CURRENT_CUT-OFF_REPORT_${timeFormat.current_cutoff_start}_TO_${timeFormat.current_cutoff_end}_${data.prof_name.replace(/[,]/g, '_').toUpperCase()}.xlsx`;
             }else if(filterType === 'byDept'){
                 reportLabel.textContent = `Current Cut-off Report as of ${timeFormat.current_cutoff_start} to ${timeFormat.current_cutoff_end} for ${deptName}`;
-                fileName = `CURRENT_CUT-OFF_REPORT_${timeFormat.current_cutoff_start}_TO_${timeFormat.current_cutoff_end}_${deptName}.csv`;
+                fileName = `CURRENT_CUT-OFF_REPORT_${timeFormat.current_cutoff_start}_TO_${timeFormat.current_cutoff_end}_${deptName}.xlsx`;
             }
         };
 
@@ -286,13 +286,13 @@ function detailedReportView(result, filterRange, date, dept, filterType){
 
             if (filterType === 'deptName_all') {
                 reportLabel.textContent = `Previous Cut-off Report as of ${timeFormat.prev_cutoff_start} to ${timeFormat.prev_cutoff_end} for All Departments`;
-                fileName = `PREVIOUS_CUT-OFF_REPORT_${timeFormat.prev_cutoff_start}_TO_${timeFormat.prev_cutoff_end}_ALL_DEPARTMENTS.csv`;
+                fileName = `PREVIOUS_CUT-OFF_REPORT_${timeFormat.prev_cutoff_start}_TO_${timeFormat.prev_cutoff_end}_ALL_DEPARTMENTS.xlsx`;
             }else if(filterType === 'byName'){
                 reportLabel.textContent = `Previous Cut-off Report as of ${timeFormat.prev_cutoff_start} to ${timeFormat.prev_cutoff_end} for ${data.prof_name}`;
-                fileName = `PREVIOUS_CUT-OFF_REPORT_${timeFormat.prev_cutoff_start}_TO_${timeFormat.prev_cutoff_end}_${data.prof_name.replace(/[,]/g, '_').toUpperCase()}.csv`;
+                fileName = `PREVIOUS_CUT-OFF_REPORT_${timeFormat.prev_cutoff_start}_TO_${timeFormat.prev_cutoff_end}_${data.prof_name.replace(/[,]/g, '_').toUpperCase()}.xlsx`;
             }else if(filterType === 'byDept'){
                 reportLabel.textContent = `Previous Cut-off Report as of ${timeFormat.prev_cutoff_start} to ${timeFormat.prev_cutoff_end} for ${deptName}`;
-                fileName = `PREVIOUS_CUT-OFF_REPORT_${timeFormat.prev_cutoff_start}_TO_${timeFormat.prev_cutoff_end}_${deptName}.csv`;
+                fileName = `PREVIOUS_CUT-OFF_REPORT_${timeFormat.prev_cutoff_start}_TO_${timeFormat.prev_cutoff_end}_${deptName}.xlsx`;
             }
         }
 
@@ -300,19 +300,19 @@ function detailedReportView(result, filterRange, date, dept, filterType){
 
             if (filterType === 'deptName_all') {
                 reportLabel.textContent = `Report as of ${date.startDate} to ${date.endDate} for All Departments`;
-                fileName = `REPORT_${date.startDate}_TO_${date.endDate}_ALL_DEPARTMENTS.csv`;
+                fileName = `REPORT_${date.startDate}_TO_${date.endDate}_ALL_DEPARTMENTS.xlsx`;
             }else if(filterType === 'byName'){
                 reportLabel.textContent = `Report as of ${date.startDate} to ${date.endDate} for ${data.prof_name}`;
-                fileName = `REPORT_${date.startDate}_TO_${date.endDate}_${data.prof_name.replace(/[,]/g, '_').toUpperCase()}.csv`;
+                fileName = `REPORT_${date.startDate}_TO_${date.endDate}_${data.prof_name.replace(/[,]/g, '_').toUpperCase()}.xlsx`;
             }else if(filterType === 'byDept'){
                 reportLabel.textContent = `Report as of ${date.startDate} to ${date.endDate} for ${deptName}`;
-                fileName = `REPORT_${date.startDate}_TO_${date.endDate}_${deptName}.csv`;
+                fileName = `REPORT_${date.startDate}_TO_${date.endDate}_${deptName}.xlsx`;
             }
         }
     })
 
     
-    exportBtn.addEventListener('click', () => exportTableToCSV('reportTable', fileName));
+    exportBtn.addEventListener('click', () => exportTableToExcel('reportTable', fileName));
     exportDiv.appendChild(reportLabel);
     exportDiv.appendChild(exportBtn);
     reportCard.appendChild(exportDiv);
@@ -559,7 +559,7 @@ function summaryReportView(result, filterRange, date, dept){
     
     const exportBtn = document.createElement('button');
     exportBtn.className = 'btn btn-hr-export';
-    exportBtn.textContent = 'Export to CSV';
+    exportBtn.textContent = 'Export to Excel';
 
     const reportLabel = document.createElement('h3');
     reportLabel.className = 'me-3 fw-bold';
@@ -597,20 +597,20 @@ function summaryReportView(result, filterRange, date, dept){
 
     if(filterRange === 'currCutOff'){
         reportLabel.textContent = `Current Cut-off Instructor Summary ${timeFormat.current_cutoff_start} to ${timeFormat.current_cutoff_end} for ${deptName}`;
-        fileName = `INSTRUCTOR_SUMMARY_${timeFormat.current_cutoff_start}_TO_${timeFormat.current_cutoff_end}_${deptName}.csv`;
+        fileName = `INSTRUCTOR_SUMMARY_${timeFormat.current_cutoff_start}_TO_${timeFormat.current_cutoff_end}_${deptName}.xlsx`;
     }
 
     if(filterRange === 'prevCutOff'){
         reportLabel.textContent = `Previous Cut-off Instructor Summary  ${timeFormat.prev_cutoff_start} to ${timeFormat.prev_cutoff_end} for ${deptName}`;
-        fileName = `INSTRUCTOR_SUMMARY_${timeFormat.prev_cutoff_start}_TO_${timeFormat.prev_cutoff_end}_${deptName}.csv`;
+        fileName = `INSTRUCTOR_SUMMARY_${timeFormat.prev_cutoff_start}_TO_${timeFormat.prev_cutoff_end}_${deptName}.xlsx`;
     }
 
     if(filterRange === 'date'){
         reportLabel.textContent = `Instructor Summary Report  ${date.startDate} to ${date.endDate} for ${deptName}`;
-        fileName = `INSTRUCTOR_SUMMARY_${date.startDate}_TO_${date.endDate}_${deptName}.csv`;
+        fileName = `INSTRUCTOR_SUMMARY_${date.startDate}_TO_${date.endDate}_${deptName}.xlsx`;
     }
 
-    exportBtn.addEventListener('click', () => exportTableToCSV('reportTable', fileName));
+    exportBtn.addEventListener('click', () => exportTableToExcel('reportTable', fileName));
     exportDiv.appendChild(reportLabel);
     exportDiv.appendChild(exportBtn);
     reportCard.appendChild(exportDiv);
@@ -783,17 +783,41 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
     const exportDiv = document.createElement('div');
     exportDiv.id = 'exportContainer';
     exportDiv.className = 'mb-3 d-flex justify-content-between';
-    
+
+    const btnDiv = document.createElement('div');
+    btnDiv.className = 'd-flex align-items-center gap-2';
+
     const exportBtn = document.createElement('button');
     exportBtn.className = 'btn btn-hr-export';
-    exportBtn.textContent = 'Export to CSV';
+    exportBtn.textContent = 'Export to Excel';
+
+    const creditBtn = document.createElement('button');
+    creditBtn.className = 'btn btn-hr-credit';
+    creditBtn.addEventListener('click', () => {
+        const tadiIds = [...new Set(
+            [...reportCard.querySelectorAll('[data-tadi-ids]')]
+                .flatMap(cell => {
+                    try {
+                        const ids = JSON.parse(cell.dataset.tadiIds || '[]');
+                        return Array.isArray(ids) ? ids : [];
+                    } catch (error) {
+                        return [];
+                    }
+                })
+                .map(Number)
+                .filter(Number.isInteger)
+        )];
+
+        creditMark(tadiIds);
+    });
+    creditBtn.textContent = 'Credit this Report';
 
     const reportLabel = document.createElement('h3');
     reportLabel.className = 'me-3 fw-bold';
 
     if(filterType == 'byName'){
         reportLabel.textContent = `Tabulation Report for ${result[0].prof_name}`;
-        fileName = `TABULATION_REPORT_${result[0].prof_name.replace(/[,]/g, '_').toUpperCase()}.csv`;
+        fileName = `TABULATION_REPORT_${result[0].prof_name.replace(/[,]/g, '_').toUpperCase()}.xlsx`;
     }else if(filterType == 'byDept'){
         switch(dept){
                 case 'COAM':
@@ -813,10 +837,10 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
                     deptName = dept;
             }
         reportLabel.textContent = `${deptName} PROFESSIONAL REGULAR 2ND SEMESTER A.Y. 2025-2026`;
-        fileName = `TABULATION_REPORT_${deptName.toUpperCase()}.csv`;
+        fileName = `TABULATION_REPORT_${deptName.toUpperCase()}.xlsx`;
     }else{
         reportLabel.textContent = `ALL DEPTARTMENTS PROFESSIONAL REGULAR 2ND SEMESTER A.Y. 2025-2026`;
-        fileName = `TABULATION_REPORT_ALL_DEPARTMENTS.csv`;
+        fileName = `TABULATION_REPORT_ALL_DEPARTMENTS.xlsx`;
     }
 
     const dateFilter = document.createElement('div');
@@ -828,9 +852,11 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
         <input type="date" id="tabDateSecond" class="form-control form-control-sm d-inline-block w-auto" value="${dateRange.endDate}">
         <button id="tabDateFilterBtn" class="btn btn-sm ms-2 text-white" style="background-color:#071976">Search</button>`;
 
-    exportBtn.addEventListener('click', () => exportTableToCSV('reportTable', fileName));
+    exportBtn.addEventListener('click', () => exportTableToExcel('reportTable', fileName));
     exportDiv.appendChild(reportLabel);
-    exportDiv.appendChild(exportBtn);
+    btnDiv.appendChild(creditBtn);
+    btnDiv.appendChild(exportBtn);
+    exportDiv.appendChild(btnDiv);
     reportCard.appendChild(exportDiv);
     reportCard.appendChild(dateFilter);
 
@@ -872,11 +898,16 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
                 total_accumulated_hours: 0,
                 subj_id: data.rec_id,
                 sections: data.sections,
-                _sectionKeys: new Set() // tracks distinct section/merge-group identities; not rendered
+                _sectionKeys: new Set(),
+                _tadiIds: new Set()
             };
         }
 
         const group = profGroups[data.prof_name][subjKey];
+        const tadiIds = typeof data.tadi_ids === 'string'
+            ? JSON.parse(data.tadi_ids || '[]')
+            : (Array.isArray(data.tadi_ids) ? data.tadi_ids : []);
+        tadiIds.forEach(id => group._tadiIds.add(Number(id)));
 
         // Rows whose section label contains "MC" belong to the same merge group -
         // dedupe by that shared label so all merged offerings count as ONE section.
@@ -930,10 +961,11 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
                                 const totalForSem = prof_Hrs * 18 * subj.section_count;
                                 const remaining = totalForSem - Math.round(subj.total_accumulated_hours);
                                 const hoursTextClass = hoursCheck.isValid ? 'fw-bold' : 'text-warning fw-bold';
+                                const tadiIds = JSON.stringify([...subj._tadiIds]);
 
                                 return `
                                 <tr>
-                                    ${idx === 0 ? `<td rowspan="${subjects.length}" class="text-center align-middle">${profName}</td>` : ''}
+                                    ${idx === 0 ? `<td rowspan="${subjects.length}" class="text-center align-middle" data-tadi-ids='${tadiIds}'>${profName}</td>` : ''}
                                     <td class="text-center align-middle">${subj.subject_code}</td>
                                     <td class="text-center align-middle">${subj.subject_desc}</td>
                                     <td class="text-center align-middle">${Math.round(subj.total_enrolled_students)}</td>
@@ -967,9 +999,9 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
         <th>Subject</th>
         <th>No. of Students</th>
         <th>Total Hours Conducted</th>
-        <th>Total Accumulated Hours per Subject</th>
-        <th>Total Hours for Sem</th>
         <th>Total Accumulated Hours per Faculty</th>
+        <th>Total Hours for Sem</th>
+        <th>Total Accumulated Hours per Subject</th>
         <th>Remaining Hours for Sem</th>
     `;
     thead.appendChild(headerRow);
@@ -985,7 +1017,7 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
             const hoursCheck = getAssignedProfHours(subj);
             const prof_Hrs = hoursCheck.assignedProfHours;
             const totalForSem = prof_Hrs * 18 * subj.section_count;
-            const remaining = totalForSem - Math.round(subj.total_accumulated_hours);
+            const remaining = totalForSem - subj.total_accumulated_hours;
 
             const row = document.createElement('tr');
             row.dataset.rowKey = `${profName}|||${subj.subject_code}`;
@@ -994,10 +1026,10 @@ function tabulationReportView(result, filterType, dept, dateRange = { startDate:
                 <td>${subj.subject_code}</td>
                 <td>${subj.subject_desc}</td>
                 <td>${Math.round(subj.total_enrolled_students)}</td>
-                <td>${Math.round(subj.filtered_hours)}</td>
-                <td>${idx === 0 ? Math.round(facultyFilteredTotal) : ''}</td>
+                <td>${subj.filtered_hours}</td>
+                <td>${idx === 0 ? facultyFilteredTotal : ''}</td>
                 <td>${totalForSem}</td>
-                <td>${Math.round(subj.total_accumulated_hours)}</td>
+                <td>${subj.total_accumulated_hours}</td>
                 <td>${remaining}</td>
             `;
             tbody.appendChild(row);
