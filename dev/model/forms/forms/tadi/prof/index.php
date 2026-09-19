@@ -12,14 +12,21 @@
                     <i class="fas fa-clipboard-list me-2"></i>TADI &mdash; Faculty
                 </h3>
             </div>
-            <button class="btn tadi-back-btn" id="summaryTadiBtn" style="display:none">
-                <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
-            </button>
+            <div>
+                <button class="btn tadi-back-btn" id="summaryTadiBtn" style="display:none">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                </button>
+            </div>
         </div>
 
         <div class="filter-card">
             <div class="filter-card-header">
-                <i class="fas fa-filter me-2"></i>Search Filters
+                <div>
+                    <i class="fas fa-filter me-2"></i>Search Filters
+                </div>
+                <div>
+                    <button class="btn tadi-detailed-btn" id="det_rep">Detailed Report</button>
+                </div>
             </div>
             <div class="filter-card-body">
                 <div class="row g-3 align-items-end">
@@ -92,6 +99,13 @@
                                 <div class="stat-label">Past Due</div>
                             </div>
                         </div>
+                        <div class="stat-card stat-rendtime">
+                            <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="totalrendtime">0</div>
+                                <div class="stat-label">Total Rendered Time</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -159,6 +173,7 @@
                                     <th scope="col">Date</th>
                                     <th scope="col">Student Name</th>
                                     <th scope="col">Time</th>
+                                    <th scope="col" class="text-center">Approved Date</th>
                                     <th></th>
                                     <th scope="col" class="text-center">Action</th>
                                 </tr>
@@ -239,6 +254,42 @@
             </div>
             <div class="toast-body">
                 <span id="toastMessage"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="detailedReportModal" tabindex="-1" aria-labelledby="detailedReportModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered detailed-report-dialog">
+            <div class="modal-content tadi-modal-content">
+                <div class="tadi-modal-header">
+                    <h5 class="modal-title" id="detailedReportModalLabel">
+                        <i class="fas fa-file-alt me-2"></i>Detailed Report
+                    </h5>
+                    <button type="button" class="tadi-close-btn" data-bs-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body px-4 py-3">
+                    <div class="d-flex flex-row flex-wrap align-items-end gap-3 mb-3">
+                        <div>
+                            <label>Start Date</label>
+                            <input type="date" class="form-control" id="reportStartTime">
+                        </div>
+                        <div>
+                            <label>End Date</label>
+                            <input type="date" class="form-control" id="reportEndTime">
+                        </div>
+                        <div>
+                            <button type="button" class="btn tadi-report-btn" id="generateReportBtn">
+                                Generate Report
+                            </button>
+                        </div>
+                        <div class="total-conducted-hours ms-auto"></div>
+                    </div>
+                    <div class="report-body">
+                        
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -144,7 +144,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
         $schltadi_late_date = $schltadi_late_status ? $dbConn->real_escape_string($_POST['late_class_date']) : null;
         $schltadi_late_reason = $schltadi_late_status && isset($_POST['late_reason']) ? $dbConn->real_escape_string($_POST['late_reason']) : null;
         $schltadi_mkup_date = ($schltadi_type === 'makeup' && isset($_POST['makeup_class_date']) && !empty($_POST['makeup_class_date'])) ? $dbConn->real_escape_string($_POST['makeup_class_date']) : null;
-
+        
+        date_default_timezone_set('Asia/Manila');
+        $currDate = date("Y-m-d H:i:s");
 
         $check_sql = "SELECT COUNT(*) as count 
                       FROM schooltadi 
@@ -158,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
             throw new Exception('Prepare failed: ' . $dbConn->error);
         }
 
-        $check_stmt->bind_param('iis', $subj_id, $prof_id, $schltadi_date);
+        $check_stmt->bind_param('iis', $subj_id, $prof_id, $currDate);
         $check_stmt->execute();
         $check_stmt->bind_result($count);
         $check_stmt->fetch();
@@ -241,7 +243,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type']) && $_POST['ty
             exit;
         }
 
-        $currDate = date("Y-m-d H:i:s");
         
         $stmt = $dbConn->prepare("INSERT INTO schooltadi 
                 (schltadi_actual_date,

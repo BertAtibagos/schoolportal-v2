@@ -10,9 +10,7 @@ function shouldLoadSummary(load, isSearch = false) {
     }
     return summaryLoad;
 }
-
   let skipTadiSummaryAutoLoad = false;
-
 function GET_ACADEMICLEVEL() {
     let isFirstLoad = true;
 
@@ -351,6 +349,7 @@ function DISPLAY_TADI_LOG(subj_off_id, summary = false) {
           <td>${new Date('1970-01-01T' + record.tadi_timein).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} - 
               ${new Date('1970-01-01T' + record.tadi_timeout).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
           </td>
+          <td>${record.approved_date ? new Date(record.approved_date).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }) : '--'}</td>
           <td>
           <button class="btn details" 
             data-tadi-id="${record.schltadi_ID}" 
@@ -442,6 +441,7 @@ function DISPLAYALL_TADI_RECORDS(subj_off_id,subjDesc = null,subjSec = null, sum
         <td>${new Date('1970-01-01T' + record.tadi_timein).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} - 
             ${new Date('1970-01-01T' + record.tadi_timeout).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
         </td>
+        <td>${record.approved_date ? new Date(record.approved_date).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }) : '--'}</td>
         <td>
           <button class="btn details" 
             data-tadi-id="${record.schltadi_ID}" 
@@ -736,11 +736,13 @@ async function TOTAL_COUNT_SUMMARY(prd){
     const totalUnverified = document.getElementById('totalUnverified');
     const totalVerified = document.getElementById('totalVerified');
     const totalOverDue = document.getElementById('totalDue');
+    const totalRenderedTime = document.getElementById('totalrendtime');
 
     totalCount.textContent = totalResult.total_count;
     totalUnverified.textContent = totalResult.total_unverified;
     totalVerified.textContent = totalResult.verified_count;
     totalOverDue.textContent = totalResult.total_overdue;
+    totalRenderedTime.textContent = totalResult.total_rendered_time;
   }catch(error){
     console.error("Error:", error);
   }
@@ -1022,3 +1024,38 @@ function viewSubmitted(subj_Id, tadiId) {
 GET_ACADEMICLEVEL();
 
 UPDATE_TADI_STATUS();
+
+async function detailedReport(lvl_id, yr_id, prd_id) {
+  setDetailedReportLoading(true);
+
+  const formData = new FormData();
+  formData.append('type', 'GET_PROF_TADI_REPORT');
+  formData.append('lvl_id', lvl_id);
+  formData.append('yr_id', yr_id);
+  formData.append('prd_id', prd_id);
+
+  const startDate = document.getElementById('reportStartTime')?.value;
+  const endDate = document.getElementById('reportEndTime')?.value;
+  if (startDate && endDate) {
+    formData.append('startDate', startDate);
+    formData.append('endDate', endDate);
+  }
+
+  try{
+    const req = await fetch(`forms/tadi/prof/controller/index-info.php`, {
+      method: "POST",
+      body: formData})
+
+      const res = await req.json();
+      
+      detailedReportView(res);
+
+    }catch(error){
+      console.error("Error:", error);
+      const totalConductedHours = document.querySelector('.total-conducted-hours');
+      if (totalConductedHours) {
+        totalConductedHours.textContent = 'Unable to load report';
+        totalConductedHours.setAttribute('aria-busy', 'false');
+      }
+    }
+}

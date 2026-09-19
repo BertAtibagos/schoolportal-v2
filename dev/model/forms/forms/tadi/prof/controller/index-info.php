@@ -41,7 +41,7 @@
     
     $fetch = [];
     $type = $_POST['type'];
-    $queryType = ['GET_SUBJECT_LIST', 'CHECK_MATCHED_SUBJ_ID', 'GET_TADI_RECORD', 'GETALL_TADI_RECORD', 'GET_IMAGE', 'GET_ACADEMIC_LEVEL', 'GET_ACADEMIC_YEAR_LEVEL', 'GET_ACADEMIC_PERIOD', 'GET_ACAD_YEAR', 'GET_INSTRUCTOR_DETAILS', 'GET_ALL_TADI_SUMMARY', 'GET_TOTAL_COUNT_SUMMARY', 'UPDATE_SUBJECT_COUNT', 'GET_SUBMITTED_REC'];
+    $queryType = ['GET_SUBJECT_LIST', 'CHECK_MATCHED_SUBJ_ID', 'GET_TADI_RECORD', 'GETALL_TADI_RECORD', 'GET_IMAGE', 'GET_ACADEMIC_LEVEL', 'GET_ACADEMIC_YEAR_LEVEL', 'GET_ACADEMIC_PERIOD', 'GET_ACAD_YEAR', 'GET_INSTRUCTOR_DETAILS', 'GET_ALL_TADI_SUMMARY', 'GET_TOTAL_COUNT_SUMMARY', 'UPDATE_SUBJECT_COUNT', 'GET_SUBMITTED_REC', 'GET_PROF_TADI_REPORT'];
     if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
         $yearId = 19;
         switch($type){
@@ -423,7 +423,8 @@
                             schl_tadi.schltadi_mkup_date AS mkup_date,
                             schl_tadi.schltadi_isconfirm AS approve,
                             schl_tadi.schltadi_isactive as active,
-                            schl_tadi.schlprof_id AS prof 
+                            schl_tadi.schlprof_id AS prof,
+                            schl_tadi.tadi_approved_date AS approved_date
 
                             FROM `schooltadi` AS schl_tadi
                             LEFT JOIN `schoolstudent` AS schl_stud 
@@ -476,7 +477,8 @@
                             schl_tadi.schltadi_isconfirm AS approve,
                             schl_tadi.schlacadprd_id AS acad_prd_id,
                             schl_tadi.schltadi_isactive as active,
-                            schl_tadi.schlprof_id AS prof 
+                            schl_tadi.schlprof_id AS prof,
+                            schl_tadi.tadi_approved_date AS approved_date
 
                             FROM `schooltadi` AS schl_tadi
                                 LEFT JOIN `schoolstudent` AS schl_stud 
@@ -635,11 +637,20 @@
                 $period = $_POST['prd_id'];
 
                 $qry = "WITH counts AS (
-                            SELECT 
+                            SELECT
                                 SUM(CASE WHEN schltadi_status = 1 AND schltadi_isactive = 1 THEN 1 ELSE 0 END) AS verified_count,
                                 SUM(CASE WHEN schltadi_status = 0 AND schltadi_isactive = 1 THEN 1 ELSE 0 END) AS total_unverified,
                                 SUM(CASE WHEN schltadi_status = 0 AND schltadi_isactive = 1 AND schltadi_isconfirm = 0 AND schltadi_status = 0 AND schltadi_date < CURDATE() - INTERVAL 3 DAY THEN 1 ELSE 0 END) AS total_overdue,
-                                COUNT(*) AS total_count
+                                COUNT(*) AS total_count,
+                                SUM(
+                                    CASE
+                                        WHEN t.schltadi_isactive = 1 AND schltadi_status = 1 AND schltadi_isconfirm = 1
+                                            AND t.schltadi_timein IS NOT NULL
+                                            AND t.schltadi_timeout IS NOT NULL
+                                        THEN TIMESTAMPDIFF(SECOND, t.schltadi_timein, t.schltadi_timeout)
+                                        ELSE 0
+                                    END
+                                ) AS total_rendered_seconds
                             FROM schooltadi t
                             LEFT JOIN `schoolenrollmentsubjectoffered` AS `schl_enr_subj_off`
                                 ON t.`schlenrollsubjoff_id` = `schl_enr_subj_off`.`SchlEnrollSubjOffSms_ID`
@@ -648,12 +659,14 @@
                                 AND t.schlacadprd_id = ?
                                 AND FIND_IN_SET(?, schl_enr_subj_off.`SchlProf_ID`) > 0
                         )
-                        SELECT 
+                        SELECT
                             COALESCE(verified_count, 0)   AS verified_count,
                             COALESCE(total_unverified, 0) AS total_unverified,
                             COALESCE(total_count, 0)      AS total_count,
                             COALESCE(total_overdue, 0)    AS total_overdue,
-                            CASE 
+                            COALESCE(total_rendered_seconds, 0) AS total_rendered_seconds,
+                            SEC_TO_TIME(COALESCE(total_rendered_seconds, 0)) AS total_rendered_time,
+                            CASE
                                 WHEN total_count > 0 THEN ROUND((verified_count / total_count) * 100)
                                 ELSE 0
                             END AS verification_rate
@@ -776,6 +789,93 @@
                 }
                 unset($row);
                 break;
+            case 'GET_PROF_TADI_REPORT':
+				rateLimit(60, 5, 'get_teacher_tadi_report_rate_limit');
+
+				if (!isset($_POST['lvl_id'], $_POST['prd_id'], $_POST['yr_id'])) {
+					http_response_code(400);
+					echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+					exit;
+				}
+
+				$user = $_SESSION['EMPLOYEE']['ID'];
+				$lvlid = $_POST['lvl_id'];
+				$prdid = $_POST['prd_id'];
+				$yrid = $_POST['yr_id'];
+				$startDate = trim((string)($_POST['startDate'] ?? ''));
+				$endDate = trim((string)($_POST['endDate'] ?? ''));
+
+				$qry = "SELECT
+                            CONCAT(emp.`SchlEmp_LNAME`, ', ', emp.`SchlEmp_FNAME`) AS prof_name,
+                            subj.`SchlAcadSubj_CODE` AS subject_code,
+                            subj.`SchlAcadSubj_DESC` AS subject_desc,
+                            sec.`SchlAcadSec_NAME` AS section_name,
+                            tadi.`schltadi_id`,
+                            tadi.`schltadi_date` AS tadi_date,
+                            tadi.schltadi_actual_date AS submitted_date,
+                            tadi.`schltadi_timein` AS time_in,
+                            tadi.`schltadi_timeout` AS time_out,
+                            TIMEDIFF(tadi.schltadi_timeout, tadi.schltadi_timein) AS duration,
+                            tadi.`schltadi_mode` AS mode,
+                            tadi.`schltadi_type` AS type,
+                            tadi.`schltadi_isconfirm` AS approved,
+                            CONCAT(info.`SchlEnrollRegStudInfo_LAST_NAME`, ', ', info.`SchlEnrollRegStudInfo_FIRST_NAME`) AS student_name,
+                            tadi.tadi_approved_date AS approved_date,
+                            tadi.schltadi_class_instruct AS class_instruction,
+                            tadi.tadi_payroll_status AS payroll_status,
+                            tadi.tadi_cutoff_batchID AS cutoff_batchID
+
+                        FROM schooltadi tadi
+
+                        LEFT JOIN schoolstudent stud
+                            ON tadi.`schlstud_id` = stud.`SchlStudSms_ID`
+                        LEFT JOIN schoolenrollmentregistrationstudentinformation info
+                            ON stud.`SchlEnrollRegColl_ID` = info.`SchlEnrollReg_ID`
+                        LEFT JOIN schoolenrollmentsubjectoffered off
+                            ON tadi.`schlenrollsubjoff_id` = off.`SchlEnrollSubjOffSms_ID`
+                        LEFT JOIN schoolacademicsubject subj
+                            ON off.`SchlAcadSubj_ID` = subj.`SchlAcadSubjSms_ID`
+                        LEFT JOIN schoolacademicsection sec
+                            ON off.`SchlAcadSec_ID` = sec.`SchlAcadSecSms_ID`
+                        LEFT JOIN schoolacademiccourses crse
+                            ON off.`SchlAcadCrses_ID` = crse.`SchlAcadCrseSms_ID`
+                        LEFT JOIN schooldepartment dept
+                            ON crse.`SchlDept_ID` = dept.`SchlDeptSms_ID`
+                        LEFT JOIN schoolemployee emp
+                            ON tadi.`schlprof_id` = emp.`SchlEmpSms_ID`
+
+                        WHERE off.`SchlAcadLvl_ID` = ?
+                        AND off.`SchlAcadYr_ID` = ?
+                        AND off.`SchlAcadPrd_ID` = ?
+                        AND tadi.schltadi_status = 1
+                        AND tadi.schltadi_isactive = 1
+                        AND tadi.schltadi_isconfirm = 1
+                        AND tadi.schlprof_id = ?";
+
+				if ($startDate && $endDate) {
+					$qry .= " AND tadi.schltadi_date BETWEEN ? AND ?";
+				}
+
+				$qry .= " ORDER BY 
+					emp.SchlEmp_LNAME, 
+					subj.SchlAcadSubj_CODE,
+					tadi.schltadi_date,
+					tadi.schltadi_timein";
+
+				$stmt = $dbConn->prepare($qry);
+				
+				if ($startDate && $endDate) {
+                    $stmt->bind_param("iiiiss", $lvlid, $yrid, $prdid, $user, $startDate, $endDate);
+				} else {
+					$stmt->bind_param("iiii", $lvlid, $yrid, $prdid, $user);
+				}
+				
+				$stmt->execute();
+				$result = $stmt->get_result();
+				$fetch = $result->fetch_all(MYSQLI_ASSOC);
+				$stmt->close();
+				$dbConn->close();
+				break;
             default:
                 http_response_code(400);
                 echo json_encode(["error" => "Invalid request type."]);

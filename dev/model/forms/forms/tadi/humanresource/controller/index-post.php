@@ -36,7 +36,7 @@ function get_current_academic_period_id($dbConn, $acadLvlId, $acadYrId) {
 }
 
 $type = $_POST['type'];
-$queryType = ['GET_ALL_TOTAL', 'GET_TOTAL_PER_MONTH', 'GET_TOTAL_PER_CUTOFF', 'GET_ALL_PROG_TOTAL', 'GET_TADI_DETAILS_BY_CUTOFF', 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY', 'GET_ACADEMIC_LEVEL', 'GET_ACADEMIC_YEAR_LEVEL', 'GET_ACADEMIC_PERIOD','GET_ACAD_YEAR','GET_INSTRUCTOR_SCHEDULE','GET_TABULATION','RECORD_TABULATION'];
+$queryType = ['GET_ALL_TOTAL', 'GET_TOTAL_PER_MONTH', 'GET_TOTAL_PER_CUTOFF', 'GET_ALL_PROG_TOTAL', 'GET_TADI_DETAILS_BY_CUTOFF', 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY', 'GET_ACADEMIC_LEVEL', 'GET_ACADEMIC_YEAR_LEVEL', 'GET_ACADEMIC_PERIOD','GET_ACAD_YEAR','GET_INSTRUCTOR_SCHEDULE','GET_TABULATION','RECORD_TABULATION','CREDIT_RECORD_TABULATION'];
 if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
     $staticPeriod = 6;
     $staticYear = 19;
@@ -1064,11 +1064,11 @@ if($_SESSION['EMPLOYEE'] && in_array($type, $queryType, true)){
                 exit;
             }
 
-            echo json_encode([
+            $fetch = [
                 "success"        => true,
                 "batch_id"       => $batchId,
                 "affected_rows"  => $stmt->affected_rows
-            ]);
+            ];
 
             $stmt->close();
             $dbConn->close();

@@ -1,3 +1,11 @@
+const htmlEscapes = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+};
+
 function escapeHtml(value) {
     return String(value ?? "").replace(/[&<>"']/g, (match) => htmlEscapes[match]);
 }
@@ -12,6 +20,41 @@ function formatTimeToAmPm(timeString) {
   const period = hoursInt >= 12 ? "PM" : "AM";
   hoursInt = hoursInt % 12 || 12;
   return `${hoursInt}:${minutes} ${period}`;
+}
+
+function durationToSeconds(duration) {
+  const parts = String(duration ?? "0:0:0").split(":").map(Number);
+  if (parts.some(Number.isNaN)) {
+    return 0;
+  }
+
+  if (parts.length === 2) {
+    return (parts[0] * 60 * 60) + (parts[1] * 60);
+  }
+
+  return (parts[0] * 60 * 60) + (parts[1] * 60) + parts[2];
+}
+
+function formatTotalDuration(totalSeconds) {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return [hours, minutes, seconds]
+    .map(value => String(value).padStart(2, "0"))
+    .join(":");
+}
+
+function setDetailedReportLoading(isLoading) {
+  const totalConductedHours = document.querySelector('.total-conducted-hours');
+  if (!totalConductedHours) {
+    return;
+  }
+
+  totalConductedHours.innerHTML = isLoading
+    ? '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span><span>Loading report...</span>'
+    : '';
+  totalConductedHours.setAttribute('aria-busy', String(isLoading));
 }
 
 function setupActivityText(element) {
@@ -362,4 +405,153 @@ function isSafeAttachmentPath(value) {
     }
 
     return /^attachment\/[A-Za-z0-9._-]+\/\d{4}-\d{2}-\d{2}\/[A-Za-z0-9._-]+$/.test(value);
+}
+
+document.getElementById('det_rep').addEventListener("click", function(){
+  const detailedReportModal = document.getElementById('detailedReportModal');
+
+  if (detailedReportModal) {
+    bootstrap.Modal.getOrCreateInstance(detailedReportModal).show();
+  }
+
+  const levelId = document.getElementById('academiclevel').value;
+  const yearId = document.getElementById('acadyear').value;
+  const periodId = document.getElementById('period').value;
+
+  detailedReport(levelId, yearId, periodId);
+});
+
+document.getElementById('generateReportBtn')?.addEventListener("click", function(){
+  detailedReport(
+    document.getElementById('academiclevel').value,
+    document.getElementById('acadyear').value,
+    document.getElementById('period').value
+  );
+});
+
+function detailedReportView(data) {
+    const modalBody = document.querySelector('.report-body');
+  const totalConductedHours = document.querySelector('.total-conducted-hours');
+  const startDate = document.getElementById('reportStartTime')?.value || '';
+  const endDate = document.getElementById('reportEndTime')?.value || '';
+  const reportDateRange = startDate && endDate ? ` (${startDate} to ${endDate})` : '';
+  if (!modalBody) {
+    return;
+  }
+
+  if (!Array.isArray(data) || data.length === 0) {
+    if (totalConductedHours) {
+      totalConductedHours.textContent = `Total Conducted Hours${reportDateRange}: 00:00:00`;
+    }
+
+    modalBody.innerHTML = `
+      <div class="tadi-empty-state py-5 text-center">
+        <p>No TADI records found for the selected criteria.</p>
+      </div>`;
+    return;
+  }
+
+  const subjectGroups = data.reduce((groups, record) => {
+    const subjectKey = record.subject_code || 'No Subject';
+
+    if (!groups[subjectKey]) {
+      groups[subjectKey] = {
+        subject_code: record.subject_code,
+        subject_desc: record.subject_desc,
+        section_name: record.section_name,
+        sessions: [],
+        totalDurationSeconds: 0
+      };
+    }
+
+    if (record.schltadi_id) {
+      groups[subjectKey].totalDurationSeconds += durationToSeconds(record.duration);
+      groups[subjectKey].sessions.push({
+        date: record.tadi_date,
+        time_in: formatTimeToAmPm(record.time_in),
+        time_out: formatTimeToAmPm(record.time_out),
+        duration: record.duration,
+        mode: record.mode === 'online_learning' ? 'Online' : 'Onsite',
+        type: record.type === 'makeup' ? 'Make-up' : 'Regular',
+        approved: record.approved,
+        approved_date: record.approved_date,
+        late_status: record.late_status,
+        class_instruction: record.class_instruction,
+        stud_name: record.student_name,
+        makeup_date: record.mkup_date || null,
+        payroll_status: record.payroll_status,
+        cutoff_batchID: record.cutoff_batchID,
+        section: record.section_name
+      });
+    }
+
+    return groups;
+  }, {});
+
+  const subjects = Object.values(subjectGroups);
+  const overallDurationSeconds = subjects.reduce(
+    (total, subject) => total + subject.totalDurationSeconds,
+    0
+  );
+
+  if (totalConductedHours) {
+    totalConductedHours.textContent = `Total Conducted Hours${reportDateRange}: ${formatTotalDuration(overallDurationSeconds)}`;
+  }
+
+  modalBody.innerHTML = `
+    ${subjects.map(subject => `
+      <div class="tadi-content-card mb-3">
+        <div class="tadi-content-card-header">
+          <h5><i class="fas fa-book me-2" style="opacity:.75"></i>${escapeHtml(subject.subject_desc || 'No Subject')}</h5>
+          <div class="d-flex gap-2 flex-wrap justify-content-end">
+            <span class="tadi-badge tadi-badge-muted">${subject.sessions.length} session(s)</span>
+            <span class="tadi-badge tadi-badge-primary">Total: ${formatTotalDuration(subject.totalDurationSeconds)}</span>
+          </div>
+        </div>
+        <div class="p-3">
+          <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
+            <span style="color:#6b7280;font-size:.85rem;">${escapeHtml(subject.subject_code || '')}</span>
+          </div>
+          <div class="tadi-modal-table-card">
+            <div class="tadi-table-wrapper" style="max-height:none">
+              <table class="tadi-table">
+                <thead>
+                  <tr style="text-align:center">
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Duration</th>
+                    <th>Session Type</th>
+                    <th>Submitted By</th>
+                    <th>Section</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${subject.sessions.map(session => `
+                    <tr style="text-align:center" class="${session.late_status == 1 ? 'tadi-row-late' : ''}">
+                      <td class="tadi-report-date">${escapeHtml(session.date)}</td>
+                      <td style="white-space:nowrap">${escapeHtml(session.time_in)} &mdash; ${escapeHtml(session.time_out)}</td>
+                      <td>${escapeHtml(session.duration)}</td>
+                      <td><span class="tadi-badge tadi-badge-primary">${escapeHtml(session.mode)} ${escapeHtml(session.type)}</span></td>
+                      <td>${escapeHtml(session.stud_name)}</td>
+                      <td>${session.section}</td>
+                      <td>
+                        <span class="tadi-badge ${session.approved == 1 ? 'tadi-badge-approved' : 'tadi-badge-pending'}">
+                          ${session.approved == 1 ? `<i class="fas fa-check-circle"></i> Approved (${escapeHtml(session.approved_date)})` : `<i class="fas fa-times-circle"></i> Not yet approved`}
+                        </span>
+                      </td>
+                      <td>
+                        ${session.payroll_status === 'paid' ? `<span class="tadi-badge tadi-badge-credited">Credited (${session.cutoff_batchID == 2 ? `Aug 16-31` : `Sept 1-15`})</span>` : `<span class="tadi-badge tadi-badge-uncredited">Not Credited</span>`}
+                      </td>
+                    </tr>
+                    <tr></tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join('')}`;
 }
